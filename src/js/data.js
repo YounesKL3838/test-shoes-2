@@ -8,9 +8,9 @@ export const IMAGES = {
   sneakers: './src/assets/images/shoe_sneakers_blush_1794235633502.jpg',
   talons: './src/assets/images/shoe_talons_silk_1794235633825.jpg',
   sandales: './src/assets/images/shoe_sandales_strappy_1794235634994.jpg',
+  boots: './src/assets/images/shoe_bottes_clean.jpg',
+  ballerines: './src/assets/images/shoe_ballerines_clean.jpg',
   ballerinesBoots: './src/assets/images/shoe_ballerines_boots_1794235635360.jpg',
-  ballerines: './src/assets/images/shoe_ballerines_boots_1794235635360.jpg',
-  boots: './src/assets/images/shoe_ballerines_boots_1794235635360.jpg',
 };
 
 export const CATEGORIES = [
@@ -48,7 +48,7 @@ export const CATEGORIES = [
     subtitle_fr: 'Silhouette Automne–Hiver',
     subtitle_ar: 'إطلالة دافئة للموسم',
     count: 11,
-    image: IMAGES.ballerinesBoots,
+    image: IMAGES.boots,
   },
   {
     id: 'Ballerines',
@@ -57,7 +57,7 @@ export const CATEGORIES = [
     subtitle_fr: 'Douceur au Quotidien',
     subtitle_ar: 'نعومة وراحة يومية',
     count: 12,
-    image: IMAGES.ballerinesBoots,
+    image: IMAGES.ballerines,
   },
 ];
 
@@ -196,8 +196,8 @@ export const PRODUCTS = [
     isNew: true,
     isBestSeller: true,
     isSpecialOffer: false,
-    image: IMAGES.ballerinesBoots,
-    gallery: [IMAGES.ballerinesBoots, IMAGES.sneakers, IMAGES.hero],
+    image: IMAGES.boots,
+    gallery: [IMAGES.boots, IMAGES.sneakers, IMAGES.hero],
     colors: ['Beige', 'Noir'],
     sizes: [36, 37, 38, 39, 40, 41],
     description_fr: 'Bottines cheville en cuir souple à fermeture zippée et talon confortable pour la mi-saison et l’hiver.',
@@ -215,8 +215,8 @@ export const PRODUCTS = [
     isNew: true,
     isBestSeller: false,
     isSpecialOffer: true,
-    image: IMAGES.ballerinesBoots,
-    gallery: [IMAGES.ballerinesBoots, IMAGES.sandales, IMAGES.talons],
+    image: IMAGES.ballerines,
+    gallery: [IMAGES.ballerines, IMAGES.sandales, IMAGES.talons],
     colors: ['Rose', 'Beige', 'Noir'],
     sizes: [35, 36, 37, 38, 39, 40],
     description_fr: 'Ballerines souples avec fine bride Mary Jane pour un style féminin et sans effort.',

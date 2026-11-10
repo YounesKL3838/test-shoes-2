@@ -900,8 +900,8 @@ function renderHomeScreen() {
       </section>
 
       <!-- 2. Catégories Rondes bilingues -->
-      <section class="px-3 sm:px-6 py-2.5 sm:py-3">
-        <div class="flex items-center justify-between sm:justify-around gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar py-1">
+      <section class="px-3 sm:px-6 py-1 sm:py-1.5">
+        <div class="flex items-center justify-between sm:justify-around gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar pt-3.5 pb-3.5 px-1">
           ${CATEGORIES.map(
             (cat, idx) => `
             <button
@@ -920,7 +920,7 @@ function renderHomeScreen() {
                   class="w-full h-full object-cover"
                 />
               </div>
-              <span class="text-[11px] sm:text-[13px] font-semibold text-[#18181B] group-hover:text-[#DE1B61] transition-colors">
+              <span class="text-[11px] sm:text-[13px] font-semibold text-[#18181B] group-hover:text-[#DE1B61] transition-colors whitespace-nowrap">
                 ${store.lang === 'ar' ? cat.name_ar : cat.name_fr}
               </span>
             </button>

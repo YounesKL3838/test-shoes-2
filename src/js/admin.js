@@ -959,6 +959,11 @@ export const adminState = {
     if (Array.isArray(this.categories) && this.categories.length > 0) {
       CATEGORIES.length = 0;
       this.categories.forEach((cat) => {
+        if (cat.id === 'Bottes' && (!cat.image || cat.image.includes('shoe_ballerines_boots'))) {
+          cat.image = IMAGES.boots;
+        } else if (cat.id === 'Ballerines' && (!cat.image || cat.image.includes('shoe_ballerines_boots'))) {
+          cat.image = IMAGES.ballerines;
+        }
         CATEGORIES.push({ ...cat });
         CATEGORY_LABELS[cat.id] = {
           ar: `${cat.name_ar} (${cat.name_fr || cat.id})`,
