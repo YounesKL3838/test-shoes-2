@@ -1506,42 +1506,6 @@ function renderCategoryScreen() {
  */
 function getActiveLandingItemConfig() {
   const isAr = store.lang === 'ar';
-  if (store.currentScreen === 'pdp') {
-    const product = store.getActiveProduct();
-    const gallery =
-      Array.isArray(product.gallery) && product.gallery.length > 0
-        ? product.gallery.filter(Boolean)
-        : [product.image].filter(Boolean);
-    const prodName = isAr
-      ? product.name_ar || product.name || product.name_fr
-      : product.name_fr || product.name || product.name_ar;
-    const prodDesc = isAr
-      ? product.description_ar || ''
-      : product.description_fr || '';
-
-    return {
-      id: product.id,
-      title: prodName,
-      description: prodDesc,
-      unitPrice: Number(product.price || 4490),
-      origUnitPrice: Number(product.originalPrice || product.price || 4490),
-      imageUrl: gallery[0] || product.image,
-      gallery,
-      colors:
-        Array.isArray(product.colors) && product.colors.length > 0
-          ? product.colors
-          : ['Rose', 'Beige', 'Noir'],
-      sizes:
-        Array.isArray(product.sizes) && product.sizes.length > 0
-          ? product.sizes
-          : [36, 37, 38, 39, 40, 41],
-      offerEnabled: product.offerEnabled !== false,
-      offerMinQty: Math.max(2, Number(product.offerMinQty || 2)),
-      offerFreeShipping: product.offerFreeShipping !== false,
-      offerText: product.offerText || '',
-    };
-  }
-
   const lpList =
     Array.isArray(adminState?.landingPages) && adminState.landingPages.length > 0
       ? adminState.landingPages
@@ -1561,7 +1525,7 @@ function getActiveLandingItemConfig() {
       offerEnabled: true,
       offerMinQty: 2,
       offerFreeShipping: true,
-      offerText: 'اشترِ 2 واحصل على شحن مجاني',
+      offerText: isAr ? 'اشترِ 2 واحصل على شحن مجاني' : '2 paires = Livraison gratuite',
     };
 
   const gallery =
@@ -2160,7 +2124,399 @@ function renderCleanLandingPageUI() {
 }
 
 function renderPDPScreen() {
-  return renderCleanLandingPageUI();
+  const t = getT();
+  const isAr = store.lang === 'ar';
+  const product = store.getActiveProduct();
+
+  const gallery =
+    Array.isArray(product.gallery) && product.gallery.length > 0
+      ? product.gallery.filter(Boolean)
+      : [product.image].filter(Boolean);
+
+  const activeIdx = (store.pdpGalleryIndex || 0) % gallery.length;
+  const prodName = isAr
+    ? product.name_ar || product.name || product.name_fr
+    : product.name_fr || product.name || product.name_ar;
+  const prodDesc = isAr
+    ? product.description_ar || ''
+    : product.description_fr || '';
+
+  const availableColors =
+    Array.isArray(product.colors) && product.colors.length > 0
+      ? product.colors
+      : ['Rose', 'Beige', 'Noir'];
+
+  const availableSizes =
+    Array.isArray(product.sizes) && product.sizes.length > 0
+      ? product.sizes
+      : [36, 37, 38, 39, 40, 41];
+
+  if (!availableColors.includes(store.pdpSelectedColor)) {
+    store.pdpSelectedColor = availableColors[0] || 'Rose';
+  }
+  if (!availableSizes.includes(store.pdpSelectedSize)) {
+    store.pdpSelectedSize =
+      availableSizes.includes(37) ? 37 : availableSizes[0] || 37;
+  }
+
+  const selectedColorSwatch = COLOR_SWATCHES[store.pdpSelectedColor];
+  const selectedColorLabel = selectedColorSwatch
+    ? isAr
+      ? selectedColorSwatch.label_ar
+      : selectedColorSwatch.label_fr
+    : store.pdpSelectedColor;
+
+  const isWishlisted = store.isWishlisted(product.id);
+  const isOutOfStock = Number(product.stock) === 0;
+  const isLowStock = Number(product.stock) > 0 && Number(product.stock) < 5;
+
+  // منتجات مقترحة من نفس التشكيلة
+  const relatedProducts = PRODUCTS.filter(
+    (p) => p.id !== product.id && (p.category === product.category || !product.category)
+  ).slice(0, 4);
+
+  return `
+    <div class="min-h-screen bg-[#FAF8F9] pb-16 animate-screen-enter">
+      <div class="max-w-6xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-6">
+        
+        <!-- الشريط العلوي للتنقل والمشاركة -->
+        <div class="flex items-center justify-between mb-4 sm:mb-6">
+          <button
+            type="button"
+            data-action="go-back"
+            class="px-3.5 py-1.5 rounded-xl bg-white border border-[#E4E4E7] hover:border-[#D4D4D8] text-[#27272A] text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+          >
+            <span>${isAr ? '→ الرجوع' : '← Retour'}</span>
+          </button>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              data-action="toggle-wishlist"
+              data-id="${product.id}"
+              class="w-9 h-9 rounded-xl bg-white border border-[#E4E4E7] hover:border-[#D4D4D8] flex items-center justify-center transition-colors shadow-2xs cursor-pointer ${
+                isWishlisted ? 'text-[#DE1B61]' : 'text-[#71717A]'
+              }"
+              title="${isAr ? 'المفضلة' : 'Favoris'}"
+            >
+              <svg class="w-5 h-5 ${isWishlisted ? 'fill-[#DE1B61]' : 'fill-none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              data-action="share-product"
+              class="px-3 py-1.5 rounded-xl bg-white border border-[#E4E4E7] hover:border-[#D4D4D8] text-[#52525B] text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+              <span>${t.pdp.share}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- شبكة تفاصيل المنتج الرئيسية -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+          
+          <!-- العمود الأيسر: معرض الصور الاحترافي المتجاوب -->
+          <div class="lg:col-span-7 bg-white rounded-3xl border border-[#EAE6E8] p-3 sm:p-5 shadow-2xs">
+            <div
+              id="pdp-gallery-swipe-box"
+              data-swipe-gallery="pdp"
+              data-active-index="${activeIdx}"
+              data-total-slides="${gallery.length}"
+              class="ss-insta-gallery-box rounded-2xl bg-[#F7F5F6] overflow-hidden"
+            >
+              <div
+                class="ss-insta-track"
+                style="transform: translate3d(-${activeIdx * 100}%, 0, 0);"
+              >
+                ${gallery
+                  .map(
+                    (imgSrc, idx) => `
+                  <div class="ss-insta-slide" data-slide-index="${idx}">
+                    <img
+                      src="${imgSrc}"
+                      alt="${prodName} - ${idx + 1}"
+                      referrerpolicy="no-referrer"
+                      decoding="async"
+                      fetchpriority="${idx === activeIdx ? 'high' : 'low'}"
+                      loading="${idx === activeIdx ? 'eager' : 'lazy'}"
+                      draggable="false"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                `
+                  )
+                  .join('')}
+              </div>
+
+              ${
+                gallery.length > 1
+                  ? `
+                <button
+                  type="button"
+                  data-action="gallery-step"
+                  data-dir="-1"
+                  class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-[#18181B] shadow-md items-center justify-center text-lg font-bold cursor-pointer transition-transform hover:scale-105"
+                  aria-label="Previous"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  data-action="gallery-step"
+                  data-dir="1"
+                  class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-[#18181B] shadow-md items-center justify-center text-lg font-bold cursor-pointer transition-transform hover:scale-105"
+                  aria-label="Next"
+                >
+                  ›
+                </button>
+                <span
+                  data-gallery-counter
+                  dir="ltr"
+                  class="absolute bottom-3 end-3 z-10 px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-xs text-white text-xs font-semibold tabular-nums pointer-events-none"
+                >
+                  ${activeIdx + 1}/${gallery.length}
+                </span>
+              `
+                  : ''
+              }
+            </div>
+
+            <!-- شريط الصور المصغرة إذا توفرت عدة صور -->
+            ${
+              gallery.length > 1
+                ? `<div class="mt-3 flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
+                    ${gallery
+                      .map(
+                        (imgUrl, idx) => `
+                        <button
+                          type="button"
+                          data-action="pdp-gallery-dot"
+                          data-index="${idx}"
+                          class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                            activeIdx === idx
+                              ? 'border-[#DE1B61] scale-105 shadow-xs'
+                              : 'border-transparent opacity-70 hover:opacity-100'
+                          }"
+                        >
+                          <img src="${imgUrl}" alt="Thumb ${idx + 1}" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
+                        </button>
+                      `
+                      )
+                      .join('')}
+                  </div>`
+                : ''
+            }
+          </div>
+
+          <!-- العمود الأيمن: تفاصيل الحذاء وخيارات الشراء وزر أضف إلى السلة -->
+          <div class="lg:col-span-5 bg-white rounded-3xl border border-[#EAE6E8] p-4 sm:p-6 shadow-2xs space-y-5">
+            
+            <!-- عنوان المنتج والتصنيف والشارة -->
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="text-xs font-bold tracking-wider uppercase text-[#DE1B61]">
+                  ${product.category || 'ShoeStyle'}
+                </span>
+                <span>
+                  ${
+                    isOutOfStock
+                      ? `<span class="px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 text-[11px] font-bold">${isAr ? 'نفد من المخزون' : 'Épuisé'}</span>`
+                      : isLowStock
+                      ? `<span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">${isAr ? `متبقي ${product.stock} فقط` : `Plus que ${product.stock} en stock`}</span>`
+                      : `<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">${isAr ? 'متوفر بالمخزون' : 'En stock'}</span>`
+                  }
+                </span>
+              </div>
+
+              <h1 class="text-xl sm:text-2xl font-black text-[#18181B] leading-snug">
+                ${prodName}
+              </h1>
+
+              <!-- السعر والخصم -->
+              <div class="mt-3 flex items-baseline gap-3 tabular-nums">
+                <span class="text-2xl sm:text-3xl font-black text-[#DE1B61]">
+                  ${formatDA(product.price, store.lang)}
+                </span>
+                ${
+                  product.originalPrice && product.originalPrice > product.price
+                    ? `<span class="text-sm sm:text-base text-[#8E8E93] line-through">
+                        ${formatDA(product.originalPrice, store.lang)}
+                      </span>
+                      <span class="px-2 py-0.5 rounded-full bg-[#DE1B61] text-white text-xs font-bold">
+                        -${product.discountPercent || Math.round((1 - product.price / product.originalPrice) * 100)}%
+                      </span>`
+                    : ''
+                }
+              </div>
+            </div>
+
+            <hr class="border-[#F1EEF0]" />
+
+            <!-- اختيار اللون -->
+            <div>
+              <label class="block text-xs font-bold text-[#3F3F46] mb-2">
+                ${t.pdp.colorLabel} <span id="pdp-selected-color-label" class="text-[#DE1B61] font-extrabold">${selectedColorLabel}</span>
+              </label>
+              <div class="flex items-center gap-2.5 flex-wrap">
+                ${availableColors
+                  .map((c) => {
+                    const swatch = COLOR_SWATCHES[c] || { hex: '#D2B48C', label_ar: c, label_fr: c };
+                    const isActive = store.pdpSelectedColor === c;
+                    return `
+                      <button
+                        type="button"
+                        data-action="pdp-select-color"
+                        data-color="${c}"
+                        class="ss-color-swatch ${isActive ? 'active' : 'border-black/15'}"
+                        style="--swatch-color: ${swatch.hex}; background-color: ${swatch.hex}; width: 34px; height: 34px;"
+                        title="${isAr ? swatch.label_ar : swatch.label_fr}"
+                      ></button>
+                    `;
+                  })
+                  .join('')}
+              </div>
+            </div>
+
+            <!-- اختيار المقاس -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-bold text-[#3F3F46]">
+                  ${t.pdp.sizeLabel} <span id="pdp-selected-size-label" class="text-[#DE1B61] font-extrabold">${store.pdpSelectedSize}</span>
+                </label>
+              </div>
+              <div class="grid grid-cols-6 gap-2 tabular-nums">
+                ${availableSizes
+                  .map((sz) => {
+                    const isActive = Number(store.pdpSelectedSize) === Number(sz);
+                    return `
+                      <button
+                        type="button"
+                        data-action="pdp-select-size"
+                        data-size="${sz}"
+                        class="py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                          isActive
+                            ? 'border-2 border-[#DE1B61] text-[#DE1B61] bg-[#FCE8EE]/40 animate-pop-spring'
+                            : 'border-[#E4E4E7] text-[#18181B] bg-white hover:border-[#D4D4D8]'
+                        }"
+                      >
+                        ${sz}
+                      </button>
+                    `;
+                  })
+                  .join('')}
+              </div>
+            </div>
+
+            <hr class="border-[#F1EEF0]" />
+
+            <!-- الأزرار الرئيسية للشراء: أضف إلى السلة (الزر الأساسي) + اطلب الآن -->
+            <div class="space-y-2.5 pt-1">
+              <button
+                type="button"
+                data-action="pdp-add-to-cart"
+                ${isOutOfStock ? 'disabled' : ''}
+                class="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#DE1B61] to-[#E53575] hover:from-[#C71555] hover:to-[#DE1B61] active:scale-[0.98] text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-lg shadow-[#DE1B61]/25 transition-all cursor-pointer ${
+                  isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''
+                }"
+              >
+                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                <span>${isOutOfStock ? (isAr ? 'نفد من المخزون' : 'Produit épuisé') : t.pdp.addToCart}</span>
+              </button>
+
+              <button
+                type="button"
+                data-action="pdp-buy-now"
+                ${isOutOfStock ? 'disabled' : ''}
+                class="w-full py-3 px-6 rounded-2xl bg-[#18181B] hover:bg-black active:scale-[0.98] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''
+                }"
+              >
+                <span>${isAr ? 'شراء فوري / اطلب الآن' : 'Acheter maintenant'}</span>
+                <span>→</span>
+              </button>
+            </div>
+
+            <!-- ميزات وضمانات الشراء (الثقة والأمان) -->
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-[#F1EEF0] text-center text-[10px] sm:text-xs text-[#52525B]">
+              <div class="p-2 rounded-xl bg-[#FAF8F9] flex flex-col items-center gap-1">
+                <svg class="w-4 h-4 text-[#DE1B61]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="1" y="3" width="15" height="13"></rect>
+                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+                <span class="font-bold">${isAr ? 'توصيل 58 ولاية' : 'Livraison 58 wilayas'}</span>
+              </div>
+
+              <div class="p-2 rounded-xl bg-[#FAF8F9] flex flex-col items-center gap-1">
+                <svg class="w-4 h-4 text-[#DE1B61]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                  <line x1="2" y1="10" x2="22" y2="10"></line>
+                </svg>
+                <span class="font-bold">${isAr ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}</span>
+              </div>
+
+              <div class="p-2 rounded-xl bg-[#FAF8F9] flex flex-col items-center gap-1">
+                <svg class="w-4 h-4 text-[#DE1B61]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span class="font-bold">${isAr ? 'استبدال المقاس' : 'Échange garanti'}</span>
+              </div>
+            </div>
+
+            <!-- الوصف إن وُجد -->
+            ${
+              prodDesc
+                ? `<div class="pt-3 border-t border-[#F1EEF0]">
+                    <h3 class="text-xs font-bold text-[#18181B] mb-1.5">${isAr ? 'وصف المنتج وتفاصيله:' : 'Description du produit :'}</h3>
+                    <p class="text-xs sm:text-sm text-[#52525B] leading-relaxed">${prodDesc}</p>
+                  </div>`
+                : ''
+            }
+          </div>
+        </div>
+
+        <!-- قسم منتجات قد تعجبك -->
+        ${
+          relatedProducts.length > 0
+            ? `<div class="mt-12 sm:mt-16 pt-8 border-t border-[#EAE6E8]">
+                <div class="flex items-center justify-between mb-4 sm:mb-6">
+                  <h2 class="text-lg sm:text-xl font-bold text-[#18181B]">
+                    ${isAr ? 'منتجات قد تنال إعجابك أيضاً' : 'Vous pourriez aussi aimer'}
+                  </h2>
+                  <button
+                    type="button"
+                    data-action="nav-screen"
+                    data-screen="category"
+                    class="text-xs sm:text-sm font-bold text-[#DE1B61] hover:underline cursor-pointer"
+                  >
+                    ${isAr ? 'عرض الكل ←' : 'Tout voir →'}
+                  </button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                  ${relatedProducts.map((p, idx) => renderShoeStyleCard(p, idx)).join('')}
+                </div>
+              </div>`
+            : ''
+        }
+      </div>
+    </div>
+  `;
 }
 
 function renderLandingScreen() {
@@ -3237,6 +3593,16 @@ function setGallerySlideIndex(galleryBox, targetIndex) {
 
   if (galleryType === 'pdp') {
     store.pdpGalleryIndex = normalized;
+    document.querySelectorAll('[data-action="pdp-gallery-dot"]').forEach((thumb) => {
+      const tIdx = Number(thumb.getAttribute('data-index'));
+      if (tIdx === normalized) {
+        thumb.className =
+          'relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-[#DE1B61] scale-105 shadow-xs';
+      } else {
+        thumb.className =
+          'relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-transparent opacity-70 hover:opacity-100';
+      }
+    });
   } else if (galleryType === 'lp') {
     store.lpGalleryIndex = normalized;
     document.querySelectorAll('[data-action="lp-select-thumb"]').forEach((thumb) => {
@@ -3288,15 +3654,20 @@ function updatePDPColorInPlace(color) {
 function updatePDPSizeInPlace(size) {
   store.pdpSelectedSize = Number(size);
 
+  const sizeLabel = document.getElementById('pdp-selected-size-label');
+  if (sizeLabel) {
+    sizeLabel.textContent = String(store.pdpSelectedSize);
+  }
+
   const sizeBtns = document.querySelectorAll('[data-action="pdp-select-size"]');
   sizeBtns.forEach((btn) => {
     const btnSize = Number(btn.getAttribute('data-size'));
     if (btnSize === store.pdpSelectedSize) {
       btn.className =
-        'py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all border-2 border-[#DE1B61] text-[#DE1B61] bg-[#FCE8EE]/35 animate-pop-spring';
+        'py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer border-2 border-[#DE1B61] text-[#DE1B61] bg-[#FCE8EE]/40 animate-pop-spring';
     } else {
       btn.className =
-        'py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all border-black/12 text-[#18181B] bg-white hover:border-black/30';
+        'py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer border-[#E4E4E7] text-[#18181B] bg-white hover:border-[#D4D4D8]';
     }
   });
 }
@@ -3710,6 +4081,22 @@ function setupEvents() {
           setTimeout(() => {
             store.navigate('cart');
           }, 380);
+        }
+        break;
+      }
+
+      case 'pdp-buy-now': {
+        const prod = store.getActiveProduct();
+        const res = store.addToCart(
+          prod.id,
+          store.pdpSelectedSize,
+          store.pdpSelectedColor,
+          1,
+          true
+        );
+        if (res) {
+          updateCartBadgesInPlace();
+          store.navigate('checkout');
         }
         break;
       }

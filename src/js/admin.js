@@ -1061,17 +1061,8 @@ export const adminState = {
         existing.offerText = invItem.offerText || '';
         existing.colors = colorsList;
         existing.sizes = sizesList;
-        existing.image = invItem.image;
-        const isDefaultMixedGallery =
-          /^ss-0[1-8]$/.test(String(invItem.id || '')) &&
-          Array.isArray(invItem.gallery) &&
-          invItem.gallery.length > 1 &&
-          invItem.gallery.every((u) => String(u || '').startsWith('./src/assets/images/'));
-        if (isDefaultMixedGallery) {
-          invItem.gallery = [invItem.image];
-          existing.gallery = [invItem.image];
-        } else if (invItem.gallery && invItem.gallery.length > 0) {
-          existing.gallery = invItem.gallery;
+        if (Array.isArray(invItem.gallery) && invItem.gallery.length > 0) {
+          existing.gallery = [...invItem.gallery];
         } else {
           existing.gallery = [invItem.image];
         }
@@ -1414,6 +1405,44 @@ ${sizeRows}`;
 }
 
 /**
+ * حفظ القيم المدخلة حالياً في نموذج المنتج داخل مسودة draftProductForm قبل إعادة التصيير
+ */
+function syncCurrentProductFormToDraft() {
+  const form = document.getElementById('adm-product-form');
+  if (!form) return;
+  const fd = new FormData(form);
+  const df = adminState.draftProductForm;
+  if (!df) return;
+
+  if (fd.has('name')) df.name = String(fd.get('name') || '').trim();
+  if (fd.has('name_fr')) df.name_fr = String(fd.get('name_fr') || '').trim();
+  if (fd.has('slug')) df.slug = String(fd.get('slug') || '').trim();
+  if (fd.has('category')) df.category = String(fd.get('category') || df.category || '').trim();
+  if (fd.has('description_ar')) df.description_ar = String(fd.get('description_ar') || '').trim();
+  if (fd.has('description_fr')) df.description_fr = String(fd.get('description_fr') || '').trim();
+
+  const orig = fd.get('originalPrice');
+  if (orig !== null) df.originalPrice = orig === '' ? '' : Number(orig);
+  const disc = fd.get('discountPrice');
+  if (disc !== null) df.discountPrice = disc === '' ? '' : Number(disc);
+
+  df.isVisible = fd.has('isVisible');
+  df.isNew = fd.has('isNew');
+  df.isBestSeller = fd.has('isBestSeller');
+  df.isSpecialOffer = fd.has('isSpecialOffer');
+  df.offerEnabled = fd.has('offerEnabled');
+  df.offerFreeShipping = fd.has('offerFreeShipping');
+
+  const minQ = fd.get('offerMinQty');
+  if (minQ !== null) df.offerMinQty = Math.max(2, Number(minQ || 2));
+  if (fd.has('offerText')) df.offerText = String(fd.get('offerText') || '').trim();
+
+  if (fd.has('colorName')) df.colorName = String(fd.get('colorName') || df.colorName || 'Beige').trim();
+  const hexInp = document.getElementById('adm-color-picker');
+  if (hexInp instanceof HTMLInputElement) df.colorHex = hexInp.value;
+}
+
+/**
  * القسم 1: إدارة المنتجات والمخزون
  */
 function renderInventorySection() {
@@ -1701,40 +1730,68 @@ function renderInventorySection() {
             </div>
           </div>
 
-          <!-- 3. صور المنتج -->
+          <!-- 3. صور المنتج (إمكانية إضافة عدة صور) -->
           <div class="adm-prod-section-card">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; margin-bottom:0.85rem;">
               <div>
-                <h3 style="font-size:1rem; font-weight:800; color:#18181b; margin:0;">
-                  ${isFr ? 'Photos du produit' : 'صور المنتج'}
+                <h3 style="font-size:1rem; font-weight:800; color:#18181b; margin:0; display:flex; align-items:center; gap:0.5rem;">
+                  <span>${isFr ? 'Photos du produit' : 'صور المنتج'}</span>
+                  <span style="font-size:0.75rem; font-weight:700; color:#de1b61; background:#fce8ee; padding:0.15rem 0.55rem; border-radius:999px;">
+                    ${galleryList.length} ${isFr ? (galleryList.length > 1 ? 'photos' : 'photo') : (galleryList.length === 1 ? 'صورة واحدة' : `${galleryList.length} صور`)}
+                  </span>
                 </h3>
-                <p style="font-size:0.76rem; color:#71717a; margin:0.2rem 0 0 0;">
-                  ${isFr ? 'Ajoutez une ou plusieurs photos (format portrait 4:5 recommandé). La première photo sera la photo principale.' : 'أضف صورة أو عدة صور للمنتج (تظهر بمقاس إنستغرام 4:5). الصورة الأولى تكون هي الصورة الرئيسية.'}
+                <p style="font-size:0.76rem; color:#71717a; margin:0.25rem 0 0 0;">
+                  ${isFr ? 'Vous pouvez ajouter plusieurs photos à la fois (format 4:5). La première photo sera la photo principale.' : 'يمكنك إضافة عدة صور للمنتج دفعة واحدة أو بالتدريج (بمقاس 4:5). الصورة الأولى تكون هي الصورة الرئيسية.'}
                 </p>
               </div>
 
-              <label
-                for="adm-prod-gallery-input"
-                style="position:relative; background:#fff; color:#18181b; border:1px solid #27272a; border-radius:6px; padding:0.5rem 1rem; font-size:0.82rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:0.4rem;"
+              <button
+                type="button"
+                data-adm-action="trigger-gallery-input"
+                style="background:#18181b; color:#fff; border:none; border-radius:6px; padding:0.5rem 1rem; font-size:0.82rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:0.45rem;"
               >
-                <span>${isFr ? '+ Ajouter des photos' : '+ رفع صور من الجهاز'}</span>
-                <input
-                  id="adm-prod-gallery-input"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  style="display:none;"
-                />
-              </label>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <span>${isFr ? '+ Ajouter des photos (multi-fichiers)' : '+ رفع عدة صور من الجهاز'}</span>
+              </button>
             </div>
 
-            <!-- إضافة رابط صورة مباشر (اختياري) -->
+            <!-- منطقة السحب والإفلات لاختيار عدة صور بسهولة -->
+            <div
+              id="adm-prod-dropzone"
+              data-adm-action="trigger-gallery-input"
+              style="border:2px dashed #d6d1c7; border-radius:10px; padding:1.25rem 1rem; text-align:center; background:#faf8f9; cursor:pointer; transition:border-color 0.2s, background 0.2s; margin-bottom:1rem;"
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="1.8" style="margin:0 auto 0.4rem auto; display:block;">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              <div style="font-size:0.86rem; font-weight:700; color:#18181b;">
+                ${isFr ? 'Glissez vos photos ici ou cliquez pour choisir plusieurs images' : 'اسحب وأفلت صور المنتج هنا، أو اضغط لاختيار عدة صور معاً'}
+              </div>
+              <div style="font-size:0.75rem; color:#71717a; margin-top:0.25rem;">
+                ${isFr ? 'Prend en charge plusieurs fichiers (JPG, PNG, WebP) avec compression automatique' : 'يمكنك تحديد حتى 10 صور في نفس الوقت وسيتم ضغطها وتجهيزها تلقائياً'}
+              </div>
+              <input
+                id="adm-prod-gallery-input"
+                type="file"
+                accept="image/*"
+                multiple
+                style="display:none;"
+              />
+            </div>
+
+            <!-- إضافة رابط صورة أو عدة روابط مفصولة بفواصل -->
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">
               <input
                 id="adm-prod-image-url-input"
-                type="url"
+                type="text"
                 dir="ltr"
-                placeholder="${isFr ? 'Ou collez un lien image direct (https://...)' : 'أو ألصق رابط صورة مباشر هنا (https://...)'}"
+                placeholder="${isFr ? 'Ou collez un lien (ou plusieurs liens séparés par des virgules)' : 'أو ألصق رابط صورة مباشر (أو عدة روابط مفصولة بفاصلة)'}"
                 class="adm-input"
                 style="flex:1 1 200px; min-width:0; border-radius:6px; border-color:#d6d1c7; background:#fff;"
               />
@@ -1750,41 +1807,78 @@ function renderInventorySection() {
             <!-- شبكة معاينة صور المنتج المرفوعة -->
             ${
               galleryList.length > 0
-                ? `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:0.65rem;">
+                ? `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:0.75rem;">
                     ${galleryList
                       .map(
                         (imgSrc, idx) => `
-                        <div style="position:relative; border:1px solid ${idx === 0 ? '#18181b' : '#e4e4e7'}; border-radius:8px; overflow:hidden; background:#fafaf9;">
-                          <div style="aspect-ratio:4/5; width:100%; overflow:hidden; background:#f4f4f5;">
+                        <div style="position:relative; border:1px solid ${idx === 0 ? '#de1b61' : '#e4e4e7'}; border-radius:8px; overflow:hidden; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+                          <div style="aspect-ratio:4/5; width:100%; overflow:hidden; background:#f4f4f5; position:relative;">
                             <img
                               src="${imgSrc}"
                               alt="Product ${idx + 1}"
                               referrerpolicy="no-referrer"
                               style="width:100%; height:100%; object-fit:cover; display:block;"
                             />
-                          </div>
-                          <div style="padding:0.35rem 0.4rem; display:flex; align-items:center; justify-content:space-between; gap:0.25rem; background:#fff; border-top:1px solid #f4f4f5;">
+                            <span style="position:absolute; top:4px; ${isFr ? 'left:4px' : 'right:4px'}; font-size:0.68rem; font-weight:800; color:#fff; background:rgba(0,0,0,0.6); padding:0.1rem 0.35rem; border-radius:4px; line-height:1.2;">
+                              #${idx + 1}
+                            </span>
                             ${
                               idx === 0
-                                ? `<span style="font-size:0.66rem; font-weight:800; color:#18181b; background:#ebe5dc; padding:0.15rem 0.4rem; border-radius:4px;">${isFr ? 'Principale' : 'الرئيسية'}</span>`
-                                : `<button
+                                ? `<span style="position:absolute; bottom:4px; ${isFr ? 'left:4px' : 'right:4px'}; font-size:0.65rem; font-weight:800; color:#fff; background:#de1b61; padding:0.15rem 0.45rem; border-radius:4px; line-height:1.2;">
+                                    ${isFr ? 'Principale' : 'الرئيسية'}
+                                  </span>`
+                                : ''
+                            }
+                          </div>
+
+                          <div style="padding:0.4rem; display:flex; align-items:center; justify-content:space-between; gap:0.25rem; background:#fff; border-top:1px solid #f4f4f5;">
+                            ${
+                              idx !== 0
+                                ? `<button
                                     type="button"
                                     data-adm-action="set-main-prod-img"
                                     data-index="${idx}"
-                                    style="font-size:0.66rem; font-weight:700; color:#52525b; background:transparent; border:1px solid #d4d4d8; border-radius:4px; padding:0.12rem 0.35rem; cursor:pointer;"
+                                    title="${isFr ? 'Définir comme photo principale' : 'تعيين كصورة رئيسية'}"
+                                    style="font-size:0.68rem; font-weight:700; color:#de1b61; background:#fce8ee; border:none; border-radius:4px; padding:0.2rem 0.45rem; cursor:pointer;"
                                   >
                                     ${isFr ? 'Principale' : 'رئيسية'}
                                   </button>`
+                                : `<span style="font-size:0.68rem; font-weight:700; color:#15803d;">✓ ${isFr ? 'Active' : 'معتمدة'}</span>`
                             }
-                            <button
-                              type="button"
-                              data-adm-action="remove-prod-gallery-img"
-                              data-index="${idx}"
-                              title="${isFr ? 'Supprimer' : 'حذف الصورة'}"
-                              style="width:24px; height:24px; border-radius:4px; border:1px solid #fecdd3; background:#fff1f2; color:#e11d48; font-weight:800; font-size:0.85rem; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;"
-                            >
-                              ×
-                            </button>
+
+                            <div style="display:flex; align-items:center; gap:0.2rem;">
+                              ${
+                                idx > 0
+                                  ? `<button
+                                      type="button"
+                                      data-adm-action="move-prod-gallery-img"
+                                      data-index="${idx}"
+                                      data-dir="-1"
+                                      title="${isFr ? 'Déplacer avant' : 'تقديم'}"
+                                      style="width:22px; height:22px; border-radius:4px; border:1px solid #d4d4d8; background:#fff; font-size:0.75rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;"
+                                    >‹</button>`
+                                  : ''
+                              }
+                              ${
+                                idx < galleryList.length - 1
+                                  ? `<button
+                                      type="button"
+                                      data-adm-action="move-prod-gallery-img"
+                                      data-index="${idx}"
+                                      data-dir="1"
+                                      title="${isFr ? 'Déplacer après' : 'تأخير'}"
+                                      style="width:22px; height:22px; border-radius:4px; border:1px solid #d4d4d8; background:#fff; font-size:0.75rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;"
+                                    >›</button>`
+                                  : ''
+                              }
+                              <button
+                                type="button"
+                                data-adm-action="remove-prod-gallery-img"
+                                data-index="${idx}"
+                                title="${isFr ? 'Supprimer' : 'حذف الصورة'}"
+                                style="width:22px; height:22px; border-radius:4px; border:1px solid #fecdd3; background:#fff1f2; color:#e11d48; font-weight:800; font-size:0.85rem; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;"
+                              >×</button>
+                            </div>
                           </div>
                         </div>
                       `
@@ -1792,7 +1886,7 @@ function renderInventorySection() {
                       .join('')}
                   </div>`
                 : `<div style="border:1px dashed #d6d1c7; border-radius:8px; padding:1.25rem; text-align:center; color:#71717a; font-size:0.82rem; background:#faf9f6;">
-                    ${isFr ? 'Aucune photo ajoutée. Cliquez sur « + Ajouter des photos » pour importer les images du produit.' : 'لم تتم إضافة صور للمنتج بعد. اضغط على «+ رفع صور من الجهاز» لإضافة صور الحذاء.'}
+                    ${isFr ? 'Aucune photo ajoutée. Cliquez sur « + Ajouter des photos » pour importer les images du produit.' : 'لم تتم إضافة صور للمنتج بعد. اضغط على «+ رفع عدة صور من الجهاز» أو اسحب الصور لإضافتها.'}
                   </div>`
             }
           </div>
@@ -2212,17 +2306,24 @@ function renderInventoryCards(productsList) {
       return `
         <article id="adm-prod-card-${p.id}" class="adm-prod-card ${isLow ? 'low-stock' : ''}">
           <div class="adm-prod-top">
-            <label class="adm-prod-img-wrap">
+            <label
+              class="adm-prod-img-wrap"
+              title="${isFr ? 'Cliquer pour importer plusieurs photos' : 'اضغط لإضافة أو تغيير عدة صور للمنتج'}"
+              style="cursor:pointer;"
+            >
               <img
                 id="adm-row-thumb-${p.id}"
                 src="${p.image}"
                 alt="${displayName}"
                 referrerpolicy="no-referrer"
               />
-              <span class="adm-prod-cam-btn">${tr.inv.changePhotoBtn}</span>
+              <span class="adm-prod-cam-btn">
+                ${p.gallery && p.gallery.length > 1 ? `${p.gallery.length} صور` : tr.inv.changePhotoBtn}
+              </span>
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 data-adm-row-img-upload="${p.id}"
                 style="display:none;"
               />
@@ -2260,6 +2361,13 @@ function renderInventoryCards(productsList) {
                     : ''
                 }
                 <span>· ${isFr ? 'Pointures' : 'المقاسات'} ${sizesRangeText}</span>
+                ${
+                  p.gallery && p.gallery.length > 1
+                    ? `<span style="background:#fce8ee; color:#de1b61; font-weight:700; font-size:0.68rem; padding:0.1rem 0.35rem; border-radius:4px;">
+                        ${p.gallery.length} ${isFr ? 'photos' : 'صور'}
+                      </span>`
+                    : ''
+                }
                 ${p.isVisible === false ? `<span class="adm-badge adm-badge-cancelled">${isFr ? 'Masqué' : 'مخفي'}</span>` : ''}
               </div>
             </div>
@@ -2292,6 +2400,16 @@ function renderInventoryCards(productsList) {
             </div>
 
             <div class="adm-prod-actions">
+              <button
+                type="button"
+                data-adm-action="quick-add-prod-photos"
+                data-id="${p.id}"
+                title="${isFr ? 'Ajouter des photos à ce produit' : 'إضافة عدة صور لهذا المنتج مباشرة'}"
+                class="adm-btn adm-btn-outline adm-btn-sm"
+                style="color:#de1b61; border-color:#fecdd3;"
+              >
+                + ${isFr ? 'Photos' : 'صور'}
+              </button>
               <a
                 href="./index.html?product=${encodeURIComponent(p.slug || p.id)}"
                 target="_blank"
@@ -3766,33 +3884,88 @@ export function setupAdminEvents() {
         break;
       }
 
+      case 'trigger-gallery-input': {
+        syncCurrentProductFormToDraft();
+        const fileInp = document.getElementById('adm-prod-gallery-input');
+        if (fileInp instanceof HTMLInputElement) fileInp.click();
+        break;
+      }
+
       case 'add-prod-image-url': {
+        syncCurrentProductFormToDraft();
         const urlInp = document.getElementById('adm-prod-image-url-input');
-        const rawUrl = urlInp instanceof HTMLInputElement ? urlInp.value.trim() : '';
-        if (!rawUrl) {
+        const rawVal = urlInp instanceof HTMLInputElement ? urlInp.value.trim() : '';
+        if (!rawVal) {
           showToast(getLang() === 'fr' ? 'Entrez un lien image valide' : 'يرجى إدخال رابط صورة صحيح');
           break;
         }
+        const urls = rawVal
+          .split(/[\n,;]+/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 5);
+
+        if (urls.length === 0) {
+          showToast(getLang() === 'fr' ? 'Entrez un lien image valide' : 'يرجى إدخال رابط صورة صحيح');
+          break;
+        }
+
         if (!Array.isArray(adminState.draftProductGallery)) {
           adminState.draftProductGallery = [];
         }
         if (adminState.draftProductImage && !adminState.draftProductGallery.includes(adminState.draftProductImage)) {
           adminState.draftProductGallery.unshift(adminState.draftProductImage);
         }
-        adminState.draftProductGallery.push(rawUrl);
-        adminState.draftProductImage = adminState.draftProductGallery[0] || rawUrl;
+
+        urls.forEach((u) => {
+          if (!adminState.draftProductGallery.includes(u)) {
+            adminState.draftProductGallery.push(u);
+          }
+        });
+
+        adminState.draftProductImage = adminState.draftProductGallery[0] || urls[0];
         renderAdminDashboard();
-        showToast(t().toasts.photoUploaded);
+        showToast(
+          getLang() === 'fr'
+            ? `${urls.length} photo(s) ajoutée(s) au produit`
+            : `تمت إضافة ${urls.length} صور للمنتج بنجاح`
+        );
         break;
       }
 
       case 'set-main-prod-img': {
+        syncCurrentProductFormToDraft();
         const idx = Number(btn.getAttribute('data-index'));
         if (Array.isArray(adminState.draftProductGallery) && !Number.isNaN(idx) && adminState.draftProductGallery[idx]) {
           const [chosen] = adminState.draftProductGallery.splice(idx, 1);
           adminState.draftProductGallery.unshift(chosen);
           adminState.draftProductImage = chosen;
           renderAdminDashboard();
+          showToast(getLang() === 'fr' ? 'Photo principale mise à jour' : 'تم تعيين الصورة كرئيسية للمنتج');
+        }
+        break;
+      }
+
+      case 'move-prod-gallery-img': {
+        syncCurrentProductFormToDraft();
+        const idx = Number(btn.getAttribute('data-index'));
+        const dir = Number(btn.getAttribute('data-dir') || 0);
+        if (!Number.isNaN(idx) && dir !== 0 && Array.isArray(adminState.draftProductGallery)) {
+          const targetIdx = idx + dir;
+          if (targetIdx >= 0 && targetIdx < adminState.draftProductGallery.length) {
+            const item = adminState.draftProductGallery.splice(idx, 1)[0];
+            adminState.draftProductGallery.splice(targetIdx, 0, item);
+            adminState.draftProductImage = adminState.draftProductGallery[0] || '';
+            renderAdminDashboard();
+          }
+        }
+        break;
+      }
+
+      case 'quick-add-prod-photos': {
+        if (!id) break;
+        const inputEl = document.querySelector(`input[data-adm-row-img-upload="${id}"]`);
+        if (inputEl instanceof HTMLInputElement) {
+          inputEl.click();
         }
         break;
       }
@@ -3924,6 +4097,7 @@ export function setupAdminEvents() {
       }
 
       case 'remove-prod-gallery-img': {
+        syncCurrentProductFormToDraft();
         const idx = Number(btn.getAttribute('data-index'));
         if (!Number.isNaN(idx)) {
           if (adminState.draftProductImage && !adminState.draftProductGallery.includes(adminState.draftProductImage)) {
@@ -4179,16 +4353,20 @@ export function setupAdminEvents() {
 
       try {
         if (target.id === 'adm-prod-file-input') {
-          const dataUrl = await readAndCompressImageFile(files[0]);
-          adminState.draftProductImage = dataUrl;
+          syncCurrentProductFormToDraft();
           if (!Array.isArray(adminState.draftProductGallery)) {
-            adminState.draftProductGallery = [dataUrl];
-          } else if (!adminState.draftProductGallery.includes(dataUrl)) {
-            adminState.draftProductGallery.unshift(dataUrl);
+            adminState.draftProductGallery = [];
           }
+          for (const f of files) {
+            const dataUrl = await readAndCompressImageFile(f);
+            adminState.draftProductGallery.push(dataUrl);
+          }
+          adminState.draftProductImage = adminState.draftProductGallery[0] || '';
+          target.value = '';
           renderAdminDashboard();
-          showToast(t().toasts.photoUploaded);
+          showToast(t().toasts.galleryAdded(files.length));
         } else if (target.id === 'adm-prod-gallery-input') {
+          syncCurrentProductFormToDraft();
           if (!Array.isArray(adminState.draftProductGallery)) {
             adminState.draftProductGallery = [];
           }
@@ -4200,24 +4378,32 @@ export function setupAdminEvents() {
             adminState.draftProductGallery.push(dataUrl);
           }
           adminState.draftProductImage = adminState.draftProductGallery[0] || '';
+          target.value = '';
           renderAdminDashboard();
           showToast(t().toasts.galleryAdded(files.length));
         } else if (target.hasAttribute('data-adm-row-img-upload')) {
           const prodId = target.getAttribute('data-adm-row-img-upload');
-          const dataUrl = await readAndCompressImageFile(files[0]);
           const prod = adminState.inventory.find((p) => p.id === prodId);
           if (prod) {
-            prod.image = dataUrl;
-            if (!Array.isArray(prod.gallery) || prod.gallery.length === 0) {
-              prod.gallery = [dataUrl];
-            } else {
-              prod.gallery[0] = dataUrl;
+            if (!Array.isArray(prod.gallery)) {
+              prod.gallery = prod.image ? [prod.image] : [];
             }
+            for (const f of files) {
+              const dataUrl = await readAndCompressImageFile(f);
+              prod.gallery.push(dataUrl);
+            }
+            if (prod.gallery.length > 0 && !prod.image) {
+              prod.image = prod.gallery[0];
+            }
+            target.value = '';
             adminState.saveAll();
             syncProductToSupabase(prod);
-            const rowThumb = document.getElementById(`adm-row-thumb-${prodId}`);
-            if (rowThumb instanceof HTMLImageElement) rowThumb.src = dataUrl;
-            showToast(t().toasts.prodPhotoUpdated(getProdDisplayName(prod)));
+            renderAdminDashboard();
+            showToast(
+              getLang() === 'fr'
+                ? `${files.length} photo(s) ajoutée(s) à ${getProdDisplayName(prod)}`
+                : `تمت إضافة ${files.length} صور إلى ${getProdDisplayName(prod)} بنجاح`
+            );
           }
         } else if (target.id === 'adm-lp-main-file') {
           const dataUrl = await readAndCompressImageFile(files[0]);
@@ -4675,6 +4861,55 @@ export function setupAdminEvents() {
       syncOrderToSupabase(newOrder);
       renderAdminDashboard();
       showToast(t().toasts.newOrderAdded(newOrder.id));
+    }
+  });
+
+  // سحب وإفلات عدة صور مباشرة في نموذج المنتج
+  root.addEventListener('dragover', (e) => {
+    const dz = e.target && e.target.closest ? e.target.closest('#adm-prod-dropzone') : null;
+    if (dz) {
+      e.preventDefault();
+      e.stopPropagation();
+      dz.style.borderColor = '#de1b61';
+      dz.style.background = '#fdf2f6';
+    }
+  });
+
+  root.addEventListener('dragleave', (e) => {
+    const dz = e.target && e.target.closest ? e.target.closest('#adm-prod-dropzone') : null;
+    if (dz) {
+      dz.style.borderColor = '#d6d1c7';
+      dz.style.background = '#faf8f9';
+    }
+  });
+
+  root.addEventListener('drop', async (e) => {
+    const dz = e.target && e.target.closest ? e.target.closest('#adm-prod-dropzone') : null;
+    if (dz && e.dataTransfer) {
+      e.preventDefault();
+      e.stopPropagation();
+      dz.style.borderColor = '#d6d1c7';
+      dz.style.background = '#faf8f9';
+
+      const droppedFiles = Array.from(e.dataTransfer.files || []).filter(
+        (f) => f.type && f.type.startsWith('image/')
+      );
+      if (droppedFiles.length === 0) return;
+
+      syncCurrentProductFormToDraft();
+      if (!Array.isArray(adminState.draftProductGallery)) {
+        adminState.draftProductGallery = [];
+      }
+      if (adminState.draftProductImage && !adminState.draftProductGallery.includes(adminState.draftProductImage)) {
+        adminState.draftProductGallery.unshift(adminState.draftProductImage);
+      }
+      for (const f of droppedFiles) {
+        const dataUrl = await readAndCompressImageFile(f);
+        adminState.draftProductGallery.push(dataUrl);
+      }
+      adminState.draftProductImage = adminState.draftProductGallery[0] || '';
+      renderAdminDashboard();
+      showToast(t().toasts.galleryAdded(droppedFiles.length));
     }
   });
 }
