@@ -1431,34 +1431,34 @@ function renderInventorySection() {
     return `
       <div class="adm-new-prod-page" style="max-width:1040px; margin:0 auto;">
         <!-- شريط العنوان العلوي: منتج جديد + زر العودة لكل المنتجات -->
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.25rem;">
-          <h2 style="font-size:1.55rem; font-weight:800; color:#18181b; margin:0;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.1rem;">
+          <h2 style="font-size:1.3rem; font-weight:800; color:#18181b; margin:0;">
             ${editingProd ? (isFr ? `Modifier : ${getProdDisplayName(editingProd)}` : `تعديل المنتج : ${getProdDisplayName(editingProd)}`) : (isFr ? 'Nouveau produit' : 'منتج جديد')}
           </h2>
           <button
             type="button"
             data-adm-action="cancel-product-edit"
-            style="background:#fff; color:#18181b; border:1px solid #27272a; border-radius:4px; padding:0.48rem 1rem; font-size:0.86rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem;"
+            style="background:#fff; color:#18181b; border:1px solid #27272a; border-radius:6px; padding:0.45rem 0.9rem; font-size:0.82rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem;"
           >
             <span>${isFr ? '← Tous les produits' : '← كل المنتجات'}</span>
           </button>
         </div>
 
-        <form id="adm-product-form" style="display:flex; flex-direction:column; gap:1.25rem;">
+        <form id="adm-product-form" style="display:flex; flex-direction:column; gap:1rem;">
           <!-- 1. المعلومات الأساسية -->
-          <div style="background:#fff; border:1px solid #e6e1d6; border-radius:6px; padding:1.5rem;">
-            <h3 style="font-size:1.02rem; font-weight:800; color:#18181b; margin:0 0 1.15rem 0;">
+          <div class="adm-prod-section-card">
+            <h3 style="font-size:1rem; font-weight:800; color:#18181b; margin:0 0 1rem 0;">
               ${isFr ? 'Informations de base' : 'المعلومات الأساسية'}
             </h3>
 
-            <div class="adm-form-grid" style="gap:1rem;">
+            <div class="adm-form-grid">
               <div class="adm-field">
                 <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Nom en arabe *' : 'الاسم بالعربية *'}</label>
                 <input
                   name="name"
                   type="text"
                   class="adm-input"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff;"
                   value="${df.name || ''}"
                   required
                 />
@@ -1471,7 +1471,7 @@ function renderInventorySection() {
                   type="text"
                   dir="ltr"
                   class="adm-input"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff;"
                   value="${df.name_fr || ''}"
                   required
                 />
@@ -1485,7 +1485,7 @@ function renderInventorySection() {
                   dir="ltr"
                   placeholder="sandale-beige"
                   class="adm-input"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff; text-align:left;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff; text-align:left;"
                   value="${df.slug || ''}"
                   required
                 />
@@ -1496,7 +1496,7 @@ function renderInventorySection() {
                 <select
                   name="category"
                   class="adm-select"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff;"
                 >
                   <option value="" ${!df.category ? 'selected' : ''}>${isFr ? '-- Aucune --' : '-- بدون --'}</option>
                   ${categoryOptions
@@ -1512,9 +1512,9 @@ function renderInventorySection() {
                 <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Description en arabe' : 'الوصف بالعربية'}</label>
                 <textarea
                   name="description_ar"
-                  rows="4"
+                  rows="3"
                   class="adm-textarea"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff; min-height:105px;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff; min-height:92px;"
                 >${df.description_ar || ''}</textarea>
               </div>
 
@@ -1522,22 +1522,22 @@ function renderInventorySection() {
                 <label class="adm-label" style="font-weight:600; color:#52525b;">Description en français</label>
                 <textarea
                   name="description_fr"
-                  rows="4"
+                  rows="3"
                   dir="ltr"
                   class="adm-textarea"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff; min-height:105px;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff; min-height:92px;"
                 >${df.description_fr || ''}</textarea>
               </div>
             </div>
           </div>
 
           <!-- 2. السعر والعرض -->
-          <div style="background:#fff; border:1px solid #e6e1d6; border-radius:6px; padding:1.5rem;">
-            <h3 style="font-size:1.02rem; font-weight:800; color:#18181b; margin:0 0 1.15rem 0;">
+          <div class="adm-prod-section-card">
+            <h3 style="font-size:1rem; font-weight:800; color:#18181b; margin:0 0 1rem 0;">
               ${isFr ? 'Prix et affichage' : 'السعر والعرض'}
             </h3>
 
-            <div class="adm-form-grid" style="gap:1rem;">
+            <div class="adm-form-grid">
               <div class="adm-field">
                 <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Prix original (DA) *' : 'السعر الأصلي (د.ج) *'}</label>
                 <input
@@ -1545,7 +1545,7 @@ function renderInventorySection() {
                   type="number"
                   min="0"
                   class="adm-input"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff;"
                   value="${df.originalPrice !== undefined && df.originalPrice !== null ? df.originalPrice : ''}"
                   required
                 />
@@ -1558,49 +1558,49 @@ function renderInventorySection() {
                   type="number"
                   min="0"
                   class="adm-input"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff;"
                   value="${df.discountPrice !== undefined && df.discountPrice !== null ? df.discountPrice : ''}"
                 />
               </div>
             </div>
 
             <!-- خيارات العرض (Checkboxes) -->
-            <div style="display:flex; align-items:center; flex-wrap:wrap; gap:1.5rem; margin-top:1.1rem;">
-              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.88rem; font-weight:600; color:#27272a; cursor:pointer;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(135px, 1fr)); gap:0.75rem; margin-top:1rem;">
+              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.84rem; font-weight:600; color:#27272a; cursor:pointer;">
                 <input
                   type="checkbox"
                   name="isVisible"
-                  style="width:16px; height:16px; accent-color:#18181b; cursor:pointer;"
+                  style="width:17px; height:17px; accent-color:#18181b; cursor:pointer;"
                   ${df.isVisible !== false ? 'checked' : ''}
                 />
                 <span>${isFr ? 'Visible en boutique' : 'ظاهر في المتجر'}</span>
               </label>
 
-              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.88rem; font-weight:600; color:#27272a; cursor:pointer;">
+              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.84rem; font-weight:600; color:#27272a; cursor:pointer;">
                 <input
                   type="checkbox"
                   name="isNew"
-                  style="width:16px; height:16px; accent-color:#18181b; cursor:pointer;"
+                  style="width:17px; height:17px; accent-color:#18181b; cursor:pointer;"
                   ${df.isNew ? 'checked' : ''}
                 />
                 <span>${isFr ? 'Nouvel arrivage' : 'وصل حديثاً'}</span>
               </label>
 
-              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.88rem; font-weight:600; color:#27272a; cursor:pointer;">
+              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.84rem; font-weight:600; color:#27272a; cursor:pointer;">
                 <input
                   type="checkbox"
                   name="isBestSeller"
-                  style="width:16px; height:16px; accent-color:#18181b; cursor:pointer;"
+                  style="width:17px; height:17px; accent-color:#18181b; cursor:pointer;"
                   ${df.isBestSeller ? 'checked' : ''}
                 />
                 <span>${isFr ? 'Meilleures ventes' : 'الأكثر مبيعاً'}</span>
               </label>
 
-              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.88rem; font-weight:600; color:#27272a; cursor:pointer;">
+              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.84rem; font-weight:600; color:#27272a; cursor:pointer;">
                 <input
                   type="checkbox"
                   name="isSpecialOffer"
-                  style="width:16px; height:16px; accent-color:#18181b; cursor:pointer;"
+                  style="width:17px; height:17px; accent-color:#18181b; cursor:pointer;"
                   ${df.isSpecialOffer ? 'checked' : ''}
                 />
                 <span>${isFr ? 'En vedette' : 'مميز'}</span>
@@ -1609,20 +1609,20 @@ function renderInventorySection() {
           </div>
 
           <!-- 3. صور المنتج -->
-          <div style="background:#fff; border:1px solid #e6e1d6; border-radius:6px; padding:1.5rem;">
+          <div class="adm-prod-section-card">
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
               <div>
-                <h3 style="font-size:1.02rem; font-weight:800; color:#18181b; margin:0;">
+                <h3 style="font-size:1rem; font-weight:800; color:#18181b; margin:0;">
                   ${isFr ? 'Photos du produit' : 'صور المنتج'}
                 </h3>
-                <p style="font-size:0.78rem; color:#71717a; margin:0.2rem 0 0 0;">
+                <p style="font-size:0.76rem; color:#71717a; margin:0.2rem 0 0 0;">
                   ${isFr ? 'Ajoutez une ou plusieurs photos (format portrait 4:5 recommandé). La première photo sera la photo principale.' : 'أضف صورة أو عدة صور للمنتج (تظهر بمقاس إنستغرام 4:5). الصورة الأولى تكون هي الصورة الرئيسية.'}
                 </p>
               </div>
 
               <label
                 for="adm-prod-gallery-input"
-                style="position:relative; background:#fff; color:#18181b; border:1px solid #27272a; border-radius:4px; padding:0.5rem 1rem; font-size:0.84rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem;"
+                style="position:relative; background:#fff; color:#18181b; border:1px solid #27272a; border-radius:6px; padding:0.5rem 1rem; font-size:0.82rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:0.4rem;"
               >
                 <span>${isFr ? '+ Ajouter des photos' : '+ رفع صور من الجهاز'}</span>
                 <input
@@ -1643,12 +1643,12 @@ function renderInventorySection() {
                 dir="ltr"
                 placeholder="${isFr ? 'Ou collez un lien image direct (https://...)' : 'أو ألصق رابط صورة مباشر هنا (https://...)'}"
                 class="adm-input"
-                style="flex:1; min-width:220px; border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                style="flex:1 1 200px; min-width:0; border-radius:6px; border-color:#d6d1c7; background:#fff;"
               />
               <button
                 type="button"
                 data-adm-action="add-prod-image-url"
-                style="background:#f5f2eb; color:#18181b; border:1px solid #d6d1c7; border-radius:4px; padding:0.5rem 1rem; font-size:0.82rem; font-weight:700; cursor:pointer;"
+                style="background:#f5f2eb; color:#18181b; border:1px solid #d6d1c7; border-radius:6px; padding:0.55rem 1rem; font-size:0.82rem; font-weight:700; cursor:pointer;"
               >
                 ${isFr ? '+ Ajouter le lien' : '+ إضافة الرابط'}
               </button>
@@ -1657,11 +1657,11 @@ function renderInventorySection() {
             <!-- شبكة معاينة صور المنتج المرفوعة -->
             ${
               galleryList.length > 0
-                ? `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(125px, 1fr)); gap:0.85rem;">
+                ? `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:0.65rem;">
                     ${galleryList
                       .map(
                         (imgSrc, idx) => `
-                        <div style="position:relative; border:1px solid ${idx === 0 ? '#18181b' : '#e4e4e7'}; border-radius:6px; overflow:hidden; background:#fafaf9;">
+                        <div style="position:relative; border:1px solid ${idx === 0 ? '#18181b' : '#e4e4e7'}; border-radius:8px; overflow:hidden; background:#fafaf9;">
                           <div style="aspect-ratio:4/5; width:100%; overflow:hidden; background:#f4f4f5;">
                             <img
                               src="${imgSrc}"
@@ -1670,17 +1670,17 @@ function renderInventorySection() {
                               style="width:100%; height:100%; object-fit:cover; display:block;"
                             />
                           </div>
-                          <div style="padding:0.35rem 0.45rem; display:flex; align-items:center; justify-content:space-between; gap:0.25rem; background:#fff; border-top:1px solid #f4f4f5;">
+                          <div style="padding:0.35rem 0.4rem; display:flex; align-items:center; justify-content:space-between; gap:0.25rem; background:#fff; border-top:1px solid #f4f4f5;">
                             ${
                               idx === 0
-                                ? `<span style="font-size:0.68rem; font-weight:800; color:#18181b; background:#ebe5dc; padding:0.15rem 0.45rem; border-radius:3px;">${isFr ? 'Principale' : 'الرئيسية'}</span>`
+                                ? `<span style="font-size:0.66rem; font-weight:800; color:#18181b; background:#ebe5dc; padding:0.15rem 0.4rem; border-radius:4px;">${isFr ? 'Principale' : 'الرئيسية'}</span>`
                                 : `<button
                                     type="button"
                                     data-adm-action="set-main-prod-img"
                                     data-index="${idx}"
-                                    style="font-size:0.68rem; font-weight:700; color:#52525b; background:transparent; border:1px solid #d4d4d8; border-radius:3px; padding:0.12rem 0.4rem; cursor:pointer;"
+                                    style="font-size:0.66rem; font-weight:700; color:#52525b; background:transparent; border:1px solid #d4d4d8; border-radius:4px; padding:0.12rem 0.35rem; cursor:pointer;"
                                   >
-                                    ${isFr ? 'Définir principale' : 'جعلها رئيسية'}
+                                    ${isFr ? 'Principale' : 'رئيسية'}
                                   </button>`
                             }
                             <button
@@ -1688,7 +1688,7 @@ function renderInventorySection() {
                               data-adm-action="remove-prod-gallery-img"
                               data-index="${idx}"
                               title="${isFr ? 'Supprimer' : 'حذف الصورة'}"
-                              style="width:22px; height:22px; border-radius:4px; border:1px solid #fecdd3; background:#fff1f2; color:#e11d48; font-weight:800; font-size:0.8rem; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;"
+                              style="width:24px; height:24px; border-radius:4px; border:1px solid #fecdd3; background:#fff1f2; color:#e11d48; font-weight:800; font-size:0.85rem; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;"
                             >
                               ×
                             </button>
@@ -1698,28 +1698,28 @@ function renderInventorySection() {
                       )
                       .join('')}
                   </div>`
-                : `<div style="border:1px dashed #d6d1c7; border-radius:6px; padding:1.5rem; text-align:center; color:#71717a; font-size:0.86rem; background:#faf9f6;">
+                : `<div style="border:1px dashed #d6d1c7; border-radius:8px; padding:1.25rem; text-align:center; color:#71717a; font-size:0.82rem; background:#faf9f6;">
                     ${isFr ? 'Aucune photo ajoutée. Cliquez sur « + Ajouter des photos » pour importer les images du produit.' : 'لم تتم إضافة صور للمنتج بعد. اضغط على «+ رفع صور من الجهاز» لإضافة صور الحذاء.'}
                   </div>`
             }
           </div>
 
           <!-- 4. المقاسات والألوان والمخزون -->
-          <div style="background:#fff; border:1px solid #e6e1d6; border-radius:6px; padding:1.5rem;">
-            <h3 style="font-size:1.02rem; font-weight:800; color:#18181b; margin:0 0 1.15rem 0;">
+          <div class="adm-prod-section-card">
+            <h3 style="font-size:1rem; font-weight:800; color:#18181b; margin:0 0 1rem 0;">
               ${isFr ? 'Pointures, couleurs et stock' : 'المقاسات والألوان والمخزون'}
             </h3>
 
             <!-- السطر 1: اللون + درجة اللون -->
-            <div style="display:flex; align-items:flex-end; gap:0.85rem; flex-wrap:wrap; margin-bottom:1rem;">
-              <div class="adm-field" style="flex:1; min-width:220px;">
+            <div style="display:flex; align-items:flex-end; gap:0.75rem; flex-wrap:wrap; margin-bottom:1rem;">
+              <div class="adm-field" style="flex:1; min-width:160px;">
                 <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Couleur' : 'اللون'}</label>
                 <input
                   id="adm-variant-color-name"
                   name="colorName"
                   type="text"
                   class="adm-input"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff;"
                   value="${df.colorName || 'Beige'}"
                 />
               </div>
@@ -1731,13 +1731,13 @@ function renderInventorySection() {
                   name="colorHex"
                   type="color"
                   value="${df.colorHex || '#D2B48C'}"
-                  style="width:58px; height:40px; padding:3px; border:1px solid #d6d1c7; border-radius:4px; background:#fff; cursor:pointer; display:block;"
+                  style="width:58px; height:42px; padding:3px; border:1px solid #d6d1c7; border-radius:6px; background:#fff; cursor:pointer; display:block;"
                 />
               </div>
             </div>
 
             <!-- السطر 2: من المقاس | إلى المقاس | الكمية لكل مقاس -->
-            <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem; margin-bottom:1rem;">
+            <div class="adm-size-range-grid">
               <div class="adm-field">
                 <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'De la pointure' : 'من المقاس'}</label>
                 <input
@@ -1747,7 +1747,7 @@ function renderInventorySection() {
                   min="30"
                   max="48"
                   class="adm-input"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff;"
                   value="${df.sizeFrom ?? 36}"
                 />
               </div>
@@ -1761,7 +1761,7 @@ function renderInventorySection() {
                   min="30"
                   max="48"
                   class="adm-input"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff;"
                   value="${df.sizeTo ?? 41}"
                 />
               </div>
@@ -1774,18 +1774,18 @@ function renderInventorySection() {
                   type="number"
                   min="0"
                   class="adm-input"
-                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  style="border-radius:6px; border-color:#d6d1c7; background:#fff;"
                   value="${df.defaultSizeStock ?? 5}"
                 />
               </div>
             </div>
 
             <!-- السطر 3: أزرار توليد المقاسات لهذا اللون + سطر يدوي -->
-            <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.15rem;">
+            <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap; margin-bottom:1rem;">
               <button
                 type="button"
                 data-adm-action="generate-variant-rows"
-                style="background:#fff; color:#18181b; border:1px solid #27272a; border-radius:4px; padding:0.5rem 1rem; font-size:0.84rem; font-weight:700; cursor:pointer;"
+                style="flex:1 1 auto; background:#fff; color:#18181b; border:1px solid #27272a; border-radius:6px; padding:0.55rem 0.9rem; font-size:0.82rem; font-weight:700; cursor:pointer;"
               >
                 ${isFr ? 'Générer les pointures pour cette couleur' : 'توليد المقاسات لهذا اللون'}
               </button>
@@ -1793,29 +1793,29 @@ function renderInventorySection() {
               <button
                 type="button"
                 data-adm-action="add-manual-variant-row"
-                style="background:#fff; color:#18181b; border:1px solid #27272a; border-radius:4px; padding:0.5rem 1rem; font-size:0.84rem; font-weight:700; cursor:pointer;"
+                style="flex:1 1 auto; background:#fff; color:#18181b; border:1px solid #27272a; border-radius:6px; padding:0.55rem 0.9rem; font-size:0.82rem; font-weight:700; cursor:pointer;"
               >
                 ${isFr ? '+ Ligne manuelle' : '+ سطر يدوي'}
               </button>
             </div>
 
             <!-- السطر 4: جدول المقاسات والألوان والكميات -->
-            <div style="border:1px solid #e6e1d6; border-radius:4px; overflow-x:auto;">
-              <table style="width:100%; border-collapse:collapse; font-size:0.86rem;">
+            <div style="border:1px solid #e6e1d6; border-radius:6px; overflow-x:auto;">
+              <table class="adm-variant-table">
                 <thead>
                   <tr style="background:#ebe5dc; color:#27272a; font-weight:800;">
-                    <th style="padding:0.65rem 0.75rem; text-align:right; border-bottom:1px solid #dfd9ce;">${isFr ? 'Pointure' : 'المقاس'}</th>
-                    <th style="padding:0.65rem 0.75rem; text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Couleur' : 'اللون'}</th>
-                    <th style="padding:0.65rem 0.75rem; text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Nuance' : 'درجة'}</th>
-                    <th style="padding:0.65rem 0.75rem; text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Quantité' : 'الكمية'}</th>
-                    <th style="padding:0.65rem 0.75rem; text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Actif' : 'مفعل'}</th>
+                    <th style="text-align:right; border-bottom:1px solid #dfd9ce;">${isFr ? 'Pointure' : 'المقاس'}</th>
+                    <th style="text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Couleur' : 'اللون'}</th>
+                    <th style="text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Nuance' : 'درجة'}</th>
+                    <th style="text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Quantité' : 'الكمية'}</th>
+                    <th style="text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Actif' : 'مفعل'}</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${
                     variants.length === 0
                       ? `<tr>
-                          <td colspan="5" style="padding:1.65rem 1rem; text-align:center; color:#71717a; font-size:0.86rem; background:#fff;">
+                          <td colspan="5" style="padding:1.4rem 0.75rem; text-align:center; color:#71717a; font-size:0.84rem; background:#fff;">
                             ${isFr ? 'Ajoutez des pointures et des couleurs.' : 'أضف مقاسات وألواناً.'}
                           </td>
                         </tr>`
@@ -1823,7 +1823,7 @@ function renderInventorySection() {
                           .map(
                             (v, vIdx) => `
                             <tr style="border-bottom:1px solid #f0ece3; background:#fff;">
-                              <td style="padding:0.5rem 0.75rem; text-align:right;">
+                              <td style="text-align:right;">
                                 <input
                                   type="number"
                                   min="30"
@@ -1831,42 +1831,42 @@ function renderInventorySection() {
                                   data-variant-idx="${vIdx}"
                                   data-variant-field="size"
                                   value="${v.size}"
-                                  class="adm-input"
-                                  style="width:76px; padding:0.32rem 0.5rem; border-radius:4px; border-color:#d6d1c7; text-align:center; font-weight:700;"
+                                  class="adm-input adm-var-input-size"
+                                  style="border-radius:4px; border-color:#d6d1c7;"
                                 />
                               </td>
-                              <td style="padding:0.5rem 0.75rem; text-align:center;">
+                              <td style="text-align:center;">
                                 <input
                                   type="text"
                                   data-variant-idx="${vIdx}"
                                   data-variant-field="colorName"
                                   value="${v.colorName || 'Beige'}"
-                                  class="adm-input"
-                                  style="width:130px; margin:0 auto; padding:0.32rem 0.5rem; border-radius:4px; border-color:#d6d1c7; text-align:center;"
+                                  class="adm-input adm-var-input-color"
+                                  style="border-radius:4px; border-color:#d6d1c7;"
                                 />
                               </td>
-                              <td style="padding:0.5rem 0.75rem; text-align:center;">
+                              <td style="text-align:center;">
                                 <input
                                   type="color"
                                   data-variant-idx="${vIdx}"
                                   data-variant-field="colorHex"
                                   value="${v.colorHex || '#D2B48C'}"
-                                  style="width:42px; height:30px; padding:2px; border:1px solid #d6d1c7; border-radius:4px; background:#fff; cursor:pointer; vertical-align:middle;"
+                                  style="width:38px; height:30px; padding:2px; border:1px solid #d6d1c7; border-radius:4px; background:#fff; cursor:pointer; vertical-align:middle;"
                                 />
                               </td>
-                              <td style="padding:0.5rem 0.75rem; text-align:center;">
+                              <td style="text-align:center;">
                                 <input
                                   type="number"
                                   min="0"
                                   data-variant-idx="${vIdx}"
                                   data-variant-field="quantity"
                                   value="${v.quantity ?? 5}"
-                                  class="adm-input"
-                                  style="width:84px; margin:0 auto; padding:0.32rem 0.5rem; border-radius:4px; border-color:#d6d1c7; text-align:center; font-weight:700;"
+                                  class="adm-input adm-var-input-qty"
+                                  style="border-radius:4px; border-color:#d6d1c7;"
                                 />
                               </td>
-                              <td style="padding:0.5rem 0.75rem; text-align:center;">
-                                <div style="display:inline-flex; align-items:center; justify-content:center; gap:0.65rem;">
+                              <td style="text-align:center;">
+                                <div style="display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;">
                                   <input
                                     type="checkbox"
                                     data-variant-idx="${vIdx}"
@@ -1879,7 +1879,7 @@ function renderInventorySection() {
                                     data-adm-action="remove-variant-row"
                                     data-index="${vIdx}"
                                     title="${isFr ? 'Supprimer la ligne' : 'حذف السطر'}"
-                                    style="background:transparent; border:none; color:#a1a1aa; font-size:1.05rem; font-weight:800; cursor:pointer; line-height:1; padding:0 0.2rem;"
+                                    style="background:transparent; border:none; color:#a1a1aa; font-size:1.1rem; font-weight:800; cursor:pointer; line-height:1; padding:0.2rem;"
                                   >
                                     ×
                                   </button>
@@ -1896,10 +1896,10 @@ function renderInventorySection() {
           </div>
 
           <!-- شريط الحفظ السفلي -->
-          <div style="display:flex; align-items:center; justify-content:flex-start; gap:0.75rem;">
+          <div style="display:flex; align-items:center; justify-content:flex-start; flex-wrap:wrap; gap:0.65rem;">
             <button
               type="submit"
-              style="background:#18181b; color:#fff; border:1px solid #18181b; border-radius:4px; padding:0.7rem 1.75rem; font-size:0.92rem; font-weight:800; cursor:pointer;"
+              style="flex:1 1 200px; background:#18181b; color:#fff; border:1px solid #18181b; border-radius:6px; padding:0.75rem 1.5rem; font-size:0.9rem; font-weight:800; cursor:pointer;"
             >
               ${editingProd ? (isFr ? 'Enregistrer les modifications' : 'حفظ التعديلات') : (isFr ? 'Enregistrer le produit' : 'حفظ المنتج')}
             </button>
@@ -1907,7 +1907,7 @@ function renderInventorySection() {
             <button
               type="button"
               data-adm-action="cancel-product-edit"
-              style="background:#fff; color:#18181b; border:1px solid #d6d1c7; border-radius:4px; padding:0.7rem 1.25rem; font-size:0.88rem; font-weight:700; cursor:pointer;"
+              style="flex:0 1 auto; background:#fff; color:#18181b; border:1px solid #d6d1c7; border-radius:6px; padding:0.75rem 1.25rem; font-size:0.88rem; font-weight:700; cursor:pointer;"
             >
               ${isFr ? 'Annuler' : 'إلغاء'}
             </button>
@@ -1950,12 +1950,12 @@ function renderInventorySection() {
           <p class="adm-card-sub">${tr.inv.currentProdsSub}</p>
         </div>
 
-        <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+        <div class="adm-card-head-actions">
           <input
             id="adm-inventory-search"
             type="search"
             class="adm-input"
-            style="width:210px; padding:0.5rem 0.8rem;"
+            style="padding:0.5rem 0.8rem;"
             placeholder="${tr.inv.searchPlaceholder}"
             value="${adminState.inventorySearch}"
           />
@@ -2069,25 +2069,25 @@ function renderCategoryManagerCard() {
           : ''
       }
 
-      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:0.85rem;">
+      <div class="adm-categories-grid">
         ${adminState.categories
           .map(
             (cat) => `
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:0.65rem 0.85rem;">
-              <div style="display:flex; align-items:center; gap:0.65rem; min-width:0; flex:1;">
-                <img src="${cat.image}" alt="${cat.name_ar}" referrerpolicy="no-referrer" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid rgba(216,27,96,0.3); flex-shrink:0;" />
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:0.65rem; background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:0.6rem 0.8rem;">
+              <div style="display:flex; align-items:center; gap:0.6rem; min-width:0; flex:1;">
+                <img src="${cat.image}" alt="${cat.name_ar}" referrerpolicy="no-referrer" style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid rgba(216,27,96,0.3); flex-shrink:0;" />
                 <div style="min-width:0; flex:1;">
-                  <strong style="font-size:0.88rem; color:var(--adm-text-dark); display:block; line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  <strong style="font-size:0.86rem; color:var(--adm-text-dark); display:block; line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                     ${isFr ? cat.name_fr : cat.name_ar}
                   </strong>
-                  <span style="font-size:0.75rem; color:var(--adm-text-muted); display:block; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  <span style="font-size:0.74rem; color:var(--adm-text-muted); display:block; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                     ${isFr ? cat.name_ar : cat.name_fr}
                   </span>
                 </div>
               </div>
               <div style="display:flex; align-items:center; gap:0.35rem; flex-shrink:0;">
-                <button type="button" data-adm-action="edit-category" data-id="${cat.id}" class="adm-btn adm-btn-soft adm-btn-sm" style="padding:0.32rem 0.65rem; font-size:0.76rem; font-weight:700;">${isFr ? 'Modifier' : 'تعديل'}</button>
-                <button type="button" data-adm-action="delete-category" data-id="${cat.id}" class="adm-btn adm-btn-danger adm-btn-sm" style="padding:0.32rem 0.65rem; font-size:0.76rem; font-weight:700;">${isFr ? 'Supprimer' : 'حذف'}</button>
+                <button type="button" data-adm-action="edit-category" data-id="${cat.id}" class="adm-btn adm-btn-soft adm-btn-sm" style="padding:0.32rem 0.65rem; font-size:0.75rem; font-weight:700;">${isFr ? 'Modifier' : 'تعديل'}</button>
+                <button type="button" data-adm-action="delete-category" data-id="${cat.id}" class="adm-btn adm-btn-danger adm-btn-sm" style="padding:0.32rem 0.65rem; font-size:0.75rem; font-weight:700;">${isFr ? 'Supprimer' : 'حذف'}</button>
               </div>
             </div>
           `
@@ -2198,7 +2198,7 @@ function renderInventoryCards(productsList) {
               >−</button>
             </div>
 
-            <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+            <div class="adm-prod-actions">
               <a
                 href="./index.html?product=${encodeURIComponent(p.slug || p.id)}"
                 target="_blank"
@@ -2315,15 +2315,15 @@ function renderOrdersSection() {
                       </span>
                     </div>
 
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem;">
-                      <div>
-                        <strong style="font-size:0.92rem; display:block;">${order.fullName}</strong>
-                        <span style="font-size:0.78rem; color:var(--adm-text-body);">${order.wilaya} — ${order.address}</span>
+                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                      <div style="min-width:0; flex:1;">
+                        <strong style="font-size:0.9rem; display:block;">${order.fullName}</strong>
+                        <span style="font-size:0.78rem; color:var(--adm-text-body); display:block;">${order.wilaya} — ${order.address}</span>
                       </div>
                       <a
                         href="tel:${order.phone}"
                         class="adm-btn adm-btn-soft adm-btn-sm"
-                        style="text-decoration:none;"
+                        style="text-decoration:none; flex-shrink:0;"
                       >
                         ${order.phone}
                       </a>
@@ -2343,17 +2343,17 @@ function renderOrdersSection() {
                       }
                     </div>
 
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:0.6rem; padding-top:0.4rem;">
+                    <div class="adm-order-foot">
                       <div>
                         <span style="font-size:0.72rem; color:var(--adm-text-muted); display:block;">${tr.orders.totalAmount}</span>
                         <strong style="font-size:1.05rem; color:var(--adm-text-dark);">${formatDA(order.total, lang)}</strong>
                       </div>
 
-                      <div style="display:flex; align-items:center; gap:0.4rem; flex:1; max-width:230px;">
+                      <div class="adm-order-controls">
                         <select
                           data-adm-order-status="${order.id}"
                           class="adm-select"
-                          style="padding:0.45rem 0.65rem; font-size:0.8rem;"
+                          style="padding:0.45rem 0.65rem; font-size:0.8rem; flex:1;"
                         >
                           ${STATUS_KEYS.map(
                             (k) =>
@@ -2961,7 +2961,7 @@ function renderLandingPreviewModal() {
         </span>
       </div>
 
-      <div style="padding:1.25rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(290px, 1fr)); gap:1.35rem; align-items:start;">
+      <div class="adm-lp-modal-grid">
         <!-- العمود الأول: معرض الصور + المميزات -->
         <div>
           <div style="position:relative; border-radius:14px; overflow:hidden; aspect-ratio:4/3; margin-bottom:0.65rem; background:#fdf2f6; border:1px solid #ece7ea;">
@@ -3134,7 +3134,7 @@ function renderShippingSection() {
         </div>
       </div>
 
-      <form id="adm-add-wilaya-form" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.75rem; align-items:end;">
+      <form id="adm-add-wilaya-form" class="adm-wilaya-add-grid">
         <div class="adm-field">
           <label class="adm-label">${isFr ? 'Code Wilaya *' : 'رقم / رمز الولاية *'}</label>
           <input
@@ -3210,12 +3210,12 @@ function renderShippingSection() {
           <h2 class="adm-card-title">${tr.ship.ratesListTitle(adminState.shipping.rates.length)}</h2>
           <p class="adm-card-sub">${tr.ship.ratesListSub}</p>
         </div>
-        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+        <div class="adm-card-head-actions">
           <input
             id="adm-shipping-search"
             type="search"
             class="adm-input"
-            style="width:220px; padding:0.5rem 0.8rem;"
+            style="padding:0.5rem 0.8rem;"
             placeholder="${isFr ? 'Chercher une wilaya...' : 'ابحث عن اسم أو رقم الولاية...'}"
             value="${adminState.shippingSearch || ''}"
           />

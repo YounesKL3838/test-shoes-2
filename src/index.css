@@ -49,13 +49,23 @@ body {
   background: linear-gradient(180deg, #FCEBF0 0%, #FDF6F8 50%, #FCEBF0 100%);
   color: var(--text-dark);
   min-height: 100vh;
-  padding-bottom: 72px;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
   overflow-x: hidden;
 }
 
 @media (min-width: 1024px) {
   body {
     padding-bottom: 0;
+  }
+}
+
+/* Prevent mobile browser auto-zoom when focusing inputs/selects/textareas */
+@media (max-width: 639px) {
+  #app-main input:not([type="checkbox"]):not([type="radio"]),
+  #app-main select,
+  #app-main textarea,
+  #app-header input[type="search"] {
+    font-size: 16px !important;
   }
 }
 
@@ -226,6 +236,7 @@ body {
   background-color: #FFFFFF;
   min-height: 100vh;
   box-shadow: 0 12px 48px rgba(222, 27, 97, 0.08);
+  overflow-x: hidden;
 }
 
 @media (min-width: 1024px) {
@@ -277,16 +288,23 @@ body {
 /* Product Card — Exact ShoeStyle Match with Enhanced Hover Choreography */
 .ss-product-card {
   background: #FFFFFF;
-  border-radius: 18px;
+  border-radius: 16px;
   border: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 0;
   transition:
     transform 240ms var(--ease-out-expo),
     box-shadow 240ms var(--ease-out-expo),
     border-color 240ms var(--ease-out-expo);
+}
+
+@media (min-width: 640px) {
+  .ss-product-card {
+    border-radius: 18px;
+  }
 }
 
 .ss-product-card:hover {
@@ -299,12 +317,19 @@ body {
   position: relative;
   aspect-ratio: 4 / 5;
   background: linear-gradient(145deg, #F7F4F5 0%, #EFEBED 100%);
-  border-radius: 14px;
-  margin: 8px 8px 0 8px;
+  border-radius: 12px;
+  margin: 6px 6px 0 6px;
   overflow: hidden;
   touch-action: pan-y pinch-zoom;
   user-select: none;
   -webkit-user-select: none;
+}
+
+@media (min-width: 640px) {
+  .ss-product-img-box {
+    border-radius: 14px;
+    margin: 8px 8px 0 8px;
+  }
 }
 
 .ss-insta-gallery-box {
@@ -370,8 +395,8 @@ body {
 
 /* Circular Category Thumbnail with Spring Lift */
 .ss-category-circle {
-  width: 74px;
-  height: 74px;
+  width: 68px;
+  height: 68px;
   border-radius: 9999px;
   background: radial-gradient(circle at 50% 40%, #FFFFFF 0%, #F5E6EA 100%);
   border: 2px solid #FFFFFF;
@@ -384,6 +409,13 @@ body {
     transform 260ms var(--ease-spring),
     border-color 200ms ease,
     box-shadow 200ms ease;
+}
+
+@media (min-width: 400px) {
+  .ss-category-circle {
+    width: 74px;
+    height: 74px;
+  }
 }
 
 @media (min-width: 640px) {

@@ -371,9 +371,9 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
             data-action="gallery-step"
             data-dir="-1"
             class="
-              absolute left-1.5 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full
+              absolute left-1.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 sm:w-7 sm:h-7 rounded-full
               bg-white/85 hover:bg-white text-[#18181B] shadow-xs
-              flex items-center justify-center opacity-0 group-hover:opacity-100
+              flex items-center justify-center opacity-80 sm:opacity-0 sm:group-hover:opacity-100
               transition-opacity duration-200 text-xs font-bold
             "
             aria-label="Previous photo"
@@ -385,9 +385,9 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
             data-action="gallery-step"
             data-dir="1"
             class="
-              absolute right-1.5 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full
+              absolute right-1.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 sm:w-7 sm:h-7 rounded-full
               bg-white/85 hover:bg-white text-[#18181B] shadow-xs
-              flex items-center justify-center opacity-0 group-hover:opacity-100
+              flex items-center justify-center opacity-80 sm:opacity-0 sm:group-hover:opacity-100
               transition-opacity duration-200 text-xs font-bold
             "
             aria-label="Next photo"
@@ -403,7 +403,7 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
           type="button"
           data-action="toggle-wishlist"
           data-id="${product.id}"
-          class="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-xs transition-transform hover:scale-110 active:scale-90"
+          class="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-xs transition-transform hover:scale-110 active:scale-90"
           aria-label="${t.nav.wishlist}"
         >
           <svg
@@ -427,7 +427,7 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
         <!-- Badge Réduction rose en bas à gauche (-25%, -20%, -30%) -->
         ${
           product.discountPercent > 0
-            ? `<span class="absolute bottom-2.5 start-2.5 z-10 px-2.5 py-0.5 rounded-full bg-[#DE1B61] text-white text-[11px] font-bold tabular-nums shadow-xs pointer-events-none">
+            ? `<span class="absolute bottom-2 start-2 sm:bottom-2.5 sm:start-2.5 z-10 px-2 py-0.5 rounded-full bg-[#DE1B61] text-white text-[10px] sm:text-[11px] font-bold tabular-nums shadow-xs pointer-events-none">
                 -${product.discountPercent}%
               </span>`
             : ''
@@ -438,7 +438,7 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
           galleryImages.length > 1
             ? `<div
                 dir="ltr"
-                class="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/25 backdrop-blur-xs"
+                class="absolute bottom-2 sm:bottom-2.5 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-full bg-black/25 backdrop-blur-xs"
               >
                 ${galleryImages
                   .map(
@@ -463,9 +463,9 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
       </div>
 
       <!-- Infos produit (بدون تقييمات) -->
-      <div class="p-3 pt-2.5 flex flex-col flex-1 justify-between">
+      <div class="p-2.5 sm:p-3 pt-2 flex flex-col flex-1 justify-between">
         <div>
-          <h3 class="text-[14px] sm:text-[15px] font-bold text-[#18181B] leading-snug truncate">
+          <h3 class="text-[13px] sm:text-[15px] font-bold text-[#18181B] leading-snug truncate">
             <a
               href="?product=${encodeURIComponent(product.slug || product.id)}"
               data-action="open-pdp"
@@ -476,13 +476,13 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
             </a>
           </h3>
 
-          <div class="mt-1 flex items-baseline gap-1.5 flex-wrap tabular-nums">
-            <span class="text-[14px] sm:text-[15px] font-extrabold text-[#DE1B61]">
+          <div class="mt-1 flex items-baseline gap-1 sm:gap-1.5 flex-wrap tabular-nums">
+            <span class="text-[13px] sm:text-[15px] font-extrabold text-[#DE1B61]">
               ${formatDA(product.price, store.lang)}
             </span>
             ${
               product.originalPrice
-                ? `<span class="text-[11px] sm:text-xs text-[#8E8E93] line-through">
+                ? `<span class="text-[10px] sm:text-xs text-[#8E8E93] line-through">
                     ${formatDA(product.originalPrice, store.lang)}
                   </span>`
                 : ''
@@ -491,14 +491,14 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
         </div>
 
         <!-- الألوان المتوفرة + زر الإضافة السريعة للسلة -->
-        <div class="mt-2.5 flex items-center justify-between">
+        <div class="mt-2 flex items-center justify-between gap-1">
           <div class="flex items-center gap-1">
             ${(Array.isArray(product.colors) ? product.colors : ['Rose'])
               .slice(0, 4)
               .map((cName) => {
                 const sw = COLOR_SWATCHES[cName];
                 const hex = sw ? sw.hex : product.colorHex || '#F38BA8';
-                return `<span class="w-3.5 h-3.5 rounded-full border border-black/15 inline-block" style="background-color:${hex};" title="${cName}"></span>`;
+                return `<span class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-black/15 inline-block" style="background-color:${hex};" title="${cName}"></span>`;
               })
               .join('')}
           </div>
@@ -507,7 +507,7 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
             type="button"
             data-action="quick-add-cart"
             data-id="${product.id}"
-            class="w-8 h-8 rounded-full border border-[#18181B]/25 hover:border-[#DE1B61] hover:bg-[#DE1B61] hover:text-white text-[#18181B] flex items-center justify-center transition-all hover:scale-110 active:scale-90"
+            class="w-8 h-8 rounded-full border border-[#18181B]/25 hover:border-[#DE1B61] hover:bg-[#DE1B61] hover:text-white text-[#18181B] flex items-center justify-center transition-all hover:scale-110 active:scale-90 shrink-0"
             aria-label="${t.pdp.addToCart}"
           >
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
@@ -548,7 +548,7 @@ function renderHeader() {
     <button
       type="button"
       data-action="toggle-language"
-      class="px-2.5 py-1 rounded-full bg-[#FCE8EE] hover:bg-[#DE1B61] text-[#DE1B61] hover:text-white text-xs font-bold transition-all shadow-2xs flex items-center gap-1 shrink-0"
+      class="px-2 sm:px-2.5 py-1 rounded-full bg-[#FCE8EE] hover:bg-[#DE1B61] text-[#DE1B61] hover:text-white text-[11px] sm:text-xs font-bold transition-all shadow-2xs flex items-center gap-1 shrink-0"
       title="${t.switchTitle}"
     >
       <span class="text-xs">🌐</span>
@@ -558,17 +558,17 @@ function renderHeader() {
 
   if (screen === 'home' || screen === 'pdp' || screen === 'landing') {
     headerEl.innerHTML = `
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div class="max-w-6xl mx-auto px-2.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
         <!-- Menu Hamburger / Catégories -->
         <button
           type="button"
           data-action="nav-screen"
           data-screen="category"
           data-category="${CATEGORIES[0]?.id || 'Talons'}"
-          class="w-10 h-10 rounded-full hover:bg-[#FCE8EE]/60 flex items-center justify-center text-[#18181B] transition-transform active:scale-90"
+          class="w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:bg-[#FCE8EE]/60 flex items-center justify-center text-[#18181B] transition-transform active:scale-90 shrink-0"
           aria-label="${t.nav.categories}"
         >
-          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="4" y1="7" x2="20" y2="7" stroke-linecap="round" />
             <line x1="4" y1="12" x2="20" y2="12" stroke-linecap="round" />
             <line x1="4" y1="17" x2="15" y2="17" stroke-linecap="round" />
@@ -580,14 +580,14 @@ function renderHeader() {
           type="button"
           data-action="nav-screen"
           data-screen="home"
-          class="flex items-center gap-2 text-start group"
+          class="flex items-center gap-1.5 sm:gap-2 text-start group min-w-0"
         >
-          ${renderHighHeelLogoSVG('w-9 h-9')}
-          <div class="leading-none">
-            <span class="font-script text-3xl sm:text-[34px] font-bold text-[#18181B] tracking-tight block">
+          ${renderHighHeelLogoSVG('w-7 h-7 sm:w-9 sm:h-9')}
+          <div class="leading-none min-w-0">
+            <span class="font-script text-2xl sm:text-[34px] font-bold text-[#18181B] tracking-tight block truncate">
               ${adminState?.cms?.storeName || 'ShoeStyle'}
             </span>
-            <span class="block text-[10px] italic text-[#71717A] tracking-wider -mt-1 text-center">
+            <span class="hidden sm:block text-[10px] italic text-[#71717A] tracking-wider -mt-1 text-center">
               — Step in Style —
             </span>
           </div>
@@ -614,13 +614,13 @@ function renderHeader() {
         </nav>
 
         <!-- Bouton Langue + Recherche & Sac Panier -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1 sm:gap-2 shrink-0">
           ${langToggleBtn}
 
           <button
             type="button"
             data-action="toggle-search"
-            class="w-10 h-10 rounded-full hover:bg-[#FCE8EE]/60 flex items-center justify-center text-[#18181B] transition-transform active:scale-90"
+            class="w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:bg-[#FCE8EE]/60 flex items-center justify-center text-[#18181B] transition-transform active:scale-90"
             aria-label="Recherche / بحث"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -634,7 +634,7 @@ function renderHeader() {
             type="button"
             data-action="nav-screen"
             data-screen="cart"
-            class="relative w-10 h-10 rounded-full hover:bg-[#FCE8EE]/60 flex items-center justify-center text-[#18181B] transition-transform active:scale-90"
+            class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:bg-[#FCE8EE]/60 flex items-center justify-center text-[#18181B] transition-transform active:scale-90"
             aria-label="${t.nav.cart}"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -642,7 +642,7 @@ function renderHeader() {
               <line x1="3" y1="6" x2="21" y2="6" />
               <path d="M16 10a4 4 0 0 1-8 0" />
             </svg>
-            <span class="ss-cart-badge absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#DE1B61] text-white text-[10px] font-bold flex items-center justify-center tabular-nums">
+            <span class="ss-cart-badge absolute top-0.5 right-0.5 sm:top-1 sm:right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#DE1B61] text-white text-[10px] font-bold flex items-center justify-center tabular-nums">
               ${details.totalCount}
             </span>
           </button>
@@ -651,13 +651,13 @@ function renderHeader() {
 
       ${
         store.searchOpen
-          ? `<div class="max-w-6xl mx-auto px-4 pb-3 animate-screen-enter">
+          ? `<div class="max-w-6xl mx-auto px-3 sm:px-4 pb-3 animate-screen-enter">
               <input
                 id="global-search-input"
                 type="search"
                 value="${store.searchQuery}"
                 placeholder="${t.search.placeholder}"
-                class="w-full px-4 py-2 rounded-full bg-[#FDF5F7] border border-[#DE1B61]/25 text-xs text-[#18181B] focus:outline-none"
+                class="w-full px-4 py-2.5 rounded-full bg-[#FDF5F7] border border-[#DE1B61]/25 text-xs sm:text-sm text-[#18181B] focus:outline-none"
               />
             </div>`
           : ''
@@ -816,11 +816,11 @@ function renderHomeScreen() {
   return `
     <div class="max-w-6xl mx-auto animate-screen-enter">
       <!-- 1. Hero Banner ShoeStyle avec Carrousel Bilingue -->
-      <section id="hero-banner-section" class="px-3 sm:px-6 pt-2 pb-4">
+      <section id="hero-banner-section" class="px-2.5 sm:px-6 pt-2 pb-3 sm:pb-4">
         <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#EFE3DC] via-[#F6EAE6] to-[#FCE8EE] border border-[#DE1B61]/10 shadow-sm">
-          <div class="grid grid-cols-1 md:grid-cols-12 items-center min-h-[270px] sm:min-h-[340px]">
+          <div class="grid grid-cols-1 md:grid-cols-12 items-center min-h-[235px] sm:min-h-[340px]">
             <!-- Image Mode avec zoom Ken Burns -->
-            <div class="md:col-span-7 relative h-[260px] sm:h-[340px] w-full overflow-hidden">
+            <div class="md:col-span-7 relative h-[235px] sm:h-[340px] w-full overflow-hidden">
               <img
                 id="hero-banner-img"
                 src="${slide.image}"
@@ -828,21 +828,21 @@ function renderHomeScreen() {
                 referrerpolicy="no-referrer"
                 class="w-full h-full object-cover object-center animate-hero-zoom transition-opacity duration-300"
               />
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-[#FCE8EE]/95 md:to-transparent pointer-events-none"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/45 to-[#FCE8EE]/95 md:to-transparent pointer-events-none"></div>
 
               <!-- Overlay Mobile -->
-              <div id="hero-mobile-overlay" class="md:hidden absolute inset-y-0 end-0 w-[60%] flex flex-col items-end justify-center pe-4 text-end transition-opacity duration-300">
-                <h2 id="hero-mobile-title" class="font-script text-[30px] leading-[1.08] font-bold text-[#18181B] drop-shadow-xs">
+              <div id="hero-mobile-overlay" class="md:hidden absolute inset-y-0 end-0 w-[64%] flex flex-col items-end justify-center pe-3.5 text-end transition-opacity duration-300">
+                <h2 id="hero-mobile-title" class="font-script text-[25px] sm:text-[30px] leading-[1.12] font-bold text-[#18181B] drop-shadow-xs">
                   ${slideTitle}
                 </h2>
-                <span class="text-xl text-[#DE1B61] mt-1 me-2 animate-float-soft inline-block" aria-hidden="true">♡</span>
+                <span class="text-lg text-[#DE1B61] mt-0.5 me-1 animate-float-soft inline-block" aria-hidden="true">♡</span>
                 <button
                   id="hero-mobile-cta"
                   type="button"
                   data-action="nav-screen"
                   data-screen="category"
                   data-category="${slide.targetCategory}"
-                  class="mt-2.5 ss-btn-pink px-5 py-2 text-xs inline-flex items-center gap-1.5"
+                  class="mt-2 ss-btn-pink px-4 py-2 text-xs inline-flex items-center gap-1.5"
                 >
                   <span id="hero-mobile-cta-label">${slideCta}</span>
                   <span id="hero-mobile-cta-arrow">${getArrowNext()}</span>
@@ -879,7 +879,7 @@ function renderHomeScreen() {
           </div>
 
           <!-- Points de pagination carrousel -->
-          <div id="hero-dots-container" class="py-2.5 flex items-center justify-center gap-2 bg-white/65 backdrop-blur-xs">
+          <div id="hero-dots-container" class="py-2 flex items-center justify-center gap-2 bg-white/65 backdrop-blur-xs">
             ${HERO_SLIDES.map(
               (_, idx) => `
               <button
@@ -900,8 +900,8 @@ function renderHomeScreen() {
       </section>
 
       <!-- 2. Catégories Rondes bilingues -->
-      <section class="px-4 sm:px-6 py-3">
-        <div class="flex items-center justify-between sm:justify-around gap-3 overflow-x-auto no-scrollbar py-1">
+      <section class="px-3 sm:px-6 py-2.5 sm:py-3">
+        <div class="flex items-center justify-between sm:justify-around gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar py-1">
           ${CATEGORIES.map(
             (cat, idx) => `
             <button
@@ -910,7 +910,7 @@ function renderHomeScreen() {
               data-screen="category"
               data-category="${cat.id}"
               style="--i: ${idx};"
-              class="ss-category-btn animate-stagger-item flex flex-col items-center gap-2 shrink-0 group"
+              class="ss-category-btn animate-stagger-item flex flex-col items-center gap-1.5 sm:gap-2 shrink-0 group"
             >
               <div class="ss-category-circle">
                 <img
@@ -920,7 +920,7 @@ function renderHomeScreen() {
                   class="w-full h-full object-cover"
                 />
               </div>
-              <span class="text-xs sm:text-[13px] font-semibold text-[#18181B] group-hover:text-[#DE1B61] transition-colors">
+              <span class="text-[11px] sm:text-[13px] font-semibold text-[#18181B] group-hover:text-[#DE1B61] transition-colors">
                 ${store.lang === 'ar' ? cat.name_ar : cat.name_fr}
               </span>
             </button>
@@ -930,9 +930,9 @@ function renderHomeScreen() {
       </section>
 
       <!-- 3. Section Nouveautés -->
-      <section class="px-4 sm:px-6 py-5">
-        <div class="flex items-center justify-between mb-3.5">
-          <h2 class="text-lg sm:text-xl font-extrabold text-[#18181B]">${t.sections.newArrivals}</h2>
+      <section class="px-3 sm:px-6 py-4 sm:py-5">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-base sm:text-xl font-extrabold text-[#18181B]">${t.sections.newArrivals}</h2>
           <button
             type="button"
             data-action="nav-screen"
@@ -945,17 +945,17 @@ function renderHomeScreen() {
           </button>
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
           ${newArrivals.map((p, idx) => renderShoeStyleCard(p, idx)).join('')}
         </div>
       </section>
 
       <!-- 4. Section Meilleures Ventes -->
-      <section class="px-4 sm:px-6 py-5 bg-[#FDF5F7]/70 reveal-on-scroll">
-        <div class="flex items-center justify-between mb-3.5">
+      <section class="px-3 sm:px-6 py-4 sm:py-5 bg-[#FDF5F7]/70 reveal-on-scroll">
+        <div class="flex items-center justify-between mb-3">
           <div>
-            <h2 class="text-lg sm:text-xl font-extrabold text-[#18181B]">${t.sections.bestSellers}</h2>
-            <p class="text-xs text-[#71717A]">${t.sections.bestSellersSub}</p>
+            <h2 class="text-base sm:text-xl font-extrabold text-[#18181B]">${t.sections.bestSellers}</h2>
+            <p class="text-[11px] sm:text-xs text-[#71717A]">${t.sections.bestSellersSub}</p>
           </div>
           <button
             type="button"
@@ -969,17 +969,17 @@ function renderHomeScreen() {
           </button>
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
           ${bestSellers.map((p, idx) => renderShoeStyleCard(p, idx)).join('')}
         </div>
       </section>
 
       <!-- 5. Section Offres Spéciales -->
-      <section class="px-4 sm:px-6 py-5 reveal-on-scroll">
-        <div class="flex items-center justify-between mb-3.5">
+      <section class="px-3 sm:px-6 py-4 sm:py-5 reveal-on-scroll">
+        <div class="flex items-center justify-between mb-3">
           <div>
-            <h2 class="text-lg sm:text-xl font-extrabold text-[#18181B]">${t.sections.specialOffers}</h2>
-            <p class="text-xs text-[#DE1B61] font-medium">${t.sections.specialOffersSub}</p>
+            <h2 class="text-base sm:text-xl font-extrabold text-[#18181B]">${t.sections.specialOffers}</h2>
+            <p class="text-[11px] sm:text-xs text-[#DE1B61] font-medium">${t.sections.specialOffersSub}</p>
           </div>
           <button
             type="button"
@@ -993,7 +993,7 @@ function renderHomeScreen() {
           </button>
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
           ${specialOffers.map((p, idx) => renderShoeStyleCard(p, idx)).join('')}
         </div>
       </section>
@@ -1166,21 +1166,21 @@ function renderRealReviewsSection() {
             </div>
           </div>
 
-          <!-- السطر الأول من الحقول: الاسم + الولاية + الموديل في سطر واحد مدمج -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <!-- السطر الأول من الحقول: الاسم + الولاية + الموديل -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <input
               type="text"
               name="reviewerName"
               required
               placeholder="${isAr ? 'الاسم (مثال: سارة م.) *' : 'Votre nom *'}"
-              class="w-full h-8.5 px-2.5 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
+              class="w-full h-10 sm:h-9 px-3 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
             />
 
             <select
               name="reviewerCity"
               required
               aria-label="${isAr ? 'الولاية' : 'Wilaya'}"
-              class="w-full h-8.5 px-2 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
+              class="w-full h-10 sm:h-9 px-2.5 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
             >
               ${WILAYAS.map(
                 (w) => `
@@ -1194,7 +1194,7 @@ function renderRealReviewsSection() {
             <select
               name="reviewerProduct"
               aria-label="${isAr ? 'الموديل' : 'Modèle'}"
-              class="col-span-2 sm:col-span-1 w-full h-8.5 px-2 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
+              class="w-full h-10 sm:h-9 px-2.5 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
             >
               <option value="${isAr ? 'تجربة عامة للمتجر' : 'Expérience générale'}">
                 ${isAr ? 'الموديل: تجربة عامة للمتجر' : 'Modèle : Expérience générale'}
@@ -1219,11 +1219,11 @@ function renderRealReviewsSection() {
                   ? 'اكتبي رأيكِ باختصار حول الجودة والمقاس والتوصيل... *'
                   : 'Votre commentaire sur la qualité, la pointure et la livraison... *'
               }"
-              class="flex-1 h-9 px-3 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
+              class="flex-1 h-10 sm:h-9 px-3 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
             />
             <button
               type="submit"
-              class="h-9 px-4 ss-btn-pink text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+              class="h-10 sm:h-9 px-4 ss-btn-pink text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
             >
               <span>${isAr ? 'نشر الرأي' : 'Publier'}</span>
               <span>♥</span>
@@ -1468,7 +1468,7 @@ function renderCategoryScreen() {
   return `
     <div class="max-w-5xl mx-auto pb-8 animate-screen-enter">
       <!-- Bannière Catégorie -->
-      <div class="relative h-44 sm:h-56 overflow-hidden bg-gradient-to-r from-[#F5E1E6] via-[#F9EBEF] to-[#F3E5E0]">
+      <div class="relative h-36 sm:h-56 overflow-hidden bg-gradient-to-r from-[#F5E1E6] via-[#F9EBEF] to-[#F3E5E0]">
         <img
           id="cat-banner-img"
           src="${activeCatObj.image}"
@@ -1476,16 +1476,16 @@ function renderCategoryScreen() {
           referrerpolicy="no-referrer"
           class="w-full h-full object-cover object-left opacity-90 animate-hero-zoom transition-opacity duration-300"
         />
-        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-[#F9EBEF]/95 flex flex-col items-end justify-center pe-6 sm:pe-12 text-center">
-          <div class="max-w-[200px] sm:max-w-xs animate-stagger-item" style="--i: 1;">
-            <h2 id="cat-banner-title" class="font-script text-4xl sm:text-5xl font-bold text-[#18181B]">
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-[#F9EBEF]/95 flex flex-col items-end justify-center pe-4 sm:pe-12 text-center">
+          <div class="max-w-[190px] sm:max-w-xs animate-stagger-item" style="--i: 1;">
+            <h2 id="cat-banner-title" class="font-script text-2xl sm:text-5xl font-bold text-[#18181B]">
               ${store.activeCategory === 'Tout' ? t.nav.all : catName}
             </h2>
-            <p id="cat-banner-sub" class="text-xs sm:text-sm font-medium text-[#3F3F46] mt-0.5">
+            <p id="cat-banner-sub" class="text-[11px] sm:text-sm font-medium text-[#3F3F46] mt-0.5">
               ${catSub}
             </p>
             <!-- Ligne courbe rose avec petit cœur -->
-            <svg class="w-28 h-4 mx-auto mt-1 text-[#DE1B61]" viewBox="0 0 120 18" fill="none">
+            <svg class="w-24 sm:w-28 h-4 mx-auto mt-1 text-[#DE1B61]" viewBox="0 0 120 18" fill="none">
               <path d="M4 12C35 4 75 18 108 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               <circle cx="112" cy="6" r="2.5" fill="currentColor" />
             </svg>
@@ -1494,7 +1494,7 @@ function renderCategoryScreen() {
       </div>
 
       <!-- Sélecteur rapide de catégories -->
-      <div class="px-4 sm:px-6 pt-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <div class="px-3 sm:px-6 pt-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
         ${['Tout', ...CATEGORIES.map((c) => c.id)]
           .map((catId) => {
             const catObj = CATEGORIES.find((c) => c.id === catId);
@@ -1523,7 +1523,7 @@ function renderCategoryScreen() {
       </div>
 
       <!-- Barre de Filtres ("Filtrer", "Prix ▾", "Taille ▾", "Couleur ▾") -->
-      <div class="px-4 sm:px-6 py-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <div class="px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
         <button
           type="button"
           data-action="reset-category-filters"
@@ -1544,7 +1544,7 @@ function renderCategoryScreen() {
         <select
           id="filter-price-select"
           aria-label="${t.filters.price}"
-          class="px-3.5 py-1.5 rounded-full bg-[#F8EEF1] text-[#18181B] text-xs font-semibold border border-transparent focus:border-[#DE1B61] cursor-pointer shrink-0 transition-colors hover:bg-[#FCE8EE]"
+          class="px-3 py-1.5 rounded-full bg-[#F8EEF1] text-[#18181B] text-xs font-semibold border border-transparent focus:border-[#DE1B61] cursor-pointer shrink-0 transition-colors hover:bg-[#FCE8EE]"
         >
           <option value="all" ${store.filterPrice === 'all' ? 'selected' : ''}>${t.filters.price}</option>
           <option value="under-4500" ${store.filterPrice === 'under-4500' ? 'selected' : ''}>${t.filters.priceUnder4500}</option>
@@ -1555,10 +1555,10 @@ function renderCategoryScreen() {
         <select
           id="filter-size-select"
           aria-label="${t.filters.size}"
-          class="px-3.5 py-1.5 rounded-full bg-[#F8EEF1] text-[#18181B] text-xs font-semibold border border-transparent focus:border-[#DE1B61] cursor-pointer shrink-0 transition-colors hover:bg-[#FCE8EE]"
+          class="px-3 py-1.5 rounded-full bg-[#F8EEF1] text-[#18181B] text-xs font-semibold border border-transparent focus:border-[#DE1B61] cursor-pointer shrink-0 transition-colors hover:bg-[#FCE8EE]"
         >
           <option value="all" ${store.filterSize === 'all' ? 'selected' : ''}>${t.filters.size}</option>
-          ${[36, 37, 38, 39, 40]
+          ${[36, 37, 38, 39, 40, 41]
             .map(
               (sz) =>
                 `<option value="${sz}" ${
@@ -1572,7 +1572,7 @@ function renderCategoryScreen() {
         <select
           id="filter-color-select"
           aria-label="${t.filters.color}"
-          class="px-3.5 py-1.5 rounded-full bg-[#F8EEF1] text-[#18181B] text-xs font-semibold border border-transparent focus:border-[#DE1B61] cursor-pointer shrink-0 transition-colors hover:bg-[#FCE8EE]"
+          class="px-3 py-1.5 rounded-full bg-[#F8EEF1] text-[#18181B] text-xs font-semibold border border-transparent focus:border-[#DE1B61] cursor-pointer shrink-0 transition-colors hover:bg-[#FCE8EE]"
         >
           <option value="all" ${store.filterColor === 'all' ? 'selected' : ''}>${t.filters.color}</option>
           ${Object.keys(COLOR_SWATCHES)
@@ -1587,7 +1587,7 @@ function renderCategoryScreen() {
       </div>
 
       <!-- Grille Produits -->
-      <div id="category-products-grid" class="px-4 sm:px-6 pt-1 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+      <div id="category-products-grid" class="px-3 sm:px-6 pt-1 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
         ${filtered.map((p, idx) => renderShoeStyleCard(p, idx)).join('')}
       </div>
     </div>
@@ -1830,9 +1830,8 @@ function renderPDPScreen() {
             <!-- Sélecteur de Taille -->
             <div class="mt-5 animate-stagger-item" style="--i: 6;">
               <p class="text-xs sm:text-sm font-bold text-[#18181B]">${t.pdp.sizeLabel}</p>
-              <div class="mt-2.5 grid grid-cols-5 gap-2 max-w-xs tabular-nums">
-                ${product.sizes
-                  .slice(0, 5)
+              <div class="mt-2.5 grid grid-cols-5 sm:grid-cols-6 gap-2 max-w-sm tabular-nums">
+                ${(Array.isArray(product.sizes) && product.sizes.length ? product.sizes : [36, 37, 38, 39, 40])
                   .map((size) => {
                     const isSelected = Number(store.pdpSelectedSize) === Number(size);
                     return `
@@ -1840,7 +1839,7 @@ function renderPDPScreen() {
                         type="button"
                         data-action="pdp-select-size"
                         data-size="${size}"
-                        class="py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all ${
+                        class="py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all ${
                           isSelected
                             ? 'border-2 border-[#DE1B61] text-[#DE1B61] bg-[#FCE8EE]/35 animate-pop-spring'
                             : 'border-black/12 text-[#18181B] bg-white hover:border-black/30'
@@ -1856,7 +1855,7 @@ function renderPDPScreen() {
           </div>
 
           <!-- Bouton Sticky Ajouter au panier -->
-          <div class="mt-7 pt-3 sticky bottom-16 lg:bottom-0 bg-white">
+          <div class="mt-6 pt-3 pb-2 sticky bottom-16 lg:bottom-0 bg-white/95 backdrop-blur-md z-20">
             <button
               type="button"
               data-action="pdp-add-to-cart"
@@ -2309,7 +2308,7 @@ function renderLandingScreen() {
                     type="button"
                     data-action="lp-select-delivery"
                     data-delivery="home"
-                    class="p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
+                    class="p-2.5 rounded-xl border text-xs font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
                       store.lpDeliveryType === 'home'
                         ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/35 text-[#18181B]'
                         : 'border-black/15 bg-[#FAFAFA] text-[#52525B]'
@@ -2325,7 +2324,7 @@ function renderLandingScreen() {
                     type="button"
                     data-action="lp-select-delivery"
                     data-delivery="desk"
-                    class="p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
+                    class="p-2.5 rounded-xl border text-xs font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
                       store.lpDeliveryType === 'desk'
                         ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/35 text-[#18181B]'
                         : 'border-black/15 bg-[#FAFAFA] text-[#52525B]'
@@ -2707,7 +2706,7 @@ function renderCheckoutScreen() {
               type="button"
               data-action="checkout-select-delivery"
               data-delivery="home"
-              class="p-3 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${
+              class="p-3 rounded-xl border text-xs sm:text-sm font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
                 details.deliveryType === 'home'
                   ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/40 text-[#18181B] shadow-2xs'
                   : 'border-black/15 bg-[#FAFAFA] text-[#52525B] hover:border-black/30'
@@ -2721,7 +2720,7 @@ function renderCheckoutScreen() {
               type="button"
               data-action="checkout-select-delivery"
               data-delivery="desk"
-              class="p-3 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${
+              class="p-3 rounded-xl border text-xs sm:text-sm font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
                 details.deliveryType === 'desk'
                   ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/40 text-[#18181B] shadow-2xs'
                   : 'border-black/15 bg-[#FAFAFA] text-[#52525B] hover:border-black/30'
@@ -3177,7 +3176,7 @@ function refreshLandingScreenPreservingInputs() {
   form.querySelectorAll('[data-action="lp-select-delivery"]').forEach((btn) => {
     const deliv = btn.getAttribute('data-delivery');
     const active = store.lpDeliveryType === deliv;
-    btn.className = `p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
+    btn.className = `p-2.5 rounded-xl border text-xs font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
       active
         ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/35 text-[#18181B]'
         : 'border-black/15 bg-[#FAFAFA] text-[#52525B]'
@@ -3275,7 +3274,7 @@ function refreshCheckoutScreenPreservingInputs() {
   form.querySelectorAll('[data-action="checkout-select-delivery"]').forEach((btn) => {
     const deliv = btn.getAttribute('data-delivery');
     const active = details.deliveryType === deliv;
-    btn.className = `p-3 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${
+    btn.className = `p-3 rounded-xl border text-xs sm:text-sm font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
       active
         ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/40 text-[#18181B] shadow-2xs'
         : 'border-black/15 bg-[#FAFAFA] text-[#52525B] hover:border-black/30'
