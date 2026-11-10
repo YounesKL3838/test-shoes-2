@@ -448,7 +448,7 @@ function getStatusBadgeClass(rawStatus) {
 /**
  * قراءة وضغط ملف الصورة المرفوع من الهاتف أو الحاسوب
  */
-function readAndCompressImageFile(file, maxWidth = 850, quality = 0.82) {
+function readAndCompressImageFile(file, maxWidth = 760, quality = 0.78) {
   return new Promise((resolve, reject) => {
     if (!file || !file.type.startsWith('image/')) {
       reject(new Error('Invalid image'));
@@ -596,7 +596,7 @@ const DEFAULT_LANDING_PAGES = [
     originalPrice: 6990,
     discountPrice: 4490,
     imageUrl: IMAGES.talons,
-    gallery: [IMAGES.talons, IMAGES.hero, IMAGES.sandales],
+    gallery: [IMAGES.talons],
     description:
       'حذاء الكعب الوردي الأنيق المصنوع من الجلد المرن المريح للقدم طوال اليوم.',
     offerEnabled: true,
@@ -613,7 +613,7 @@ const DEFAULT_LANDING_PAGES = [
     originalPrice: 5400,
     discountPrice: 3790,
     imageUrl: IMAGES.sneakers,
-    gallery: [IMAGES.sneakers, IMAGES.ballerines],
+    gallery: [IMAGES.sneakers],
     description:
       'نعل خفيف مضاد للانزلاق وتصميم عصري ناعم يناسب الجامعة والعمل والنزهات اليومية.',
     offerEnabled: true,
@@ -894,7 +894,7 @@ export const adminState = {
   },
 
   draftLandingMainImage: IMAGES.talons,
-  draftLandingGallery: [IMAGES.talons, IMAGES.hero],
+  draftLandingGallery: [IMAGES.talons],
   draftCmsLogo: null,
   draftCmsHeroBg: null,
 
@@ -1062,8 +1062,18 @@ export const adminState = {
         existing.colors = colorsList;
         existing.sizes = sizesList;
         existing.image = invItem.image;
-        if (invItem.gallery && invItem.gallery.length > 0) {
+        const isDefaultMixedGallery =
+          /^ss-0[1-8]$/.test(String(invItem.id || '')) &&
+          Array.isArray(invItem.gallery) &&
+          invItem.gallery.length > 1 &&
+          invItem.gallery.every((u) => String(u || '').startsWith('./src/assets/images/'));
+        if (isDefaultMixedGallery) {
+          invItem.gallery = [invItem.image];
+          existing.gallery = [invItem.image];
+        } else if (invItem.gallery && invItem.gallery.length > 0) {
           existing.gallery = invItem.gallery;
+        } else {
+          existing.gallery = [invItem.image];
         }
       } else if (invItem.isVisible !== false) {
         PRODUCTS.unshift({

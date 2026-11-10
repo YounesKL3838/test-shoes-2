@@ -307,14 +307,10 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
   const wishlisted = store.isWishlisted(product.id);
   const t = getT();
   const prodName = store.lang === 'ar' ? product.name_ar || product.name : product.name_fr || product.name;
-  const rawGallery =
-    Array.isArray(product.gallery) && product.gallery.length > 0
-      ? product.gallery.filter(Boolean)
-      : [product.image];
-  const galleryImages =
-    rawGallery.length > 1
-      ? rawGallery
-      : Array.from(new Set([product.image, IMAGES.hero, IMAGES.sandales].filter(Boolean)));
+  const mainImage =
+    product.image ||
+    (Array.isArray(product.gallery) && product.gallery.find(Boolean)) ||
+    IMAGES.talons;
 
   return `
     <article
@@ -323,80 +319,19 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
     >
       <div
         class="ss-product-img-box cursor-pointer"
-        data-swipe-gallery="card"
-        data-active-index="0"
-        data-total-slides="${galleryImages.length}"
         data-action="open-pdp"
         data-id="${product.id}"
       >
-        <!-- شريط السحب الانسيابي بحجم انستغرام 4:5 -->
-        <div class="ss-insta-track">
-          ${galleryImages
-            .map(
-              (imgSrc, idx) => `
-            <div class="ss-insta-slide" data-slide-index="${idx}">
-              <img
-                src="${imgSrc}"
-                alt="${prodName} - ${idx + 1}"
-                referrerpolicy="no-referrer"
-                loading="lazy"
-                draggable="false"
-                onerror="this.style.display='none';"
-              />
-            </div>
-          `
-            )
-            .join('')}
-        </div>
-
-        <!-- عداد الصور بأسلوب انستغرام أعلى اليسار -->
-        ${
-          galleryImages.length > 1
-            ? `<span
-                data-gallery-counter
-                dir="ltr"
-                class="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 rounded-full bg-black/45 backdrop-blur-xs text-white text-[10px] font-bold tabular-nums pointer-events-none"
-              >
-                1/${galleryImages.length}
-              </span>`
-            : ''
-        }
-
-        <!-- أزرار التقليب السريع عند التمرير -->
-        ${
-          galleryImages.length > 1
-            ? `
-          <button
-            type="button"
-            data-action="gallery-step"
-            data-dir="-1"
-            class="
-              absolute left-1.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 sm:w-7 sm:h-7 rounded-full
-              bg-white/85 hover:bg-white text-[#18181B] shadow-xs
-              flex items-center justify-center opacity-80 sm:opacity-0 sm:group-hover:opacity-100
-              transition-opacity duration-200 text-xs font-bold
-            "
-            aria-label="Previous photo"
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            data-action="gallery-step"
-            data-dir="1"
-            class="
-              absolute right-1.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 sm:w-7 sm:h-7 rounded-full
-              bg-white/85 hover:bg-white text-[#18181B] shadow-xs
-              flex items-center justify-center opacity-80 sm:opacity-0 sm:group-hover:opacity-100
-              transition-opacity duration-200 text-xs font-bold
-            "
-            aria-label="Next photo"
-          >
-            ›
-          </button>
-        `
-            : ''
-        }
+        <img
+          src="${mainImage}"
+          alt="${prodName}"
+          referrerpolicy="no-referrer"
+          decoding="async"
+          fetchpriority="${staggerIndex < 4 ? 'high' : 'auto'}"
+          draggable="false"
+          class="ss-single-product-img"
+          onerror="this.style.display='none';"
+        />
 
         <!-- Bouton Cœur en haut à droite -->
         <button
@@ -430,34 +365,6 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
             ? `<span class="absolute bottom-2 start-2 sm:bottom-2.5 sm:start-2.5 z-10 px-2 py-0.5 rounded-full bg-[#DE1B61] text-white text-[10px] sm:text-[11px] font-bold tabular-nums shadow-xs pointer-events-none">
                 -${product.discountPercent}%
               </span>`
-            : ''
-        }
-
-        <!-- نقاط التمرير بأسلوب انستغرام أسفل الصورة -->
-        ${
-          galleryImages.length > 1
-            ? `<div
-                dir="ltr"
-                class="absolute bottom-2 sm:bottom-2.5 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-full bg-black/25 backdrop-blur-xs"
-              >
-                ${galleryImages
-                  .map(
-                    (_, idx) => `
-                  <button
-                    type="button"
-                    data-action="gallery-dot"
-                    data-index="${idx}"
-                    aria-label="Slide ${idx + 1}"
-                    class="transition-all duration-300 rounded-full ${
-                      idx === 0
-                        ? 'w-3.5 h-1.5 bg-[#DE1B61]'
-                        : 'w-1.5 h-1.5 bg-white/80 hover:bg-white'
-                    }"
-                  ></button>
-                `
-                  )
-                  .join('')}
-              </div>`
             : ''
         }
       </div>
@@ -1603,8 +1510,8 @@ function getActiveLandingItemConfig() {
     const product = store.getActiveProduct();
     const gallery =
       Array.isArray(product.gallery) && product.gallery.length > 0
-        ? product.gallery
-        : [product.image, IMAGES.hero, IMAGES.sandales];
+        ? product.gallery.filter(Boolean)
+        : [product.image].filter(Boolean);
     const prodName = isAr
       ? product.name_ar || product.name || product.name_fr
       : product.name_fr || product.name || product.name_ar;
@@ -1648,7 +1555,7 @@ function getActiveLandingItemConfig() {
       originalPrice: 6990,
       discountPrice: 4490,
       imageUrl: IMAGES.talons,
-      gallery: [IMAGES.talons, IMAGES.hero, IMAGES.sandales],
+      gallery: [IMAGES.talons],
       description:
         'حذاء الكعب الوردي الأنيق المصنوع من الجلد المرن المريح للقدم طوال اليوم.',
       offerEnabled: true,
@@ -1816,6 +1723,9 @@ function renderCleanLandingPageUI() {
                       src="${imgSrc}"
                       alt="${cfg.title} - ${idx + 1}"
                       referrerpolicy="no-referrer"
+                      decoding="async"
+                      fetchpriority="${idx === activeIdx ? 'high' : 'low'}"
+                      loading="${idx === activeIdx ? 'eager' : 'lazy'}"
                       draggable="false"
                       class="w-full h-full object-cover"
                     />
@@ -1832,7 +1742,7 @@ function renderCleanLandingPageUI() {
                   type="button"
                   data-action="gallery-step"
                   data-dir="-1"
-                  class="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#18181B] shadow-xs flex items-center justify-center text-base font-bold cursor-pointer"
+                  class="hidden md:flex absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#18181B] shadow-xs items-center justify-center text-base font-bold cursor-pointer"
                   aria-label="Previous photo"
                 >
                   ‹
@@ -1841,22 +1751,21 @@ function renderCleanLandingPageUI() {
                   type="button"
                   data-action="gallery-step"
                   data-dir="1"
-                  class="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#18181B] shadow-xs flex items-center justify-center text-base font-bold cursor-pointer"
+                  class="hidden md:flex absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#18181B] shadow-xs items-center justify-center text-base font-bold cursor-pointer"
                   aria-label="Next photo"
                 >
                   ›
                 </button>
+                <span
+                  data-gallery-counter
+                  dir="ltr"
+                  class="absolute bottom-2.5 end-2.5 z-10 px-2.5 py-0.5 rounded-full bg-black/45 backdrop-blur-xs text-white text-[11px] font-semibold tabular-nums pointer-events-none"
+                >
+                  ${activeIdx + 1}/${gallery.length}
+                </span>
               `
                   : ''
               }
-
-              <span
-                data-gallery-counter
-                dir="ltr"
-                class="absolute bottom-2.5 end-2.5 z-10 px-2.5 py-0.5 rounded-full bg-black/45 backdrop-blur-xs text-white text-[11px] font-semibold tabular-nums pointer-events-none"
-              >
-                ${activeIdx + 1}/${gallery.length}
-              </span>
             </div>
 
             ${
