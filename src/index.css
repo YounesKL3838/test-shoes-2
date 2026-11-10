@@ -27,6 +27,11 @@ html {
   color: var(--text-dark);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  width: 100%;
+  max-width: 100%;
+  touch-action: pan-y;
+  overscroll-behavior-y: auto;
 }
 
 /* RTL Arabic typography overrides */
@@ -50,7 +55,12 @@ body {
   color: var(--text-dark);
   min-height: 100vh;
   padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
-  overflow-x: hidden;
+  overflow-x: clip;
+  width: 100%;
+  max-width: 100%;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto;
 }
 
 @media (min-width: 1024px) {
@@ -236,7 +246,23 @@ body {
   background-color: #FFFFFF;
   min-height: 100vh;
   box-shadow: 0 12px 48px rgba(222, 27, 97, 0.08);
-  overflow-x: hidden;
+  overflow-x: clip;
+  width: 100%;
+  max-width: 100%;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Global touch-safe image settings to prevent mobile Safari/Chrome image-drag freeze */
+img {
+  max-width: 100%;
+  height: auto;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
 }
 
 @media (min-width: 1024px) {

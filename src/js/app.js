@@ -4236,7 +4236,7 @@ function setupEvents() {
     if (!(targetEl instanceof Element)) return;
     if (
       targetEl.closest(
-        'button[data-action="toggle-wishlist"], button[data-action="gallery-step"], button[data-action="gallery-dot"], button[data-action="go-back"], button[data-action="share-product"]'
+        'button, a, input, select, textarea, label, [data-action="toggle-wishlist"], [data-action="gallery-step"], [data-action="gallery-dot"], [data-action="go-back"], [data-action="share-product"]'
       )
     ) {
       return;
@@ -4267,14 +4267,27 @@ function setupEvents() {
     swipeState.deltaX = clientX - swipeState.startX;
     swipeState.deltaY = clientY - swipeState.startY;
 
+    const absX = Math.abs(swipeState.deltaX);
+    const absY = Math.abs(swipeState.deltaY);
+
     if (swipeState.isHorizontal === null) {
-      if (Math.abs(swipeState.deltaX) > 6 || Math.abs(swipeState.deltaY) > 6) {
-        swipeState.isHorizontal =
-          Math.abs(swipeState.deltaX) > Math.abs(swipeState.deltaY);
+      // تحديد النية: إذا تحرك الإصبع بمقدار 8 بكسل على الأقل
+      if (absX >= 8 || absY >= 8) {
+        if (absX > absY * 1.35) {
+          // حركة أفقية واضحة لسحب الصور
+          swipeState.isHorizontal = true;
+        } else {
+          // حركة رأسية لتمرير الصفحة — نلغي السحب فوراً لمنح المتصفح تحكماً كاملاً بالتمرير بسلاسة
+          swipeState = null;
+          return;
+        }
+      } else {
+        // حركة طفيفة جداً، لا نتدخل
+        return;
       }
     }
 
-    if (!swipeState.isHorizontal) return;
+    if (!swipeState || !swipeState.isHorizontal) return;
 
     swipeState.track.classList.add('is-dragging');
     const isEdge =
@@ -4310,7 +4323,10 @@ function setupEvents() {
   document.addEventListener(
     'touchstart',
     (e) => {
-      if (e.touches.length !== 1) return;
+      if (e.touches.length !== 1) {
+        swipeState = null;
+        return;
+      }
       beginSwipe(e.target, e.touches[0].clientX, e.touches[0].clientY);
     },
     { passive: true }
