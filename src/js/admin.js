@@ -591,27 +591,35 @@ function ensureAll69Wilayas(savedRates) {
 const DEFAULT_LANDING_PAGES = [
   {
     id: 'lp-101',
-    title: 'عرض خاص: حذاء كعب عالي كلاسيك روز · Offre VIP Escarpins Rose',
+    title: 'حذاء كعب عالي كلاسيك روز · Escarpins Classiques Rose',
     slug: '/offer/pink-heels-vip',
     originalPrice: 6990,
     discountPrice: 4490,
     imageUrl: IMAGES.talons,
     gallery: [IMAGES.talons, IMAGES.hero, IMAGES.sandales],
     description:
-      'تألقي بإطلالة أنثوية ساحرة مع حذاء الكعب الوردي اللامع المصنوع من الجلد المرن المريح للقدم طوال السهرة. Un style raffiné et confortable avec livraison rapide.',
+      'حذاء الكعب الوردي الأنيق المصنوع من الجلد المرن المريح للقدم طوال اليوم.',
+    offerEnabled: true,
+    offerMinQty: 2,
+    offerFreeShipping: true,
+    offerText: 'اشترِ 2 واحصل على شحن مجاني',
     quickFormEnabled: true,
     createdAt: '2026-11-08',
   },
   {
     id: 'lp-102',
-    title: 'تخفيض نهاية الأسبوع: سنيكرز أبيض ووردي · Promo Sneakers Mode',
+    title: 'سنيكرز أبيض ووردي مريح · Sneakers Mode Blush',
     slug: '/offer/urban-sneakers-pack',
     originalPrice: 5400,
     discountPrice: 3790,
     imageUrl: IMAGES.sneakers,
     gallery: [IMAGES.sneakers, IMAGES.ballerines],
     description:
-      'الحذاء اليومي الأكثر مبيعاً! نعل خفيف مضاد للانزلاق وتصميم عصري ناعم يناسب الجامعة والعمل والنزهات اليومية.',
+      'نعل خفيف مضاد للانزلاق وتصميم عصري ناعم يناسب الجامعة والعمل والنزهات اليومية.',
+    offerEnabled: true,
+    offerMinQty: 2,
+    offerFreeShipping: true,
+    offerText: 'اشترِ 2 واحصل على شحن مجاني',
     quickFormEnabled: true,
     createdAt: '2026-11-09',
   },
@@ -872,6 +880,10 @@ export const adminState = {
     isNew: false,
     isBestSeller: false,
     isSpecialOffer: false,
+    offerEnabled: true,
+    offerMinQty: 2,
+    offerFreeShipping: true,
+    offerText: 'اشترِ 2 واحصل على شحن مجاني',
     colorName: 'Beige',
     colorHex: '#D2B48C',
     sizeFrom: 36,
@@ -1043,6 +1055,10 @@ export const adminState = {
         existing.isNew = Boolean(invItem.isNew);
         existing.isBestSeller = Boolean(invItem.isBestSeller);
         existing.isSpecialOffer = Boolean(invItem.isSpecialOffer);
+        existing.offerEnabled = invItem.offerEnabled !== false;
+        existing.offerMinQty = Math.max(2, Number(invItem.offerMinQty || 2));
+        existing.offerFreeShipping = invItem.offerFreeShipping !== false;
+        existing.offerText = invItem.offerText || '';
         existing.colors = colorsList;
         existing.sizes = sizesList;
         existing.image = invItem.image;
@@ -1065,6 +1081,10 @@ export const adminState = {
           isNew: Boolean(invItem.isNew ?? true),
           isBestSeller: Boolean(invItem.isBestSeller ?? false),
           isSpecialOffer: Boolean(invItem.isSpecialOffer ?? false),
+          offerEnabled: invItem.offerEnabled !== false,
+          offerMinQty: Math.max(2, Number(invItem.offerMinQty || 2)),
+          offerFreeShipping: invItem.offerFreeShipping !== false,
+          offerText: invItem.offerText || '',
           colors: colorsList,
           sizes: sizesList,
           image: invItem.image,
@@ -1610,6 +1630,64 @@ function renderInventorySection() {
                 />
                 <span>${isFr ? 'En vedette' : 'مميز'}</span>
               </label>
+            </div>
+
+            <!-- عرض اختياري على الكمية (مثال: تاخذ 2 شحن مجاني) -->
+            <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid #ece7ea;">
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+                <label style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.86rem; font-weight:800; color:#18181b; cursor:pointer;">
+                  <input
+                    type="checkbox"
+                    name="offerEnabled"
+                    style="width:17px; height:17px; accent-color:var(--adm-pink); cursor:pointer;"
+                    ${df.offerEnabled !== false ? 'checked' : ''}
+                  />
+                  <span>${isFr ? 'Activer une offre optionnelle sur la quantité (ex: 2 = Livraison Gratuite)' : 'تفعيل عرض اختياري على الكمية (مثال: تاخذ 2 شحن مجاني)'}</span>
+                </label>
+              </div>
+
+              <div class="adm-form-grid" style="background:#faf8f9; border:1px solid #ece7ea; border-radius:10px; padding:0.85rem;">
+                <div class="adm-field">
+                  <label class="adm-label" style="font-weight:600; color:#52525b;">
+                    ${isFr ? 'Quantité pour activer l’offre (ex: 2)' : 'الكمية المطلوبة للعرض (مثلاً: 2)'}
+                  </label>
+                  <input
+                    name="offerMinQty"
+                    type="number"
+                    min="2"
+                    max="20"
+                    class="adm-input"
+                    style="background:#fff;"
+                    value="${df.offerMinQty ?? 2}"
+                  />
+                </div>
+
+                <div class="adm-field">
+                  <label class="adm-label" style="font-weight:600; color:#52525b;">
+                    ${isFr ? 'Texte de l’offre affiché au client' : 'عنوان العرض الاختياري للزبون'}
+                  </label>
+                  <input
+                    name="offerText"
+                    type="text"
+                    class="adm-input"
+                    style="background:#fff;"
+                    placeholder="${isFr ? 'Ex: Prenez 2 = Livraison Gratuite' : 'مثال: اشترِ 2 واحصل على شحن مجاني'}"
+                    value="${df.offerText ?? 'اشترِ 2 واحصل على شحن مجاني'}"
+                  />
+                </div>
+
+                <div class="adm-field full">
+                  <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.82rem; font-weight:700; color:#15803d; cursor:pointer;">
+                    <input
+                      type="checkbox"
+                      name="offerFreeShipping"
+                      style="width:16px; height:16px; accent-color:#15803d; cursor:pointer;"
+                      ${df.offerFreeShipping !== false ? 'checked' : ''}
+                    />
+                    <span>${isFr ? 'Livraison gratuite automatique dès cette quantité' : 'منح شحن مجاني تلقائياً عند اختيار هذا العرض'}</span>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2754,6 +2832,60 @@ function renderLandingBuilderSection() {
             >${editingPage ? editingPage.description : ''}</textarea>
           </div>
 
+          <!-- العرض الاختياري في صفحة الهبوط (مثال: تاخذ 2 شحن مجاني) -->
+          <div class="adm-field full" style="background:#faf8f9; border:1px solid #ece7ea; border-radius:12px; padding:0.9rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+              <label style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.86rem; font-weight:800; color:#18181b; cursor:pointer;">
+                <input
+                  type="checkbox"
+                  name="offerEnabled"
+                  style="width:17px; height:17px; accent-color:var(--adm-pink); cursor:pointer;"
+                  ${!editingPage || editingPage.offerEnabled !== false ? 'checked' : ''}
+                />
+                <span>${isFr ? 'Activer une offre optionnelle (ex: Prenez 2 = Livraison Gratuite)' : 'تفعيل عرض اختياري في صفحة الهبوط (مثال: تاخذ 2 شحن مجاني)'}</span>
+              </label>
+            </div>
+
+            <div class="adm-form-grid">
+              <div class="adm-field">
+                <label class="adm-label">${isFr ? 'Quantité pour l’offre (ex: 2)' : 'الكمية المطلوبة للعرض (مثلاً: 2)'}</label>
+                <input
+                  name="offerMinQty"
+                  type="number"
+                  min="2"
+                  max="20"
+                  class="adm-input"
+                  style="background:#fff;"
+                  value="${editingPage && editingPage.offerMinQty ? editingPage.offerMinQty : 2}"
+                />
+              </div>
+
+              <div class="adm-field">
+                <label class="adm-label">${isFr ? 'Texte de l’offre affiché au client' : 'نص العرض الاختياري للزبون'}</label>
+                <input
+                  name="offerText"
+                  type="text"
+                  class="adm-input"
+                  style="background:#fff;"
+                  placeholder="${isFr ? 'Ex: Prenez 2 = Livraison Gratuite' : 'مثال: اشترِ 2 واحصل على شحن مجاني'}"
+                  value="${editingPage && editingPage.offerText !== undefined ? editingPage.offerText : 'اشترِ 2 واحصل على شحن مجاني'}"
+                />
+              </div>
+
+              <div class="adm-field full">
+                <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.82rem; font-weight:700; color:#15803d; cursor:pointer;">
+                  <input
+                    type="checkbox"
+                    name="offerFreeShipping"
+                    style="width:16px; height:16px; accent-color:#15803d; cursor:pointer;"
+                    ${!editingPage || editingPage.offerFreeShipping !== false ? 'checked' : ''}
+                  />
+                  <span>${isFr ? 'Livraison gratuite automatique avec cette offre' : 'منح شحن مجاني تلقائياً عند اختيار هذا العرض'}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
           <div class="adm-field full">
             <button type="submit" class="adm-btn adm-btn-pink" style="width:100%; padding:0.85rem;">
               ${editingPage ? tr.lp.updateBtn : tr.lp.createBtn}
@@ -2910,148 +3042,111 @@ function renderLandingPreviewModal() {
 
   const orig = Number(lp.originalPrice || 0);
   const disc = Number(lp.discountPrice || 0);
-  const saved = Math.max(0, orig - disc);
-  const pct = orig > disc && orig > 0 ? Math.round(((orig - disc) / orig) * 100) : 28;
-  const pack2Price = Math.max(0, disc * 2 - 500);
+  const offerEnabled = lp.offerEnabled !== false;
+  const offerMinQty = Math.max(2, Number(lp.offerMinQty || 2));
+  const offerLabel =
+    lp.offerText ||
+    (isFr
+      ? `Prenez ${offerMinQty} = Livraison Gratuite`
+      : `اشترِ ${offerMinQty} واحصل على شحن مجاني`);
   const liveUrl = `./index.html?lp=${encodeURIComponent(lp.id)}`;
 
   return `
-    <div class="adm-modal-card" dir="${dir}" style="max-width:920px;">
-      <!-- شريط عنوان نافذة المعاينة مع أزرار النسخ والفتح المباشر -->
-      <div style="background:#18181b; color:#fff; padding:0.75rem 1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
-        <div style="display:flex; align-items:center; gap:0.6rem;">
-          <span style="background:var(--adm-pink); color:#fff; font-size:0.72rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">
-            ${isFr ? 'OFFRE FLASH COD' : 'صفحة هبوط عالية التحويل'}
-          </span>
-          <strong style="font-size:0.84rem; color:#fbcfe8;">${tr.lp.modalHeader(lp.slug)}</strong>
-        </div>
+    <div class="adm-modal-card" dir="${dir}" style="max-width:860px; background:#faf8f9;">
+      <!-- شريط علوي هادئ ومريح للعين -->
+      <div style="background:#ffffff; border-bottom:1px solid #ece7ea; padding:0.75rem 1.15rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+        <strong style="font-size:0.88rem; color:#18181b;">${tr.lp.modalHeader(lp.slug)}</strong>
 
         <div style="display:flex; align-items:center; gap:0.4rem;">
           <button
             type="button"
             data-adm-action="copy-landing-link"
             data-id="${lp.id}"
-            class="adm-btn adm-btn-soft adm-btn-sm"
-            style="padding:0.3rem 0.65rem; font-size:0.74rem;"
+            class="adm-btn adm-btn-outline adm-btn-sm"
+            style="padding:0.35rem 0.7rem; font-size:0.75rem;"
           >
-            ${isFr ? 'Copier le lien pub' : 'نسخ رابط الإعلان'}
+            ${isFr ? 'Copier le lien' : 'نسخ الرابط'}
           </button>
           <a
             href="${liveUrl}"
             target="_blank"
             rel="noopener"
             class="adm-btn adm-btn-pink adm-btn-sm"
-            style="padding:0.3rem 0.65rem; font-size:0.74rem; text-decoration:none;"
+            style="padding:0.35rem 0.7rem; font-size:0.75rem; text-decoration:none;"
           >
-            ${isFr ? 'Voir sur la boutique' : 'فتح في المتجر'}
+            ${isFr ? 'Ouvrir la page' : 'فتح الصفحة'}
           </a>
           <button
             type="button"
             data-adm-action="close-landing-modal"
-            class="adm-btn adm-btn-danger adm-btn-sm"
-            style="padding:0.3rem 0.65rem; font-size:0.74rem;"
+            class="adm-btn adm-btn-soft adm-btn-sm"
+            style="padding:0.35rem 0.7rem; font-size:0.75rem;"
           >
             ${tr.lp.closeModal}
           </button>
         </div>
       </div>
 
-      <!-- شريط العد التنازلي الترويجي -->
-      <div style="background:#fdf2f6; border-bottom:1px solid #f5d0de; padding:0.5rem 1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; font-size:0.76rem;">
-        <span style="font-weight:700; color:#be123c;">
-          ${isFr ? 'Offre limitée — Plus que 5 pièces disponibles à ce prix !' : 'عرض محدود جداً — بقي 5 قطع فقط في المخزون بهذا السعر!'}
-        </span>
-        <span style="font-weight:800; color:#15803d;">
-          ${isFr ? 'Paiement à la livraison · Livraison 69 Wilayas' : 'الدفع عند الاستلام · توصيل سريع 69 ولاية'}
-        </span>
-      </div>
-
       <div class="adm-lp-modal-grid">
-        <!-- العمود الأول: معرض الصور + المميزات -->
-        <div>
-          <div style="position:relative; border-radius:14px; overflow:hidden; aspect-ratio:4/3; margin-bottom:0.65rem; background:#fdf2f6; border:1px solid #ece7ea;">
+        <!-- العمود الأول: المنتج مع صوره فقط -->
+        <div style="background:#fff; border:1px solid #ece7ea; border-radius:14px; padding:0.9rem;">
+          <div style="position:relative; border-radius:12px; overflow:hidden; aspect-ratio:4/5; margin-bottom:0.65rem; background:#f7f4f5;">
             <img id="lp-modal-main-img" src="${lp.imageUrl}" alt="${lp.title}" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" />
-            <span style="position:absolute; top:10px; right:10px; background:var(--adm-pink); color:#fff; font-size:0.78rem; font-weight:800; padding:0.25rem 0.7rem; border-radius:99px;">
-              -${pct}%
-            </span>
           </div>
 
-          <div style="display:flex; gap:0.45rem; overflow-x:auto; padding-bottom:0.25rem;">
-            ${gallery
-              .map(
-                (imgUrl) => `
-                <img
-                  src="${imgUrl}"
-                  alt="Thumb"
-                  data-adm-action="swap-lp-img"
-                  data-src="${imgUrl}"
-                  style="width:56px; height:56px; border-radius:10px; object-fit:cover; cursor:pointer; border:2px solid var(--adm-pink);"
-                />
-              `
-              )
-              .join('')}
-          </div>
+          ${
+            gallery.length > 1
+              ? `<div style="display:flex; gap:0.45rem; overflow-x:auto; padding-bottom:0.25rem; margin-bottom:0.5rem;">
+                  ${gallery
+                    .map(
+                      (imgUrl) => `
+                      <img
+                        src="${imgUrl}"
+                        alt="Thumb"
+                        data-adm-action="swap-lp-img"
+                        data-src="${imgUrl}"
+                        style="width:54px; height:54px; border-radius:10px; object-fit:cover; cursor:pointer; border:1.5px solid #e4e4e7;"
+                      />
+                    `
+                    )
+                    .join('')}
+                </div>`
+              : ''
+          }
 
-          <h3 style="font-size:1.15rem; font-weight:800; margin:0.65rem 0 0.35rem; color:var(--adm-text-dark);">${lp.title}</h3>
+          <h3 style="font-size:1.05rem; font-weight:800; margin:0.4rem 0 0.25rem; color:#18181b;">${lp.title}</h3>
 
-          <div style="display:flex; align-items:baseline; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.6rem;">
-            <strong style="font-size:1.4rem; color:var(--adm-pink);">${formatDA(disc, lang)}</strong>
+          <div style="display:flex; align-items:baseline; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.45rem;">
+            <strong style="font-size:1.3rem; color:var(--adm-pink);">${formatDA(disc, lang)}</strong>
             ${
               orig > disc
-                ? `<span style="text-decoration:line-through; color:var(--adm-text-muted); font-size:0.9rem;">${formatDA(orig, lang)}</span>`
-                : ''
-            }
-            ${
-              saved > 0
-                ? `<span style="background:#ecfdf5; color:#15803d; font-size:0.74rem; font-weight:800; padding:2px 8px; border-radius:6px;">
-                    ${isFr ? `Économisez ${formatDA(saved, 'fr')}` : `وفر ${formatDA(saved, 'ar')}`}
-                  </span>`
+                ? `<span style="text-decoration:line-through; color:#71717a; font-size:0.85rem;">${formatDA(orig, lang)}</span>`
                 : ''
             }
           </div>
 
-          <p style="font-size:0.83rem; color:var(--adm-text-body); line-height:1.6; margin-bottom:0.85rem;">${lp.description}</p>
-
-          <!-- بطاقات الثقة الـ 4 -->
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; font-size:0.74rem;">
-            <div style="background:#fafafa; border:1px solid #ece7ea; border-radius:10px; padding:0.55rem 0.7rem;">
-              <strong>${isFr ? 'Qualité supérieure' : 'خامة مريحة وفاخرة'}</strong>
-            </div>
-            <div style="background:#fafafa; border:1px solid #ece7ea; border-radius:10px; padding:0.55rem 0.7rem;">
-              <strong>${isFr ? 'Vérification avant paiement' : 'معاينة الطرد قبل الدفع'}</strong>
-            </div>
-            <div style="background:#fafafa; border:1px solid #ece7ea; border-radius:10px; padding:0.55rem 0.7rem;">
-              <strong>${isFr ? 'Livraison 69 Wilayas' : 'توصيل سريع 69 ولاية'}</strong>
-            </div>
-            <div style="background:#fafafa; border:1px solid #ece7ea; border-radius:10px; padding:0.55rem 0.7rem;">
-              <strong>${isFr ? 'Échange garanti 7j' : 'ضمان استبدال المقاس'}</strong>
-            </div>
-          </div>
+          <p style="font-size:0.8rem; color:#52525b; line-height:1.55; margin:0;">${lp.description || ''}</p>
         </div>
 
-        <!-- العمود الثاني: استمارة الشراء السريع المدمجة المناسبة للهاتف -->
-        <div style="background:#fff; border:2px solid rgba(216, 27, 96, 0.25); border-radius:16px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,0.05);">
-          <div style="background:linear-gradient(135deg, #d81b60, #ad1457); color:#fff; padding:0.85rem 1.15rem;">
-            <h4 style="margin:0; font-size:0.98rem; font-weight:800;">${tr.lp.quickOrderTitle}</h4>
-            <p style="margin:0.2rem 0 0; font-size:0.74rem; opacity:0.9;">${tr.lp.quickOrderSub}</p>
-          </div>
+        <!-- العمود الثاني: الكمية + العرض الاختياري + معلومات الزبون فقط -->
+        <div style="background:#fff; border:1px solid #ece7ea; border-radius:14px; padding:1rem;">
+          <h4 style="margin:0 0 0.85rem; font-size:0.95rem; font-weight:800; color:#18181b;">
+            ${isFr ? 'Quantité & Informations client' : 'الكمية ومعلومات الزبون'}
+          </h4>
 
-          <form id="adm-lp-quick-order-form" data-lp-id="${lp.id}" style="padding:1.1rem; display:flex; flex-direction:column; gap:0.75rem;">
-            <div>
-              <label class="adm-label" style="margin-bottom:0.35rem;">
-                ${isFr ? '1. Choisissez votre offre :' : '1. اختاري العرض المناسب:'}
-              </label>
-              <select name="bundleQty" id="adm-lp-modal-bundle" data-unit-price="${disc}" class="adm-select" style="font-weight:700; border-color:var(--adm-pink);">
-                <option value="1">
-                  ${isFr ? `1 Paire — ${formatDA(disc, 'fr')}` : `زوج واحد (حذاء واحد) — ${formatDA(disc, 'ar')}`}
-                </option>
-                <option value="2">
-                  ${isFr ? `Pack 2 Paires (-500 DA + Livraison Gratuite) — ${formatDA(pack2Price, 'fr')}` : `عرض زوجين (خصم 500 د.ج + توصيل مجاني) — ${formatDA(pack2Price, 'ar')}`}
-                </option>
-              </select>
-            </div>
-
+          <form id="adm-lp-quick-order-form" data-lp-id="${lp.id}" style="display:flex; flex-direction:column; gap:0.75rem;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+              <div>
+                <label class="adm-label" style="margin-bottom:0.25rem;">${isFr ? 'Pointure' : 'المقاس'}</label>
+                <select name="size" class="adm-select">
+                  <option value="36">36</option>
+                  <option value="37" selected>37</option>
+                  <option value="38">38</option>
+                  <option value="39">39</option>
+                  <option value="40">40</option>
+                  <option value="41">41</option>
+                </select>
+              </div>
               <div>
                 <label class="adm-label" style="margin-bottom:0.25rem;">${isFr ? 'Couleur' : 'اللون'}</label>
                 <select name="color" class="adm-select">
@@ -3061,17 +3156,24 @@ function renderLandingPreviewModal() {
                   <option value="Blanc">Blanc / أبيض</option>
                 </select>
               </div>
-              <div>
-                <label class="adm-label" style="margin-bottom:0.25rem;">${isFr ? 'Pointure' : 'المقاس'}</label>
-                <select name="size" class="adm-select">
-                  <option value="36">${tr.orders.sizeWord} 36</option>
-                  <option value="37" selected>${tr.orders.sizeWord} 37</option>
-                  <option value="38">${tr.orders.sizeWord} 38</option>
-                  <option value="39">${tr.orders.sizeWord} 39</option>
-                  <option value="40">${tr.orders.sizeWord} 40</option>
-                  <option value="41">${tr.orders.sizeWord} 41</option>
-                </select>
-              </div>
+            </div>
+
+            <div>
+              <label class="adm-label" style="margin-bottom:0.3rem;">
+                ${isFr ? 'Quantité & Offre :' : 'الكمية والعرض الاختياري:'}
+              </label>
+              <select name="bundleQty" id="adm-lp-modal-bundle" data-unit-price="${disc}" class="adm-select" style="font-weight:700;">
+                <option value="1">
+                  ${isFr ? `1 Pièce — ${formatDA(disc, 'fr')}` : `قطعة واحدة (1) — ${formatDA(disc, 'ar')}`}
+                </option>
+                ${
+                  offerEnabled
+                    ? `<option value="${offerMinQty}">
+                        ${offerLabel} (${offerMinQty}) — ${formatDA(disc * offerMinQty, lang)}
+                      </option>`
+                    : `<option value="2">2 — ${formatDA(disc * 2, lang)}</option>`
+                }
+              </select>
             </div>
 
             <input name="fullName" type="text" required class="adm-input" placeholder="${tr.lp.fullNamePlaceholder}" />
@@ -3094,7 +3196,7 @@ function renderLandingPreviewModal() {
 
             <input name="address" type="text" required class="adm-input" placeholder="${tr.lp.addressPlaceholder}" />
 
-            <button type="submit" class="adm-btn adm-btn-pink" style="width:100%; padding:0.85rem; font-size:0.92rem;">
+            <button type="submit" class="adm-btn adm-btn-pink" style="width:100%; padding:0.85rem; font-size:0.9rem;">
               ${tr.lp.confirmQuickOrder(formatDA(disc, lang))}
             </button>
           </form>
@@ -3754,6 +3856,10 @@ export function setupAdminEvents() {
             isNew: Boolean(prod.isNew ?? false),
             isBestSeller: Boolean(prod.isBestSeller ?? false),
             isSpecialOffer: Boolean(prod.isSpecialOffer ?? false),
+            offerEnabled: prod.offerEnabled !== false,
+            offerMinQty: Math.max(2, Number(prod.offerMinQty || 2)),
+            offerFreeShipping: prod.offerFreeShipping !== false,
+            offerText: prod.offerText ?? 'اشترِ 2 واحصل على شحن مجاني',
             colorName: primaryColor,
             colorHex: primaryHex,
             sizeFrom: szFrom,
@@ -3791,6 +3897,10 @@ export function setupAdminEvents() {
           isNew: false,
           isBestSeller: false,
           isSpecialOffer: false,
+          offerEnabled: true,
+          offerMinQty: 2,
+          offerFreeShipping: true,
+          offerText: 'اشترِ 2 واحصل على شحن مجاني',
           colorName: 'Beige',
           colorHex: '#D2B48C',
           sizeFrom: 36,
@@ -4296,6 +4406,10 @@ export function setupAdminEvents() {
         imageUrl: mainImg,
         gallery,
         description: String(fd.get('description') || '').trim(),
+        offerEnabled: fd.has('offerEnabled'),
+        offerMinQty: Math.max(2, Number(fd.get('offerMinQty') || 2)),
+        offerFreeShipping: fd.has('offerFreeShipping'),
+        offerText: String(fd.get('offerText') || 'اشترِ 2 واحصل على شحن مجاني').trim(),
         quickFormEnabled: true,
         createdAt: new Date().toISOString().slice(0, 10),
       };
@@ -4353,6 +4467,12 @@ export function setupAdminEvents() {
       const isNew = fd.has('isNew');
       const isBestSeller = fd.has('isBestSeller');
       const isSpecialOffer = fd.has('isSpecialOffer');
+      const offerEnabled = fd.has('offerEnabled');
+      const offerMinQty = Math.max(2, Number(fd.get('offerMinQty') || df.offerMinQty || 2));
+      const offerFreeShipping = fd.has('offerFreeShipping');
+      const offerText = String(
+        fd.get('offerText') ?? df.offerText ?? 'اشترِ 2 واحصل على شحن مجاني'
+      ).trim();
 
       const colorName = String(fd.get('colorName') || df.colorName || 'Beige').trim() || 'Beige';
       const colorHex = String(fd.get('colorHex') || df.colorHex || '#D2B48C').trim() || '#D2B48C';
@@ -4455,6 +4575,10 @@ export function setupAdminEvents() {
         isNew,
         isBestSeller,
         isSpecialOffer,
+        offerEnabled,
+        offerMinQty,
+        offerFreeShipping,
+        offerText,
         colorName: colors[0] || colorName,
         colorHex,
         colors: colors.length > 0 ? colors : [colorName],

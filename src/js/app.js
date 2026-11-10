@@ -1597,294 +1597,107 @@ function renderCategoryScreen() {
 /**
  * ÉCRAN 3 : FICHE PRODUIT DÉTAILLÉE
  */
-function renderPDPScreen() {
-  const t = getT();
-  const product = store.getActiveProduct();
-  const wishlisted = store.isWishlisted(product.id);
-  const galleryImages =
-    product.gallery && product.gallery.length > 0
-      ? product.gallery
-      : [product.image, IMAGES.hero, IMAGES.sandales, IMAGES.sneakers];
-  const activeIdx = store.pdpGalleryIndex % galleryImages.length;
+function getActiveLandingItemConfig() {
+  const isAr = store.lang === 'ar';
+  if (store.currentScreen === 'pdp') {
+    const product = store.getActiveProduct();
+    const gallery =
+      Array.isArray(product.gallery) && product.gallery.length > 0
+        ? product.gallery
+        : [product.image, IMAGES.hero, IMAGES.sandales];
+    const prodName = isAr
+      ? product.name_ar || product.name || product.name_fr
+      : product.name_fr || product.name || product.name_ar;
+    const prodDesc = isAr
+      ? product.description_ar || ''
+      : product.description_fr || '';
 
-  const prodName = store.lang === 'ar' ? product.name_ar || product.name : product.name_fr || product.name;
-  const prodDesc = store.lang === 'ar' ? product.description_ar : product.description_fr;
-  const selectedColorLabel =
-    COLOR_SWATCHES[store.pdpSelectedColor]
-      ? store.lang === 'ar'
-        ? COLOR_SWATCHES[store.pdpSelectedColor].label_ar
-        : COLOR_SWATCHES[store.pdpSelectedColor].label_fr
-      : store.pdpSelectedColor;
+    return {
+      id: product.id,
+      title: prodName,
+      description: prodDesc,
+      unitPrice: Number(product.price || 4490),
+      origUnitPrice: Number(product.originalPrice || product.price || 4490),
+      imageUrl: gallery[0] || product.image,
+      gallery,
+      colors:
+        Array.isArray(product.colors) && product.colors.length > 0
+          ? product.colors
+          : ['Rose', 'Beige', 'Noir'],
+      sizes:
+        Array.isArray(product.sizes) && product.sizes.length > 0
+          ? product.sizes
+          : [36, 37, 38, 39, 40, 41],
+      offerEnabled: product.offerEnabled !== false,
+      offerMinQty: Math.max(2, Number(product.offerMinQty || 2)),
+      offerFreeShipping: product.offerFreeShipping !== false,
+      offerText: product.offerText || '',
+    };
+  }
 
-  return `
-    <div class="max-w-4xl mx-auto bg-white pb-8 animate-screen-enter">
-      <div class="grid grid-cols-1 md:grid-cols-2 md:gap-8 md:p-6">
-        <!-- معرض صور المنتج بمقاس انستغرام (4:5) مع خاصية السحب والأنيميشن -->
-        <div
-          id="pdp-gallery-swipe-box"
-          data-swipe-gallery="pdp"
-          data-active-index="${activeIdx}"
-          data-total-slides="${galleryImages.length}"
-          class="ss-insta-gallery-box md:rounded-2xl group"
-        >
-          <div
-            class="ss-insta-track"
-            style="transform: translate3d(-${activeIdx * 100}%, 0, 0);"
-          >
-            ${galleryImages
-              .map(
-                (imgSrc, idx) => `
-              <div class="ss-insta-slide" data-slide-index="${idx}">
-                <img
-                  src="${imgSrc}"
-                  alt="${prodName} - ${idx + 1}"
-                  referrerpolicy="no-referrer"
-                  draggable="false"
-                  class="w-full h-full object-cover"
-                />
-              </div>
-            `
-              )
-              .join('')}
-          </div>
+  const lpList =
+    Array.isArray(adminState?.landingPages) && adminState.landingPages.length > 0
+      ? adminState.landingPages
+      : [];
+  const lp =
+    lpList.find((item) => item.id === store.activeLandingId) ||
+    lpList[0] || {
+      id: 'lp-101',
+      title: 'حذاء كعب عالي كلاسيك روز · Escarpins Classiques Rose',
+      slug: '/offer/pink-heels-vip',
+      originalPrice: 6990,
+      discountPrice: 4490,
+      imageUrl: IMAGES.talons,
+      gallery: [IMAGES.talons, IMAGES.hero, IMAGES.sandales],
+      description:
+        'حذاء الكعب الوردي الأنيق المصنوع من الجلد المرن المريح للقدم طوال اليوم.',
+      offerEnabled: true,
+      offerMinQty: 2,
+      offerFreeShipping: true,
+      offerText: 'اشترِ 2 واحصل على شحن مجاني',
+    };
 
-          <!-- عداد الصور بأسلوب انستغرام -->
-          <span
-            data-gallery-counter
-            dir="ltr"
-            class="absolute bottom-3.5 end-4 z-10 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-xs text-white text-xs font-bold tabular-nums pointer-events-none"
-          >
-            ${activeIdx + 1}/${galleryImages.length}
-          </span>
+  const gallery =
+    Array.isArray(lp.gallery) && lp.gallery.length > 0 ? lp.gallery : [lp.imageUrl];
 
-          <!-- أزرار التقليب يميناً ويساراً -->
-          ${
-            galleryImages.length > 1
-              ? `
-            <button
-              type="button"
-              data-action="gallery-step"
-              data-dir="-1"
-              class="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/85 hover:bg-white text-[#18181B] shadow-sm flex items-center justify-center text-lg font-bold transition-transform hover:scale-105 active:scale-95"
-              aria-label="Previous image"
-            >
-              ‹
-            </button>
-            <button
-              type="button"
-              data-action="gallery-step"
-              data-dir="1"
-              class="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/85 hover:bg-white text-[#18181B] shadow-sm flex items-center justify-center text-lg font-bold transition-transform hover:scale-105 active:scale-95"
-              aria-label="Next image"
-            >
-              ›
-            </button>
-          `
-              : ''
-          }
-
-          <!-- Bouton Retour en haut -->
-          <button
-            type="button"
-            data-action="go-back"
-            class="absolute top-4 start-4 z-10 w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-sm flex items-center justify-center text-[#18181B] transition-transform hover:scale-105 active:scale-90"
-            aria-label="${t.pdp.back}"
-          >
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              ${getBackIconSvg()}
-            </svg>
-          </button>
-
-          <!-- Boutons Favoris (♡) & Partager (↑) -->
-          <div class="absolute top-4 end-4 z-10 flex items-center gap-2">
-            <button
-              type="button"
-              data-action="toggle-wishlist"
-              data-id="${product.id}"
-              class="w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-sm flex items-center justify-center text-[#18181B] transition-transform hover:scale-105 active:scale-90"
-              aria-label="${t.nav.wishlist}"
-            >
-              <svg
-                class="w-5 h-5 ${
-                  wishlisted
-                    ? 'fill-[#DE1B61] text-[#DE1B61] animate-pop-spring'
-                    : 'fill-none text-[#18181B]'
-                }"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                />
-              </svg>
-            </button>
-
-            <button
-              type="button"
-              data-action="share-product"
-              class="w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-sm flex items-center justify-center text-[#18181B] transition-transform hover:scale-105 active:scale-90"
-              aria-label="${t.pdp.share}"
-            >
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
-                <polyline points="16 6 12 2 8 6" />
-                <line x1="12" y1="2" x2="12" y2="15" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Points de pagination cliquables -->
-          <div
-            id="pdp-dots-container"
-            dir="ltr"
-            class="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-3 py-1 rounded-full bg-black/25 backdrop-blur-xs"
-          >
-            ${galleryImages
-              .map(
-                (_, idx) => `
-                <button
-                  type="button"
-                  data-action="gallery-dot"
-                  data-index="${idx}"
-                  aria-label="Vue ${idx + 1}"
-                  class="transition-all duration-300 rounded-full ${
-                    activeIdx === idx
-                      ? 'w-4 h-2 bg-[#DE1B61]'
-                      : 'w-2 h-2 bg-white/85 hover:bg-white'
-                  }"
-                ></button>
-              `
-              )
-              .join('')}
-          </div>
-        </div>
-
-        <!-- Détails du Produit (بدون تقييمات) -->
-        <div class="px-5 pt-5 flex flex-col justify-between">
-          <div>
-            <h1 class="text-xl sm:text-2xl font-extrabold text-[#18181B] animate-stagger-item" style="--i: 1;">
-              ${prodName}
-            </h1>
-
-            <!-- Prix & Réduction -->
-            <div class="mt-3 flex items-center justify-between gap-2 tabular-nums animate-stagger-item" style="--i: 2;">
-              <div class="flex items-baseline gap-2.5">
-                <span class="text-2xl sm:text-3xl font-extrabold text-[#DE1B61]">
-                  ${formatDA(product.price, store.lang)}
-                </span>
-                ${
-                  product.originalPrice
-                    ? `<span class="text-sm sm:text-base text-[#71717A] line-through">
-                        ${formatDA(product.originalPrice, store.lang)}
-                      </span>`
-                    : ''
-                }
-              </div>
-
-              ${
-                product.discountPercent > 0
-                  ? `<span class="px-3 py-1 rounded-full bg-[#DE1B61] text-white text-xs font-bold animate-pop-spring">
-                      -${product.discountPercent}%
-                    </span>`
-                  : ''
-              }
-            </div>
-
-            <p class="mt-3 text-xs sm:text-sm text-[#52525B] leading-relaxed animate-stagger-item" style="--i: 3;">
-              ${prodDesc}
-            </p>
-
-            <!-- Sélecteur de Couleur -->
-            <div class="mt-5 animate-stagger-item" style="--i: 5;">
-              <p class="text-xs sm:text-sm text-[#18181B]">
-                <span class="font-bold">${t.pdp.colorLabel}</span> <span id="pdp-selected-color-label">${selectedColorLabel}</span>
-              </p>
-              <div class="mt-2.5 flex items-center gap-3">
-                ${product.colors
-                  .map((colorName) => {
-                    const swatch = COLOR_SWATCHES[colorName];
-                    const hex = swatch ? swatch.hex : '#F38BA8';
-                    const isSelected = store.pdpSelectedColor === colorName;
-                    return `
-                      <button
-                        type="button"
-                        data-action="pdp-select-color"
-                        data-color="${colorName}"
-                        class="ss-color-swatch ${isSelected ? 'active' : 'border-black/15'}"
-                        aria-label="${colorName}"
-                      >
-                        <span
-                          class="block w-full h-full rounded-full border border-black/10"
-                          style="background-color: ${hex};"
-                        ></span>
-                      </button>
-                    `;
-                  })
-                  .join('')}
-              </div>
-            </div>
-
-            <!-- Sélecteur de Taille -->
-            <div class="mt-5 animate-stagger-item" style="--i: 6;">
-              <p class="text-xs sm:text-sm font-bold text-[#18181B]">${t.pdp.sizeLabel}</p>
-              <div class="mt-2.5 grid grid-cols-5 sm:grid-cols-6 gap-2 max-w-sm tabular-nums">
-                ${(Array.isArray(product.sizes) && product.sizes.length ? product.sizes : [36, 37, 38, 39, 40])
-                  .map((size) => {
-                    const isSelected = Number(store.pdpSelectedSize) === Number(size);
-                    return `
-                      <button
-                        type="button"
-                        data-action="pdp-select-size"
-                        data-size="${size}"
-                        class="py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all ${
-                          isSelected
-                            ? 'border-2 border-[#DE1B61] text-[#DE1B61] bg-[#FCE8EE]/35 animate-pop-spring'
-                            : 'border-black/12 text-[#18181B] bg-white hover:border-black/30'
-                        }"
-                      >
-                        ${size}
-                      </button>
-                    `;
-                  })
-                  .join('')}
-              </div>
-            </div>
-          </div>
-
-          <!-- Bouton Sticky Ajouter au panier -->
-          <div class="mt-6 pt-3 pb-2 sticky bottom-16 lg:bottom-0 bg-white/95 backdrop-blur-md z-20">
-            <button
-              type="button"
-              data-action="pdp-add-to-cart"
-              class="w-full py-3.5 px-6 ss-btn-pink text-sm sm:text-base flex items-center justify-center gap-2.5"
-            >
-              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="9" cy="21" r="1.5" />
-                <circle cx="19" cy="21" r="1.5" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 3h2.5l2.2 11.2a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 1.9-1.4L22 7H6" />
-              </svg>
-              <span>${t.pdp.addToCart}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+  return {
+    id: lp.id,
+    title: lp.title,
+    description: lp.description || '',
+    unitPrice: Number(lp.discountPrice || 4490),
+    origUnitPrice: Number(lp.originalPrice || lp.discountPrice || 4490),
+    imageUrl: gallery[0] || lp.imageUrl,
+    gallery,
+    colors:
+      Array.isArray(lp.colors) && lp.colors.length > 0
+        ? lp.colors
+        : ['Rose', 'Beige', 'Noir', 'Blanc'],
+    sizes:
+      Array.isArray(lp.sizes) && lp.sizes.length > 0
+        ? lp.sizes
+        : [36, 37, 38, 39, 40, 41],
+    offerEnabled: lp.offerEnabled !== false,
+    offerMinQty: Math.max(2, Number(lp.offerMinQty || 2)),
+    offerFreeShipping: lp.offerFreeShipping !== false,
+    offerText: lp.offerText || '',
+  };
 }
 
 /**
- * حساب تكلفة عرض صفحة الهبوط (الزوج الواحد أو عرض الزوجين + سعر التوصيل حسب الولاية)
+ * حساب تكلفة عرض صفحة الهبوط (الكمية المختارة + العرض الاختياري للشحن المجاني + سعر التوصيل حسب الولاية)
  */
-function calculateLandingOrderPricing(lp) {
-  const unitPrice = Number(lp?.discountPrice || 4490);
-  const origUnitPrice = Number(lp?.originalPrice || Math.round(unitPrice * 1.3));
-  const bundleQty = store.lpSelectedBundle === 2 ? 2 : 1;
+function calculateLandingOrderPricing(rawItem) {
+  const cfg = rawItem && rawItem.unitPrice !== undefined ? rawItem : getActiveLandingItemConfig();
+  const unitPrice = Number(cfg.unitPrice || cfg.discountPrice || 4490);
+  const origUnitPrice = Number(cfg.origUnitPrice || cfg.originalPrice || unitPrice);
+  const bundleQty = Math.max(1, Number(store.lpSelectedBundle || 1));
 
-  // عرض الزوجين يمنح تخفيض إضافي 500 د.ج + توصيل مجاني
-  const subtotal = bundleQty === 2 ? Math.max(0, unitPrice * 2 - 500) : unitPrice;
+  const offerEnabled = cfg.offerEnabled !== false;
+  const offerMinQty = Math.max(2, Number(cfg.offerMinQty || 2));
+  const offerFreeShipping = cfg.offerFreeShipping !== false;
+  const isOfferApplied = offerEnabled && bundleQty >= offerMinQty;
+
+  const subtotal = unitPrice * bundleQty;
   const originalTotal = origUnitPrice * bundleQty;
 
   const rates =
@@ -1905,10 +1718,16 @@ function calculateLandingOrderPricing(lp) {
       ? Number(wilayaRate?.deskFee ?? 350)
       : Number(wilayaRate?.homeFee ?? 500);
 
-  const isFreeShipping = bundleQty === 2;
+  const isFreeShipping = isOfferApplied && offerFreeShipping;
   const shippingFee = isFreeShipping ? 0 : baseShippingFee;
   const total = subtotal + shippingFee;
   const totalSaved = Math.max(0, originalTotal - subtotal + (isFreeShipping ? baseShippingFee : 0));
+
+  const isAr = store.lang === 'ar';
+  const defaultOfferText = isAr
+    ? `اشترِ ${offerMinQty} واحصلي على شحن مجاني`
+    : `Prenez ${offerMinQty} = Livraison Gratuite`;
+  const offerLabel = (cfg.offerText && String(cfg.offerText).trim()) || defaultOfferText;
 
   return {
     unitPrice,
@@ -1919,6 +1738,10 @@ function calculateLandingOrderPricing(lp) {
     baseShippingFee,
     shippingFee,
     isFreeShipping,
+    isOfferApplied,
+    offerEnabled,
+    offerMinQty,
+    offerLabel,
     total,
     totalSaved,
     wilayaRate,
@@ -1927,40 +1750,19 @@ function calculateLandingOrderPricing(lp) {
 }
 
 /**
- * ÉCRAN 3.B : PAGE D'ATTERRISSAGE PROMOTIONNELLE (Mobile-First Easy Order COD Landing Page)
+ * واجهة صفحة الهبوط الموحدة والهادئة والمريحة للعين:
+ * تحتوي فقط على: المنتج مع صوره + الكمية والعرض الاختياري + معلومات الزبون
  */
-function renderLandingScreen() {
+function renderCleanLandingPageUI() {
   const isAr = store.lang === 'ar';
-  const lpList =
-    Array.isArray(adminState?.landingPages) && adminState.landingPages.length > 0
-      ? adminState.landingPages
-      : [];
-  const lp =
-    lpList.find((item) => item.id === store.activeLandingId) ||
-    lpList[0] || {
-      id: 'lp-101',
-      title: 'عرض خاص: حذاء كعب عالي كلاسيك روز · Offre VIP Escarpins Rose',
-      slug: '/offer/pink-heels-vip',
-      originalPrice: 6990,
-      discountPrice: 4490,
-      imageUrl: IMAGES.talons,
-      gallery: [IMAGES.talons, IMAGES.hero, IMAGES.sandales],
-      description:
-        'تألقي بإطلالة أنثوية ساحرة مع حذاء الكعب الوردي اللامع المصنوع من الجلد المرن المريح للقدم طوال السهرة.',
-    };
-
+  const cfg = getActiveLandingItemConfig();
   const gallery =
-    Array.isArray(lp.gallery) && lp.gallery.length > 0 ? lp.gallery : [lp.imageUrl];
-  const activeImg = gallery[store.lpGalleryIndex % gallery.length] || lp.imageUrl;
+    Array.isArray(cfg.gallery) && cfg.gallery.length > 0 ? cfg.gallery : [cfg.imageUrl];
+  const activeIdx = store.lpGalleryIndex % gallery.length;
+  const pricing = calculateLandingOrderPricing(cfg);
 
-  const pricing = calculateLandingOrderPricing(lp);
-  const discountPct =
-    pricing.origUnitPrice > pricing.unitPrice && pricing.origUnitPrice > 0
-      ? Math.round(((pricing.origUnitPrice - pricing.unitPrice) / pricing.origUnitPrice) * 100)
-      : 28;
-
-  const availableColors = ['Rose', 'Beige', 'Noir', 'Blanc'];
-  const availableSizes = [36, 37, 38, 39, 40, 41];
+  const availableColors = cfg.colors;
+  const availableSizes = cfg.sizes;
   const selectedColorSwatch = COLOR_SWATCHES[store.lpSelectedColor];
   const selectedColorLabel = selectedColorSwatch
     ? isAr
@@ -1969,46 +1771,42 @@ function renderLandingScreen() {
     : store.lpSelectedColor;
 
   return `
-    <div class="max-w-5xl mx-auto pb-24 sm:pb-12 animate-screen-enter">
-      <!-- 1. شريط علوي مختصر ومناسب للهاتف -->
-      <div class="bg-[#18181B] text-white px-3.5 py-2 flex items-center justify-between gap-2 text-xs sm:rounded-b-2xl shadow-xs">
-        <button
-          type="button"
-          data-action="go-back"
-          class="px-2.5 py-1 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold inline-flex items-center gap-1 transition-colors shrink-0"
-        >
-          <span>${isAr ? '→ المتجر' : '← Boutique'}</span>
-        </button>
+    <div class="min-h-screen bg-[#FAF8F9] pb-12 animate-screen-enter">
+      <div class="max-w-4xl mx-auto px-3 sm:px-6 pt-3 sm:pt-5">
+        <!-- شريط علوي هادئ وبسيط للعودة للمتجر -->
+        <div class="flex items-center justify-between mb-3 sm:mb-4">
+          <button
+            type="button"
+            data-action="go-back"
+            class="px-3.5 py-1.5 rounded-xl bg-white border border-[#E4E4E7] hover:border-[#D4D4D8] text-[#27272A] text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+          >
+            <span>${isAr ? '→ العودة للمتجر' : '← Retour à la boutique'}</span>
+          </button>
 
-        <span class="font-bold text-[#FBCFE8] truncate text-[11px] sm:text-xs">
-          🔥 ${isAr ? 'تخفيض حصري · الدفع عند الاستلام (69 ولاية)' : 'Promo Flash · Paiement à la livraison (69 Wilayas)'}
-        </span>
+          <button
+            type="button"
+            data-action="share-product"
+            class="px-3 py-1.5 rounded-xl bg-white border border-[#E4E4E7] hover:border-[#D4D4D8] text-[#52525B] text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+          >
+            <span>${isAr ? 'مشاركة الرابط' : 'Partager'}</span>
+          </button>
+        </div>
 
-        <button
-          type="button"
-          data-action="lp-scroll-to-form"
-          class="lg:hidden px-2.5 py-1 rounded-full bg-[#DE1B61] text-white text-[11px] font-extrabold shrink-0"
-        >
-          ${isAr ? 'اطلبي الآن ↓' : 'Commander ↓'}
-        </button>
-      </div>
-
-      <!-- 2. تصميم متجاوب ومريح جداً للهاتف: بطاقة المنتج المختصرة + استمارة الطلب الفوري مباشرة تحتها -->
-      <div class="px-3 sm:px-6 pt-3 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
-        
-        <!-- العمود الأول: عرض الحذاء والسعر بوضوح على شاشة الهاتف -->
-        <div class="lg:col-span-6 space-y-3">
-          <div class="bg-white rounded-2xl border border-black/8 p-3 sm:p-4 shadow-xs">
+        <!-- الشبكة الرئيسية المريحة للعين: (1) المنتج وصوره + (2) الكمية ومعلومات الزبون فقط -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 items-start">
+          
+          <!-- القسم الأول: المنتج مع صوره -->
+          <div class="md:col-span-6 bg-white rounded-2xl border border-[#EAE6E8] p-3 sm:p-4 shadow-2xs">
             <div
               id="lp-gallery-swipe-box"
               data-swipe-gallery="lp"
-              data-active-index="${store.lpGalleryIndex % gallery.length}"
+              data-active-index="${activeIdx}"
               data-total-slides="${gallery.length}"
-              class="ss-insta-gallery-box rounded-xl bg-[#FDF2F6]"
+              class="ss-insta-gallery-box rounded-xl bg-[#F7F5F6]"
             >
               <div
                 class="ss-insta-track"
-                style="transform: translate3d(-${(store.lpGalleryIndex % gallery.length) * 100}%, 0, 0);"
+                style="transform: translate3d(-${activeIdx * 100}%, 0, 0);"
               >
                 ${gallery
                   .map(
@@ -2016,7 +1814,7 @@ function renderLandingScreen() {
                   <div class="ss-insta-slide" data-slide-index="${idx}">
                     <img
                       src="${imgSrc}"
-                      alt="${lp.title} - ${idx + 1}"
+                      alt="${cfg.title} - ${idx + 1}"
                       referrerpolicy="no-referrer"
                       draggable="false"
                       class="w-full h-full object-cover"
@@ -2034,7 +1832,7 @@ function renderLandingScreen() {
                   type="button"
                   data-action="gallery-step"
                   data-dir="-1"
-                  class="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/85 hover:bg-white text-[#18181B] shadow-xs flex items-center justify-center text-base font-bold"
+                  class="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#18181B] shadow-xs flex items-center justify-center text-base font-bold cursor-pointer"
                   aria-label="Previous photo"
                 >
                   ‹
@@ -2043,7 +1841,7 @@ function renderLandingScreen() {
                   type="button"
                   data-action="gallery-step"
                   data-dir="1"
-                  class="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/85 hover:bg-white text-[#18181B] shadow-xs flex items-center justify-center text-base font-bold"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#18181B] shadow-xs flex items-center justify-center text-base font-bold cursor-pointer"
                   aria-label="Next photo"
                 >
                   ›
@@ -2052,24 +1850,18 @@ function renderLandingScreen() {
                   : ''
               }
 
-              <span class="absolute top-2.5 start-2.5 z-10 px-3 py-1 rounded-full bg-[#DE1B61] text-white text-xs font-extrabold shadow-sm tabular-nums pointer-events-none">
-                -${discountPct}%
-              </span>
               <span
                 data-gallery-counter
                 dir="ltr"
-                class="absolute top-2.5 end-2.5 z-10 px-2.5 py-0.5 rounded-full bg-black/50 backdrop-blur-xs text-white text-[11px] font-bold tabular-nums pointer-events-none"
+                class="absolute bottom-2.5 end-2.5 z-10 px-2.5 py-0.5 rounded-full bg-black/45 backdrop-blur-xs text-white text-[11px] font-semibold tabular-nums pointer-events-none"
               >
-                ${(store.lpGalleryIndex % gallery.length) + 1}/${gallery.length}
-              </span>
-              <span class="absolute bottom-2.5 end-2.5 z-10 px-2.5 py-1 rounded-full bg-[#15803D] text-white text-[11px] font-bold shadow-xs tabular-nums pointer-events-none">
-                ✓ ${isAr ? 'توصيل 69 ولاية' : 'Livraison 69 Wilayas'}
+                ${activeIdx + 1}/${gallery.length}
               </span>
             </div>
 
             ${
               gallery.length > 1
-                ? `<div class="mt-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar">
+                ? `<div class="mt-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
                     ${gallery
                       .map(
                         (imgUrl, idx) => `
@@ -2077,10 +1869,10 @@ function renderLandingScreen() {
                           type="button"
                           data-action="lp-select-thumb"
                           data-index="${idx}"
-                          class="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
-                            store.lpGalleryIndex === idx
+                          class="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                            activeIdx === idx
                               ? 'border-[#DE1B61] scale-105'
-                              : 'border-transparent opacity-70'
+                              : 'border-transparent opacity-70 hover:opacity-100'
                           }"
                         >
                           <img src="${imgUrl}" alt="Thumb ${idx + 1}" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
@@ -2092,76 +1884,62 @@ function renderLandingScreen() {
                 : ''
             }
 
-            <div class="mt-3 pt-2.5 border-t border-black/6">
-              <div class="flex items-center justify-between gap-2">
-                <h1 class="text-base sm:text-xl font-extrabold text-[#18181B] leading-snug">
-                  ${lp.title}
-                </h1>
-              </div>
+            <!-- اسم المنتج والسعر والوصف المختصر بهدوء ووضوح -->
+            <div class="mt-3.5 pt-3 border-t border-[#F1EEF0]">
+              <h1 class="text-base sm:text-xl font-bold text-[#18181B] leading-snug">
+                ${cfg.title}
+              </h1>
 
-              <div class="mt-2 flex items-center justify-between flex-wrap gap-2">
-                <div class="flex items-baseline gap-2 tabular-nums">
-                  <span class="text-2xl sm:text-3xl font-extrabold text-[#DE1B61]">
-                    ${formatDA(pricing.unitPrice, store.lang)}
-                  </span>
-                  ${
-                    pricing.origUnitPrice > pricing.unitPrice
-                      ? `<span class="text-xs sm:text-sm text-[#71717A] line-through">
-                          ${formatDA(pricing.origUnitPrice, store.lang)}
-                        </span>`
-                      : ''
-                  }
-                </div>
-                <span class="px-2.5 py-1 rounded-lg bg-[#ECFDF5] text-[#15803D] text-xs font-extrabold">
-                  🤝 ${isAr ? 'افتحي الطرد وتأكدي قبل الدفع' : 'Vérifiez le colis avant de payer'}
+              <div class="mt-2 flex items-baseline gap-2.5 tabular-nums">
+                <span class="text-xl sm:text-2xl font-extrabold text-[#D81B60]">
+                  ${formatDA(pricing.unitPrice, store.lang)}
                 </span>
+                ${
+                  pricing.origUnitPrice > pricing.unitPrice
+                    ? `<span class="text-xs sm:text-sm text-[#71717A] line-through">
+                        ${formatDA(pricing.origUnitPrice, store.lang)}
+                      </span>`
+                    : ''
+                }
               </div>
 
-              <p class="mt-2 text-xs text-[#52525B] leading-relaxed">
-                ${lp.description}
-              </p>
+              ${
+                cfg.description
+                  ? `<p class="mt-2 text-xs sm:text-sm text-[#52525B] leading-relaxed">
+                      ${cfg.description}
+                    </p>`
+                  : ''
+              }
             </div>
           </div>
-        </div>
 
-        <!-- العمود الثاني: استمارة الطلب السريع المصممة خصيصاً للهاتف (كبيرة وواضحة وبخطوة واحدة) -->
-        <div id="lp-order-form-anchor" class="lg:col-span-6">
-          <div class="bg-white rounded-2xl border-2 border-[#DE1B61] shadow-md overflow-hidden">
-            <div class="bg-gradient-to-r from-[#DE1B61] to-[#B8144E] text-white px-4 py-3 flex items-center justify-between">
-              <div>
-                <h2 class="text-sm sm:text-base font-extrabold flex items-center gap-1.5">
-                  <span>🛍️</span>
-                  <span>${isAr ? 'اطلبي الآن من هاتفكِ في 30 ثانية' : 'Commandez en 30 secondes sur mobile'}</span>
-                </h2>
-                <p class="text-[11px] text-white/90">
-                  ${isAr ? 'الدفع عند الاستلام · توصيل سريع لجميع الـ 69 ولاية' : 'Paiement à la livraison · 69 Wilayas'}
-                </p>
-              </div>
-              <span id="lp-header-total-badge" class="px-2.5 py-1 rounded-full bg-white text-[#DE1B61] text-xs font-extrabold tabular-nums">
-                ${formatDA(pricing.total, store.lang)}
-              </span>
-            </div>
+          <!-- القسم الثاني: المقاس والكمية والعرض الاختياري ومعلومات الزبون فقط -->
+          <div id="lp-order-form-anchor" class="md:col-span-6 bg-white rounded-2xl border border-[#EAE6E8] p-4 sm:p-5 shadow-2xs">
+            <h2 class="text-base sm:text-lg font-bold text-[#18181B] pb-3 border-b border-[#F1EEF0]">
+              ${isAr ? 'معلومات الطلب والزبون' : 'Détails de la commande'}
+            </h2>
 
-            <form id="storefront-lp-order-form" data-lp-id="${lp.id}" class="p-3.5 sm:p-5 space-y-3.5">
-              <!-- 1. اختيار المقاس واللون بأزرار لمس كبيرة للهاتف -->
-              <div class="bg-[#FDF5F7] p-3 rounded-xl border border-[#DE1B61]/15 space-y-3">
+            <form id="storefront-lp-order-form" data-lp-id="${cfg.id}" class="mt-3.5 space-y-4">
+              
+              <!-- 1. المقاس واللون -->
+              <div class="space-y-3">
                 <div>
-                  <label class="block text-xs font-extrabold text-[#18181B] mb-1.5">
-                    1. ${isAr ? 'اختاري المقاس (Pointure):' : 'Choisissez la pointure :'} <strong id="lp-selected-size-label" class="text-[#DE1B61] text-sm">${store.lpSelectedSize}</strong>
+                  <label class="block text-xs font-bold text-[#3F3F46] mb-1.5">
+                    ${isAr ? 'المقاس:' : 'Pointure :'} <strong id="lp-selected-size-label" class="text-[#D81B60]">${store.lpSelectedSize}</strong>
                   </label>
                   <div class="grid grid-cols-6 gap-1.5 tabular-nums">
                     ${availableSizes
                       .map((sz) => {
-                        const active = Number(store.lpSelectedSize) === sz;
+                        const active = Number(store.lpSelectedSize) === Number(sz);
                         return `
                           <button
                             type="button"
                             data-action="lp-select-size"
                             data-size="${sz}"
-                            class="py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition-all ${
+                            class="py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                               active
-                                ? 'border-2 border-[#DE1B61] bg-[#DE1B61] text-white shadow-xs'
-                                : 'border-black/15 bg-white text-[#18181B]'
+                                ? 'border-2 border-[#D81B60] bg-[#FDF2F6] text-[#D81B60]'
+                                : 'border-[#E4E4E7] bg-white text-[#27272A] hover:border-[#D4D4D8]'
                             }"
                           >
                             ${sz}
@@ -2172,11 +1950,11 @@ function renderLandingScreen() {
                   </div>
                 </div>
 
-                <div class="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-black/6">
-                  <span class="text-xs font-extrabold text-[#18181B]">
-                    2. ${isAr ? 'اللون:' : 'Couleur :'} <strong id="lp-selected-color-label" class="text-[#DE1B61]">${selectedColorLabel}</strong>
+                <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
+                  <span class="text-xs font-bold text-[#3F3F46]">
+                    ${isAr ? 'اللون:' : 'Couleur :'} <strong id="lp-selected-color-label" class="text-[#18181B]">${selectedColorLabel}</strong>
                   </span>
-                  <div class="flex items-center gap-2.5">
+                  <div class="flex items-center gap-2">
                     ${availableColors
                       .map((cName) => {
                         const sw = COLOR_SWATCHES[cName];
@@ -2187,7 +1965,7 @@ function renderLandingScreen() {
                             type="button"
                             data-action="lp-select-color"
                             data-color="${cName}"
-                            class="ss-color-swatch ${active ? 'active' : 'border-black/15'}"
+                            class="ss-color-swatch cursor-pointer ${active ? 'active' : 'border-black/15'}"
                             aria-label="${cName}"
                           >
                             <span class="block w-full h-full rounded-full border border-black/10" style="background-color:${hex};"></span>
@@ -2199,62 +1977,114 @@ function renderLandingScreen() {
                 </div>
               </div>
 
-              <!-- 2. اختيار الكمية (زوج واحد أو زوجين مع توصيل مجاني) -->
-              <div class="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  data-action="lp-select-bundle"
-                  data-bundle="1"
-                  class="p-2.5 rounded-xl border-2 text-start transition-all ${
-                    store.lpSelectedBundle === 1
-                      ? 'border-[#DE1B61] bg-[#FCE8EE]/40'
-                      : 'border-black/12 bg-[#FAFAFA]'
-                  }"
-                >
-                  <span class="text-xs font-extrabold text-[#18181B] block">
-                    🥿 ${isAr ? 'حذاء واحد (1)' : '1 Paire'}
-                  </span>
-                  <strong class="text-sm font-extrabold text-[#DE1B61] tabular-nums">
-                    ${formatDA(pricing.unitPrice, store.lang)}
-                  </strong>
-                </button>
+              <!-- 2. الكمية + العرض الاختياري (مثلاً: تاخذ 2 شحن مجاني) -->
+              <div class="pt-3 border-t border-[#F1EEF0] space-y-2.5">
+                <div class="flex items-center justify-between gap-3">
+                  <label class="text-xs sm:text-sm font-bold text-[#27272A]">
+                    ${isAr ? 'الكمية:' : 'Quantité :'}
+                  </label>
 
-                <button
-                  type="button"
-                  data-action="lp-select-bundle"
-                  data-bundle="2"
-                  class="relative p-2.5 rounded-xl border-2 text-start transition-all ${
-                    store.lpSelectedBundle === 2
-                      ? 'border-[#DE1B61] bg-[#FCE8EE]/50'
-                      : 'border-black/12 bg-[#FAFAFA]'
-                  }"
-                >
-                  <span class="absolute -top-2 end-2 px-1.5 py-0.2 rounded-full bg-[#15803D] text-white text-[9px] font-extrabold">
-                    🎁 ${isAr ? 'شحن مجاني' : 'Livraison 0 DA'}
-                  </span>
-                  <span class="text-xs font-extrabold text-[#18181B] block">
-                    👠👠 ${isAr ? 'عرض زوجين (2)' : 'Pack 2 Paires'}
-                  </span>
-                  <strong class="text-sm font-extrabold text-[#DE1B61] tabular-nums">
-                    ${formatDA(Math.max(0, pricing.unitPrice * 2 - 500), store.lang)}
-                  </strong>
-                </button>
+                  <div class="inline-flex items-center rounded-xl border border-[#E4E4E7] bg-[#FAF8F9] p-1 tabular-nums">
+                    <button
+                      type="button"
+                      data-action="lp-qty-step"
+                      data-step="-1"
+                      class="w-9 h-8 rounded-lg bg-white border border-[#E4E4E7] text-[#18181B] font-bold text-base flex items-center justify-center hover:bg-[#F4F4F5] active:scale-95 transition-all cursor-pointer"
+                      aria-label="Decrease quantity"
+                    >
+                      −
+                    </button>
+                    <span id="lp-qty-value" class="w-11 text-center text-sm font-extrabold text-[#18181B]">
+                      ${pricing.bundleQty}
+                    </span>
+                    <button
+                      type="button"
+                      data-action="lp-qty-step"
+                      data-step="1"
+                      class="w-9 h-8 rounded-lg bg-white border border-[#E4E4E7] text-[#18181B] font-bold text-base flex items-center justify-center hover:bg-[#F4F4F5] active:scale-95 transition-all cursor-pointer"
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                ${
+                  pricing.offerEnabled
+                    ? `
+                  <button
+                    type="button"
+                    id="lp-optional-offer-btn"
+                    data-action="lp-toggle-offer"
+                    data-min-qty="${pricing.offerMinQty}"
+                    class="w-full p-3 rounded-xl border text-start flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
+                      pricing.isOfferApplied
+                        ? 'border-2 border-[#10B981] bg-[#ECFDF5]/60 text-[#065F46]'
+                        : 'border-[#E4E4E7] bg-[#FAF8F9] hover:border-[#D81B60]/40 text-[#27272A]'
+                    }"
+                  >
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <span
+                        id="lp-offer-check-circle"
+                        class="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 transition-colors ${
+                          pricing.isOfferApplied
+                            ? 'bg-[#10B981] text-white'
+                            : 'border border-[#A1A1AA] bg-white text-transparent'
+                        }"
+                      >
+                        ✓
+                      </span>
+                      <div class="min-w-0">
+                        <span class="text-xs sm:text-[13px] font-bold block truncate">
+                          ${isAr ? 'عرض اختياري:' : 'Offre optionnelle :'} ${pricing.offerLabel}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span
+                      id="lp-offer-badge"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 ${
+                        pricing.isOfferApplied
+                          ? 'bg-[#10B981] text-white'
+                          : 'bg-white border border-[#E4E4E7] text-[#D81B60]'
+                      }"
+                    >
+                      ${
+                        pricing.isOfferApplied
+                          ? isAr
+                            ? 'شحن مجاني مفعّل'
+                            : 'Livraison 0 DA'
+                          : isAr
+                          ? `اختيار (${pricing.offerMinQty})`
+                          : `Choisir (${pricing.offerMinQty})`
+                      }
+                    </span>
+                  </button>
+                `
+                    : ''
+                }
               </div>
 
-              <!-- 3. معلومات الزبون (مبسطة وملائمة للكتابة السريعة على الهاتف) -->
-              <div class="space-y-2.5">
+              <!-- 3. معلومات الزبون فقط (واضحة ومريحة للعين) -->
+              <div class="pt-3 border-t border-[#F1EEF0] space-y-3">
                 <div>
+                  <label class="block text-xs font-semibold text-[#3F3F46] mb-1">
+                    ${isAr ? 'الاسم واللقب' : 'Nom et Prénom'} <span class="text-[#D81B60]">*</span>
+                  </label>
                   <input
                     name="fullName"
                     type="text"
                     required
                     autocomplete="name"
-                    placeholder="${isAr ? '👤 الاسم واللقب الكامل *' : '👤 Nom et Prénom complet *'}"
-                    class="w-full px-4 py-3 rounded-xl bg-[#FAFAFA] border border-black/20 text-sm font-semibold text-[#18181B] focus:border-[#DE1B61] focus:bg-white focus:outline-none"
+                    placeholder="${isAr ? 'أدخلي الاسم الكامل' : 'Votre nom complet'}"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-medium text-[#18181B] focus:border-[#D81B60] focus:bg-white focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div>
+                  <label class="block text-xs font-semibold text-[#3F3F46] mb-1">
+                    ${isAr ? 'رقم الهاتف' : 'Numéro de téléphone'} <span class="text-[#D81B60]">*</span>
+                  </label>
                   <input
                     name="phone"
                     type="tel"
@@ -2262,86 +2092,113 @@ function renderLandingScreen() {
                     required
                     autocomplete="tel"
                     dir="ltr"
-                    placeholder="${isAr ? '📞 رقم الهاتف (مثال: 0550123456) *' : '📞 Numéro de téléphone *'}"
-                    class="w-full px-4 py-3 rounded-xl bg-[#FAFAFA] border border-black/20 text-sm font-bold text-[#18181B] tabular-nums focus:border-[#DE1B61] focus:bg-white focus:outline-none"
+                    placeholder="0550 00 00 00"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-semibold text-[#18181B] tabular-nums focus:border-[#D81B60] focus:bg-white focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <select
-                    id="lp-wilaya-select"
-                    name="wilayaCode"
-                    required
-                    class="w-full px-3.5 py-3 rounded-xl bg-[#FAFAFA] border border-black/20 text-sm font-bold text-[#18181B] focus:border-[#DE1B61] focus:bg-white focus:outline-none"
-                  >
-                    ${pricing.rates
-                      .map((w) => {
-                        const wName = isAr ? w.name : w.name_fr || w.name;
-                        return `<option value="${w.code}" ${
-                          w.code === store.lpSelectedWilaya ? 'selected' : ''
-                        }>${w.code} - ${wName}</option>`;
-                      })
-                      .join('')}
-                  </select>
+                  <div>
+                    <label class="block text-xs font-semibold text-[#3F3F46] mb-1">
+                      ${isAr ? 'الولاية' : 'Wilaya'} <span class="text-[#D81B60]">*</span>
+                    </label>
+                    <select
+                      id="lp-wilaya-select"
+                      name="wilayaCode"
+                      required
+                      class="w-full px-3 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-semibold text-[#18181B] focus:border-[#D81B60] focus:bg-white focus:outline-none transition-colors"
+                    >
+                      ${pricing.rates
+                        .map((w) => {
+                          const wName = isAr ? w.name : w.name_fr || w.name;
+                          return `<option value="${w.code}" ${
+                            w.code === store.lpSelectedWilaya ? 'selected' : ''
+                          }>${w.code} - ${wName}</option>`;
+                        })
+                        .join('')}
+                    </select>
+                  </div>
 
-                  <input
-                    id="lp-address-input"
-                    name="address"
-                    type="text"
-                    required
-                    placeholder="${
-                      store.lpDeliveryType === 'desk'
-                        ? isAr
-                          ? '📍 البلدية أو مكتب التوصيل *'
-                          : '📍 Commune ou bureau Stop-Desk *'
-                        : isAr
-                        ? '📍 البلدية أو الحي *'
-                        : '📍 Commune ou quartier *'
-                    }"
-                    class="w-full px-3.5 py-3 rounded-xl bg-[#FAFAFA] border border-black/20 text-sm font-semibold text-[#18181B] focus:border-[#DE1B61] focus:bg-white focus:outline-none"
-                  />
+                  <div>
+                    <label class="block text-xs font-semibold text-[#3F3F46] mb-1">
+                      ${isAr ? 'البلدية / العنوان' : 'Commune / Adresse'} <span class="text-[#D81B60]">*</span>
+                    </label>
+                    <input
+                      id="lp-address-input"
+                      name="address"
+                      type="text"
+                      required
+                      placeholder="${
+                        store.lpDeliveryType === 'desk'
+                          ? isAr
+                            ? 'اسم البلدية أو مكتب التوصيل'
+                            : 'Commune ou bureau Stop-Desk'
+                          : isAr
+                          ? 'اسم البلدية أو الحي'
+                          : 'Commune ou quartier'
+                      }"
+                      class="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-medium text-[#18181B] focus:border-[#D81B60] focus:bg-white focus:outline-none transition-colors"
+                    />
+                  </div>
                 </div>
 
-                <!-- طريقة الاستلام: للمنزل أو المكتب -->
-                <div class="grid grid-cols-2 gap-2 tabular-nums">
-                  <button
-                    type="button"
-                    data-action="lp-select-delivery"
-                    data-delivery="home"
-                    class="p-2.5 rounded-xl border text-xs font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
-                      store.lpDeliveryType === 'home'
-                        ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/35 text-[#18181B]'
-                        : 'border-black/15 bg-[#FAFAFA] text-[#52525B]'
-                    }"
-                  >
-                    <span>🏠 ${isAr ? 'لباب المنزل' : 'Domicile'}</span>
-                    <strong id="lp-home-fee-label" class="text-[#DE1B61]">
-                      ${pricing.isFreeShipping ? (isAr ? 'مجاني' : '0 DA') : formatDA(pricing.wilayaRate?.homeFee ?? 500, store.lang)}
-                    </strong>
-                  </button>
+                <!-- خيار التوصيل: إلى المنزل أم المكتب -->
+                <div>
+                  <label class="block text-xs font-semibold text-[#3F3F46] mb-1.5">
+                    ${isAr ? 'مكان التوصيل' : 'Mode de livraison'}
+                  </label>
+                  <div class="grid grid-cols-2 gap-2 tabular-nums">
+                    <button
+                      type="button"
+                      data-action="lp-select-delivery"
+                      data-delivery="home"
+                      class="p-2.5 rounded-xl border text-xs font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
+                        store.lpDeliveryType === 'home'
+                          ? 'border-2 border-[#D81B60] bg-[#FDF2F6]/60 text-[#18181B]'
+                          : 'border-[#E4E4E7] bg-[#FAF8F9] text-[#52525B]'
+                      }"
+                    >
+                      <span>${isAr ? 'التوصيل للمنزل' : 'À Domicile'}</span>
+                      <strong id="lp-home-fee-label" class="text-[#D81B60]">
+                        ${
+                          pricing.isFreeShipping
+                            ? isAr
+                              ? 'مجاني'
+                              : '0 DA'
+                            : formatDA(pricing.wilayaRate?.homeFee ?? 500, store.lang)
+                        }
+                      </strong>
+                    </button>
 
-                  <button
-                    type="button"
-                    data-action="lp-select-delivery"
-                    data-delivery="desk"
-                    class="p-2.5 rounded-xl border text-xs font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
-                      store.lpDeliveryType === 'desk'
-                        ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/35 text-[#18181B]'
-                        : 'border-black/15 bg-[#FAFAFA] text-[#52525B]'
-                    }"
-                  >
-                    <span>🏢 ${isAr ? 'مكتب التوصيل' : 'Stop-Desk'}</span>
-                    <strong id="lp-desk-fee-label" class="text-[#DE1B61]">
-                      ${pricing.isFreeShipping ? (isAr ? 'مجاني' : '0 DA') : formatDA(pricing.wilayaRate?.deskFee ?? 350, store.lang)}
-                    </strong>
-                  </button>
+                    <button
+                      type="button"
+                      data-action="lp-select-delivery"
+                      data-delivery="desk"
+                      class="p-2.5 rounded-xl border text-xs font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
+                        store.lpDeliveryType === 'desk'
+                          ? 'border-2 border-[#D81B60] bg-[#FDF2F6]/60 text-[#18181B]'
+                          : 'border-[#E4E4E7] bg-[#FAF8F9] text-[#52525B]'
+                      }"
+                    >
+                      <span>${isAr ? 'مكتب التوصيل' : 'Stop-Desk'}</span>
+                      <strong id="lp-desk-fee-label" class="text-[#D81B60]">
+                        ${
+                          pricing.isFreeShipping
+                            ? isAr
+                              ? 'مجاني'
+                              : '0 DA'
+                            : formatDA(pricing.wilayaRate?.deskFee ?? 350, store.lang)
+                        }
+                      </strong>
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <!-- 4. ملخص المبلغ الفرعي وسعر التوصيل والمبلغ الإجمالي قبل تأكيد الطلبية -->
-              <div class="p-3.5 rounded-xl bg-[#FDF5F7] border border-[#DE1B61]/20 space-y-1.5 tabular-nums">
+              <!-- 4. ملخص المبلغ الفرعي والإجمالي قبل التأكيد -->
+              <div class="p-3.5 rounded-xl bg-[#FAF8F9] border border-[#EAE6E8] space-y-1.5 tabular-nums">
                 <div class="flex items-center justify-between text-xs text-[#52525B]">
-                  <span>${isAr ? 'المبلغ الفرعي (المنتج):' : 'Sous-total (Article) :'}</span>
+                  <span>${isAr ? 'المبلغ الفرعي:' : 'Sous-total :'}</span>
                   <strong id="lp-summary-subtotal" class="text-[#18181B]">${formatDA(pricing.subtotal, store.lang)}</strong>
                 </div>
                 <div class="flex items-center justify-between text-xs text-[#52525B]">
@@ -2349,64 +2206,56 @@ function renderLandingScreen() {
                     ${
                       store.lpDeliveryType === 'desk'
                         ? isAr
-                          ? 'التوصيل (إلى المكتب Stop-Desk):'
-                          : 'Livraison (Bureau Stop-Desk) :'
+                          ? 'سعر التوصيل (للمكتب):'
+                          : 'Livraison (Stop-Desk) :'
                         : isAr
-                        ? 'التوصيل (إلى المنزل):'
-                        : 'Livraison (À Domicile) :'
+                        ? 'سعر التوصيل (للمنزل):'
+                        : 'Livraison (Domicile) :'
                     }
                   </span>
                   <strong id="lp-summary-shipping-fee" class="text-[#18181B]">
                     ${
                       pricing.isFreeShipping
-                        ? `<span class="text-[#15803D] font-extrabold">${isAr ? 'مجاني (0 د.ج)' : 'Gratuite (0 DA)'}</span>`
+                        ? `<span class="text-[#059669] font-bold">${isAr ? 'مجاني (0 د.ج)' : 'Gratuite (0 DA)'}</span>`
                         : formatDA(pricing.shippingFee, store.lang)
                     }
                   </strong>
                 </div>
-                <div class="pt-2 border-t border-[#DE1B61]/15 flex items-center justify-between">
-                  <div>
-                    <span class="text-xs sm:text-sm font-extrabold text-[#18181B] block">
-                      ${isAr ? 'المبلغ الإجمالي للدفع:' : 'Total à payer :'}
-                    </span>
-                    <span class="text-[10px] text-[#15803D] font-bold">
-                      ✓ ${isAr ? 'الدفع عند استلام الطرد' : 'Paiement à la réception'}
-                    </span>
-                  </div>
-                  <strong id="lp-summary-total" class="text-lg sm:text-xl font-extrabold text-[#DE1B61]">
+                <div class="pt-2 border-t border-[#E4E4E7] flex items-center justify-between">
+                  <span class="text-xs sm:text-sm font-bold text-[#18181B]">
+                    ${isAr ? 'المبلغ الإجمالي:' : 'Total à payer :'}
+                  </span>
+                  <strong id="lp-summary-total" class="text-base sm:text-lg font-extrabold text-[#D81B60]">
                     ${formatDA(pricing.total, store.lang)}
                   </strong>
                 </div>
               </div>
 
-              <!-- 5. زر التأكيد الكبير والمريح للإبهام -->
+              <!-- 5. زر تأكيد الطلب -->
               <button
                 type="submit"
-                class="w-full py-4 px-5 ss-btn-pink text-base font-extrabold flex items-center justify-center gap-2 shadow-md active:scale-98 transition-transform cursor-pointer"
+                class="w-full py-3.5 px-5 rounded-xl bg-[#D81B60] hover:bg-[#BE123C] text-white text-sm sm:text-base font-bold flex items-center justify-center shadow-xs active:scale-99 transition-all cursor-pointer"
               >
-                <span id="lp-submit-btn-label">🛍️ ${isAr ? `تأكيد الطلب الآن — ${formatDA(pricing.total, 'ar')}` : `Confirmer la commande — ${formatDA(pricing.total, 'fr')}`}</span>
+                <span id="lp-submit-btn-label">${
+                  isAr
+                    ? `تأكيد الطلب — ${formatDA(pricing.total, 'ar')}`
+                    : `Confirmer la commande — ${formatDA(pricing.total, 'fr')}`
+                }</span>
               </button>
             </form>
           </div>
         </div>
       </div>
-
-      <!-- شريط سفلي ثابت على الهاتف لسهولة الطلب الفوري من أي مكان في الصفحة -->
-      <div class="lg:hidden fixed bottom-14 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#DE1B61]/20 px-4 py-2.5 flex items-center justify-between gap-3 shadow-lg">
-        <div class="tabular-nums">
-          <span class="text-[10px] font-bold text-[#71717A] block">${isAr ? 'السعر الإجمالي مع التوصيل' : 'Total livraison incluse'}</span>
-          <strong id="lp-sticky-total" class="text-base font-extrabold text-[#DE1B61]">${formatDA(pricing.total, store.lang)}</strong>
-        </div>
-        <button
-          type="button"
-          data-action="lp-scroll-to-form"
-          class="flex-1 py-3 px-4 ss-btn-pink text-xs font-extrabold text-center shadow-sm"
-        >
-          🛍️ ${isAr ? 'اطلبي الآن — الدفع عند الاستلام' : 'Commander maintenant'}
-        </button>
-      </div>
     </div>
   `;
+}
+
+function renderPDPScreen() {
+  return renderCleanLandingPageUI();
+}
+
+function renderLandingScreen() {
+  return renderCleanLandingPageUI();
 }
 
 /**
@@ -3119,18 +2968,13 @@ function renderAll() {
  * تحديث استمارة صفحة الهبوط موضعياً (In-Place DOM Update) بدون إعادة بناء الصفحة أو تشغيل أنيميشن التحديث
  */
 function refreshLandingScreenPreservingInputs() {
-  if (store.currentScreen !== 'landing') return;
+  if (store.currentScreen !== 'landing' && store.currentScreen !== 'pdp') return;
   const form = document.getElementById('storefront-lp-order-form');
   if (!form) return;
 
-  const lpId = form.getAttribute('data-lp-id') || store.activeLandingId;
-  const lp =
-    (adminState?.landingPages || []).find((item) => item.id === lpId) ||
-    adminState?.landingPages?.[0];
-  if (!lp) return;
-
+  const cfg = getActiveLandingItemConfig();
   const isAr = store.lang === 'ar';
-  const pricing = calculateLandingOrderPricing(lp);
+  const pricing = calculateLandingOrderPricing(cfg);
 
   // 1. تحديث المقاس المختار
   const sizeLabel = document.getElementById('lp-selected-size-label');
@@ -3138,10 +2982,10 @@ function refreshLandingScreenPreservingInputs() {
   form.querySelectorAll('[data-action="lp-select-size"]').forEach((btn) => {
     const sz = Number(btn.getAttribute('data-size'));
     const active = Number(store.lpSelectedSize) === sz;
-    btn.className = `py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition-all ${
+    btn.className = `py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
       active
-        ? 'border-2 border-[#DE1B61] bg-[#DE1B61] text-white shadow-xs'
-        : 'border-black/15 bg-white text-[#18181B]'
+        ? 'border-2 border-[#D81B60] bg-[#FDF2F6] text-[#D81B60]'
+        : 'border-[#E4E4E7] bg-white text-[#27272A] hover:border-[#D4D4D8]'
     }`;
   });
 
@@ -3154,23 +2998,44 @@ function refreshLandingScreenPreservingInputs() {
   form.querySelectorAll('[data-action="lp-select-color"]').forEach((btn) => {
     const cName = btn.getAttribute('data-color');
     const active = store.lpSelectedColor === cName;
-    btn.className = `ss-color-swatch ${active ? 'active' : 'border-black/15'}`;
+    btn.className = `ss-color-swatch cursor-pointer ${active ? 'active' : 'border-black/15'}`;
   });
 
-  // 3. تحديث أزرار الكمية (حذاء واحد / عرض زوجين)
-  form.querySelectorAll('[data-action="lp-select-bundle"]').forEach((btn) => {
-    const bVal = Number(btn.getAttribute('data-bundle'));
-    const active = store.lpSelectedBundle === bVal;
-    if (bVal === 1) {
-      btn.className = `p-2.5 rounded-xl border-2 text-start transition-all ${
-        active ? 'border-[#DE1B61] bg-[#FCE8EE]/40' : 'border-black/12 bg-[#FAFAFA]'
-      }`;
-    } else {
-      btn.className = `relative p-2.5 rounded-xl border-2 text-start transition-all ${
-        active ? 'border-[#DE1B61] bg-[#FCE8EE]/50' : 'border-black/12 bg-[#FAFAFA]'
-      }`;
-    }
-  });
+  // 3. تحديث عداد الكمية وبطاقة العرض الاختياري
+  const qtyValueEl = document.getElementById('lp-qty-value');
+  if (qtyValueEl) qtyValueEl.textContent = String(pricing.bundleQty);
+
+  const offerBtn = document.getElementById('lp-optional-offer-btn');
+  if (offerBtn) {
+    offerBtn.className = `w-full p-3 rounded-xl border text-start flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
+      pricing.isOfferApplied
+        ? 'border-2 border-[#10B981] bg-[#ECFDF5]/60 text-[#065F46]'
+        : 'border-[#E4E4E7] bg-[#FAF8F9] hover:border-[#D81B60]/40 text-[#27272A]'
+    }`;
+  }
+  const offerCheck = document.getElementById('lp-offer-check-circle');
+  if (offerCheck) {
+    offerCheck.className = `w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 transition-colors ${
+      pricing.isOfferApplied
+        ? 'bg-[#10B981] text-white'
+        : 'border border-[#A1A1AA] bg-white text-transparent'
+    }`;
+  }
+  const offerBadge = document.getElementById('lp-offer-badge');
+  if (offerBadge) {
+    offerBadge.className = `px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 ${
+      pricing.isOfferApplied
+        ? 'bg-[#10B981] text-white'
+        : 'bg-white border border-[#E4E4E7] text-[#D81B60]'
+    }`;
+    offerBadge.textContent = pricing.isOfferApplied
+      ? isAr
+        ? 'شحن مجاني مفعّل'
+        : 'Livraison 0 DA'
+      : isAr
+      ? `اختيار (${pricing.offerMinQty})`
+      : `Choisir (${pricing.offerMinQty})`;
+  }
 
   // 4. تحديث أزرار التوصيل (منزل / مكتب) وحقل العنوان
   form.querySelectorAll('[data-action="lp-select-delivery"]').forEach((btn) => {
@@ -3178,8 +3043,8 @@ function refreshLandingScreenPreservingInputs() {
     const active = store.lpDeliveryType === deliv;
     btn.className = `p-2.5 rounded-xl border text-xs font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
       active
-        ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/35 text-[#18181B]'
-        : 'border-black/15 bg-[#FAFAFA] text-[#52525B]'
+        ? 'border-2 border-[#D81B60] bg-[#FDF2F6]/60 text-[#18181B]'
+        : 'border-[#E4E4E7] bg-[#FAF8F9] text-[#52525B]'
     }`;
   });
 
@@ -3205,17 +3070,14 @@ function refreshLandingScreenPreservingInputs() {
     addrInput.placeholder =
       store.lpDeliveryType === 'desk'
         ? isAr
-          ? '📍 البلدية أو مكتب التوصيل *'
-          : '📍 Commune ou bureau Stop-Desk *'
+          ? 'اسم البلدية أو مكتب التوصيل'
+          : 'Commune ou bureau Stop-Desk'
         : isAr
-        ? '📍 البلدية أو الحي *'
-        : '📍 Commune ou quartier *';
+        ? 'اسم البلدية أو الحي'
+        : 'Commune ou quartier';
   }
 
   // 5. تحديث ملخص الأسعار وزر التأكيد
-  const headerTotalBadge = document.getElementById('lp-header-total-badge');
-  if (headerTotalBadge) headerTotalBadge.textContent = formatDA(pricing.total, store.lang);
-
   const subEl = document.getElementById('lp-summary-subtotal');
   if (subEl) subEl.textContent = formatDA(pricing.subtotal, store.lang);
 
@@ -3224,17 +3086,17 @@ function refreshLandingScreenPreservingInputs() {
     shipLabelEl.textContent =
       store.lpDeliveryType === 'desk'
         ? isAr
-          ? 'التوصيل (إلى المكتب Stop-Desk):'
-          : 'Livraison (Bureau Stop-Desk) :'
+          ? 'سعر التوصيل (للمكتب):'
+          : 'Livraison (Stop-Desk) :'
         : isAr
-        ? 'التوصيل (إلى المنزل):'
-        : 'Livraison (À Domicile) :';
+        ? 'سعر التوصيل (للمنزل):'
+        : 'Livraison (Domicile) :';
   }
 
   const shipFeeEl = document.getElementById('lp-summary-shipping-fee');
   if (shipFeeEl) {
     shipFeeEl.innerHTML = pricing.isFreeShipping
-      ? `<span class="text-[#15803D] font-extrabold">${isAr ? 'مجاني (0 د.ج)' : 'Gratuite (0 DA)'}</span>`
+      ? `<span class="text-[#059669] font-bold">${isAr ? 'مجاني (0 د.ج)' : 'Gratuite (0 DA)'}</span>`
       : formatDA(pricing.shippingFee, store.lang);
   }
 
@@ -3243,15 +3105,10 @@ function refreshLandingScreenPreservingInputs() {
 
   const submitBtnLabel = document.getElementById('lp-submit-btn-label');
   if (submitBtnLabel) {
-    submitBtnLabel.textContent = `🛍️ ${
-      isAr
-        ? `تأكيد الطلب الآن — ${formatDA(pricing.total, 'ar')}`
-        : `Confirmer la commande — ${formatDA(pricing.total, 'fr')}`
-    }`;
+    submitBtnLabel.textContent = isAr
+      ? `تأكيد الطلب — ${formatDA(pricing.total, 'ar')}`
+      : `Confirmer la commande — ${formatDA(pricing.total, 'fr')}`;
   }
-
-  const stickyTotalEl = document.getElementById('lp-sticky-total');
-  if (stickyTotalEl) stickyTotalEl.textContent = formatDA(pricing.total, store.lang);
 }
 
 /**
@@ -3774,10 +3631,27 @@ function setupEvents() {
 
       case 'lp-select-bundle': {
         const bundle = Number(target.getAttribute('data-bundle'));
-        if (bundle === 1 || bundle === 2) {
+        if (bundle >= 1) {
           store.lpSelectedBundle = bundle;
           refreshLandingScreenPreservingInputs();
         }
+        break;
+      }
+
+      case 'lp-qty-step': {
+        const step = Number(target.getAttribute('data-step') || 0);
+        const currentQty = Math.max(1, Number(store.lpSelectedBundle || 1));
+        const nextQty = Math.max(1, Math.min(20, currentQty + step));
+        store.lpSelectedBundle = nextQty;
+        refreshLandingScreenPreservingInputs();
+        break;
+      }
+
+      case 'lp-toggle-offer': {
+        const minQty = Math.max(2, Number(target.getAttribute('data-min-qty') || 2));
+        const currentQty = Math.max(1, Number(store.lpSelectedBundle || 1));
+        store.lpSelectedBundle = currentQty >= minQty ? 1 : minQty;
+        refreshLandingScreenPreservingInputs();
         break;
       }
 
@@ -3785,6 +3659,7 @@ function setupEvents() {
         const color = target.getAttribute('data-color');
         if (color) {
           store.lpSelectedColor = color;
+          store.pdpSelectedColor = color;
           refreshLandingScreenPreservingInputs();
         }
         break;
@@ -3794,6 +3669,7 @@ function setupEvents() {
         const size = Number(target.getAttribute('data-size'));
         if (size) {
           store.lpSelectedSize = size;
+          store.pdpSelectedSize = size;
           refreshLandingScreenPreservingInputs();
         }
         break;
@@ -4057,11 +3933,8 @@ function setupEvents() {
       showToast(t.confirmation.title);
     } else if (form.id === 'storefront-lp-order-form') {
       e.preventDefault();
-      const lpId = form.getAttribute('data-lp-id') || store.activeLandingId;
-      const lp =
-        (adminState?.landingPages || []).find((item) => item.id === lpId) ||
-        adminState?.landingPages?.[0];
-      if (!lp) return;
+      const cfg = getActiveLandingItemConfig();
+      if (!cfg) return;
 
       const data = new FormData(form);
       const fullName = String(data.get('fullName') || '').trim();
@@ -4070,7 +3943,7 @@ function setupEvents() {
       const address = String(data.get('address') || '').trim();
       if (!fullName || !phone || !address) return;
 
-      const pricing = calculateLandingOrderPricing(lp);
+      const pricing = calculateLandingOrderPricing(cfg);
       const wilayaName =
         store.lang === 'ar'
           ? pricing.wilayaRate?.name || wilayaCode
@@ -4091,7 +3964,7 @@ function setupEvents() {
         phone,
         wilaya: `${wilayaCode} - ${wilayaName}`,
         address: `${address} (${delivTypeLabel})`,
-        itemsSummary: `[عرض صفحة هبوط] ${lp.title} (${store.lpSelectedColor} · مقاس ${store.lpSelectedSize} × ${pricing.bundleQty})`,
+        itemsSummary: `${cfg.title} (${store.lpSelectedColor} · مقاس ${store.lpSelectedSize} × ${pricing.bundleQty})`,
         customer: {
           fullName,
           phone,
@@ -4100,7 +3973,7 @@ function setupEvents() {
         },
         items: [
           {
-            name: lp.title,
+            name: cfg.title,
             size: store.lpSelectedSize,
             color: store.lpSelectedColor,
             quantity: pricing.bundleQty,
@@ -4124,7 +3997,7 @@ function setupEvents() {
         value: newOrder.total,
         currency: 'DZD',
         order_id: newOrder.id,
-        content_name: lp.title,
+        content_name: cfg.title,
       });
       store.currentScreen = 'confirmation';
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4384,6 +4257,11 @@ function checkUrlForLandingPage() {
             ? 37
             : (Array.isArray(matchedProd.sizes) && matchedProd.sizes[0]) || 37;
         store.pdpGalleryIndex = 0;
+        store.lpSelectedColor = store.pdpSelectedColor;
+        store.lpSelectedSize = store.pdpSelectedSize;
+        store.lpSelectedBundle = 1;
+        store.lpDeliveryType = 'home';
+        store.lpGalleryIndex = 0;
         store.currentScreen = 'pdp';
         return;
       }
@@ -4400,6 +4278,9 @@ function checkUrlForLandingPage() {
       );
       if (matched) {
         store.activeLandingId = matched.id;
+        store.lpSelectedBundle = 1;
+        store.lpDeliveryType = 'home';
+        store.lpGalleryIndex = 0;
         store.currentScreen = 'landing';
         return;
       }

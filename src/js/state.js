@@ -173,9 +173,16 @@ export const store = {
         ) || null;
       this.activeProductId = prod ? prod.id : options.productId;
       if (prod) {
-        this.pdpSelectedColor = prod.colors[0] || 'Rose';
-        this.pdpSelectedSize = prod.sizes.includes(37) ? 37 : prod.sizes[0];
+        const defaultColor = prod.colors[0] || 'Rose';
+        const defaultSize = prod.sizes.includes(37) ? 37 : prod.sizes[0];
+        this.pdpSelectedColor = defaultColor;
+        this.pdpSelectedSize = defaultSize;
         this.pdpGalleryIndex = 0;
+        this.lpSelectedColor = defaultColor;
+        this.lpSelectedSize = defaultSize;
+        this.lpSelectedBundle = 1;
+        this.lpDeliveryType = 'home';
+        this.lpGalleryIndex = 0;
       }
     }
     if (options.landingId) {
