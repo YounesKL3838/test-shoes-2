@@ -37,7 +37,7 @@ const ADMIN_I18N = {
     brandSubtitle: 'لوحة التحكم الشاملة للمتجر',
     viewStore: 'عرض المتجر',
     logout: 'خروج',
-    switchLangBtn: '🌐 Français',
+    switchLangBtn: 'Français',
     tabs: {
       inventory: 'المنتجات والفئات',
       inventoryShort: 'المنتجات',
@@ -47,7 +47,7 @@ const ADMIN_I18N = {
       cmsShort: 'الواجهة',
       landing: 'صفحات الهبوط',
       landingShort: 'الهبوط',
-      shipping: 'التوصيل (69 ولاية)',
+      shipping: 'التوصيل والولايات',
       shippingShort: 'التوصيل',
     },
     kpi: {
@@ -63,14 +63,14 @@ const ADMIN_I18N = {
       activeWilayas: (n) => `${n} ولاية مفعلة`,
     },
     inv: {
-      lowStockAlert: (names) => `⚠️ تنبيه مخزون منخفض (أقل من 5 قطع): ${names}`,
+      lowStockAlert: (names) => `تنبيه مخزون منخفض (أقل من 5 قطع): ${names}`,
       productsBadge: (n) => `${n} منتجات`,
-      editProdTitle: (name) => `✏️ تعديل المنتج: ${name}`,
-      addProdTitle: '➕ إضافة حذاء جديد للمتجر',
+      editProdTitle: (name) => `تعديل المنتج: ${name}`,
+      addProdTitle: '+ إضافة حذاء جديد للمتجر',
       prodFormSub: 'ارفع صورة الحذاء مباشرة من هاتفك أو حاسوبك وحدد السعر والكمية',
       cancelEdit: 'إلغاء التعديل',
       mainPhotoLabel: 'صورة الحذاء الأساسية (اضغط لرفع صورة من هاتفك أو جهازك)',
-      uploadTapTitle: '📷 اضغط هنا لاختيار صورة من الاستوديو أو الكاميرا',
+      uploadTapTitle: 'اضغط هنا لاختيار صورة من الاستوديو أو الكاميرا',
       uploadTapSub: 'بدون روابط — رفع مباشر وسريع',
       uploadBtn: 'رفع صورة',
       nameArLabel: 'اسم الحذاء (بالعربية)',
@@ -81,25 +81,25 @@ const ADMIN_I18N = {
       priceLabel: 'السعر (د.ج)',
       stockLabel: 'الكمية المتوفرة في المخزون',
       galleryLabel: 'صور إضافية للحذاء (اختياري)',
-      galleryTapTitle: (n) => `🖼️ إضافة صور أخرى للمعرض (${n} صور مرفوعة)`,
+      galleryTapTitle: (n) => `إضافة صور أخرى للمعرض (${n} صور مرفوعة)`,
       galleryTapSub: 'يمكنك اختيار عدة صور معاً من هاتفك',
-      galleryBtn: '➕ صور إضافية',
-      saveProdChanges: '💾 حفظ التعديلات',
-      addProdNow: '➕ إضافة الحذاء للمتجر الآن',
+      galleryBtn: '+ صور إضافية',
+      saveProdChanges: 'حفظ التعديلات',
+      addProdNow: '+ إضافة الحذاء للمتجر الآن',
       currentProdsTitle: (n) => `المنتجات الحالية والتحكم السريع بالمخزون (${n})`,
       currentProdsSub: 'اضغط على (+) أو (-) لتعديل المخزون فوراً، أو اضغط على الصورة لتغييرها من هاتفك',
-      searchPlaceholder: '🔍 ابحث عن اسم الحذاء...',
-      changePhotoBtn: '📷 تغيير',
+      searchPlaceholder: 'ابحث عن اسم الحذاء...',
+      changePhotoBtn: 'تغيير',
       outOfStock: 'نفد (0)',
-      lowStockBadge: (n) => `⚠️ منخفض (${n})`,
+      lowStockBadge: (n) => `منخفض (${n})`,
       inStockBadge: (n) => `متوفر (${n})`,
       editBtn: 'تعديل',
       deleteBtn: 'حذف',
     },
     orders: {
-      title: (n) => `🛍️ طلبات الزبائن (${n})`,
+      title: (n) => `طلبات الزبائن (${n})`,
       sub: 'غيّر حالة الطلب بلمسة واحدة أو اتصل بالزبون مباشرة من البطاقة',
-      addDemoBtn: '➕ إضافة طلب تجريبي',
+      addDemoBtn: '+ إضافة طلب تجريبي',
       allFilter: (n) => `الكل (${n})`,
       emptyOrders: 'لا توجد طلبات في هذه الحالة حالياً',
       totalAmount: 'المبلغ الإجمالي',
@@ -113,14 +113,14 @@ const ADMIN_I18N = {
       },
     },
     cms: {
-      livePreviewBanner: '👁️ معاينة مباشرة لواجهة المتجر (تتغير تلقائياً أثناء الكتابة)',
+      livePreviewBanner: 'معاينة مباشرة لواجهة المتجر (تتغير تلقائياً أثناء الكتابة)',
       navLinksPreview: 'الرئيسية · كعب · سنيكرز',
-      formTitle: '🎨 تعديل نصوص وصور الواجهة الرئيسية',
+      formTitle: 'تعديل نصوص وصور الواجهة الرئيسية',
       formSub: 'عدّل اسم المتجر، الإعلانات، البانر، والمميزات ثم اضغط حفظ',
-      saveBtn: '💾 حفظ التعديلات',
+      saveBtn: 'حفظ التعديلات',
       storeNameLabel: 'اسم المتجر',
       logoLabel: 'تغيير صورة شعار المتجر (من الهاتف)',
-      logoUploadTitle: '📷 رفع صورة الشعار',
+      logoUploadTitle: 'رفع صورة الشعار',
       chooseBtn: 'اختيار',
       annSwitchTitle: 'إظهار شريط الإعلانات الوردي بأعلى الموقع',
       annSwitchSub: 'لعرض عروض التوصيل المجاني أو التخفيضات',
@@ -129,15 +129,15 @@ const ADMIN_I18N = {
       heroBtnLabel: 'نص زر البانر',
       heroSubLabel: 'الوصف التسويقي للبانر',
       heroImgLabel: 'صورة البانر الرئيسي (رفع مباشر من الجهاز)',
-      heroImgTitle: '🖼️ اضغط لرفع صورة جديدة للبانر الرئيسي',
+      heroImgTitle: 'اضغط لرفع صورة جديدة للبانر الرئيسي',
       heroImgSub: 'تظهر فوراً في المعاينة أعلاه',
-      featLabel: (i) => `الميزة ${i} (الأيقونة والعنوان)`,
+      featLabel: (i) => `الميزة ${i} (الرمز والعنوان)`,
       featDescLabel: (i) => `وصف الميزة ${i}`,
-      saveAllCmsBtn: '💾 حفظ وتطبيق تعديلات الواجهة',
+      saveAllCmsBtn: 'حفظ وتطبيق تعديلات الواجهة',
     },
     lp: {
-      editTitle: (t) => `✏️ تعديل العرض: ${t}`,
-      createTitle: '🚀 إنشاء صفحة هبوط لعرض ترويجي',
+      editTitle: (t) => `تعديل العرض: ${t}`,
+      createTitle: '+ إنشاء صفحة هبوط لعرض ترويجي',
       sub: 'صفحة خاصة بمنتج مخفض مع استمارة شراء سريع تزيد المبيعات',
       cancelBtn: 'إلغاء',
       offerTitleLabel: 'عنوان العرض الترويجي',
@@ -146,22 +146,22 @@ const ADMIN_I18N = {
       origPriceLabel: 'السعر قبل التخفيض (د.ج)',
       discPriceLabel: 'سعر العرض المخفض (د.ج)',
       mainImgLabel: 'صورة العرض الرئيسية (من الهاتف)',
-      mainImgTitle: '📷 رفع صورة العرض',
+      mainImgTitle: 'رفع صورة العرض',
       mainImgSub: 'من ألبوم الصور',
       galleryLabel: 'صور إضافية لمعرض العرض',
-      galleryTitle: (n) => `🖼️ إضافة صور للمعرض (${n})`,
+      galleryTitle: (n) => `إضافة صور للمعرض (${n})`,
       gallerySub: 'اختيار متعدد',
-      addPhotosBtn: '➕ صور',
+      addPhotosBtn: '+ صور',
       descLabel: 'وصف العرض ومميزاته',
       descPlaceholder: 'اشرح مميزات الحذاء والعرض...',
-      updateBtn: '💾 تحديث صفحة الهبوط',
-      createBtn: '➕ إنشاء وحفظ صفحة الهبوط',
+      updateBtn: 'تحديث صفحة الهبوط',
+      createBtn: '+ إنشاء وحفظ صفحة الهبوط',
       activeListTitle: (n) => `صفحات الهبوط النشطة (${n})`,
       activeListSub: 'اضغط على "معاينة العرض" لتجربة استمارة الشراء السريع',
-      previewBtn: '👁️ معاينة العرض',
-      modalHeader: (slug) => `✨ معاينة صفحة الهبوط (${slug})`,
-      closeModal: 'إغلاق ✕',
-      quickOrderTitle: '🛍️ اطلبي الآن — الدفع عند الاستلام',
+      previewBtn: 'معاينة العرض',
+      modalHeader: (slug) => `معاينة صفحة الهبوط (${slug})`,
+      closeModal: 'إغلاق',
+      quickOrderTitle: 'اطلبي الآن — الدفع عند الاستلام',
       quickOrderSub: 'أدخلي معلوماتكِ ليصلكِ الطلب لباب المنزل',
       fullNamePlaceholder: 'الاسم واللقب *',
       phonePlaceholder: 'رقم الهاتف *',
@@ -169,20 +169,20 @@ const ADMIN_I18N = {
       confirmQuickOrder: (price) => `تأكيد الطلب — ${price}`,
     },
     ship: {
-      title: '🚚 سقف التوصيل المجاني وإضافة ولاية',
-      sub: 'حدد المبلغ الذي يصبح بعده الشحن مجانياً تلقائياً',
+      title: 'إضافة ولاية جديدة',
+      sub: 'أضف ولاية جديدة مع تحديد سعر التوصيل للمنزل وللمكتب',
       thresholdLabel: 'سقف التوصيل المجاني (د.ج)',
-      saveThresholdBtn: '💾 حفظ سقف الشحن المجاني',
+      saveThresholdBtn: 'حفظ سقف الشحن المجاني',
       addWilayaLabel: 'إضافة ولاية جديدة (الرمز والاسم)',
       wilayaNamePlaceholder: 'اسم الولاية (مثلاً: بجاية)',
       feesLabel: 'سعر المنزل والمكتب (د.ج)',
       homePlaceholder: 'المنزل 600',
       deskPlaceholder: 'المكتب 400',
-      addBtn: '➕ إضافة',
+      addBtn: '+ إضافة الولاية',
       ratesListTitle: (n) => `أسعار التوصيل حسب الولايات (${n})`,
       ratesListSub: 'عدّل السعر مباشرة وسيتم الحفظ تلقائياً',
-      homeFeeLabel: '🏠 للمنزل (د.ج)',
-      deskFeeLabel: '🏢 للمكتب (د.ج)',
+      homeFeeLabel: 'للمنزل (د.ج)',
+      deskFeeLabel: 'للمكتب (د.ج)',
     },
     toasts: {
       loggedOut: 'تم الخروج والعودة إلى واجهة المتجر',
@@ -191,26 +191,26 @@ const ADMIN_I18N = {
       newOrderAdded: (id) => `تم تسجيل الطلب الجديد #${id}`,
       orderDeleted: 'تم حذف الطلب',
       wilayaDeleted: 'تم حذف الولاية',
-      photoUploaded: '📷 تم رفع الصورة بنجاح',
-      galleryAdded: (n) => `🖼️ تمت إضافة ${n} صور`,
-      prodPhotoUpdated: (name) => `✅ تم تحديث صورة "${name}" فوراً`,
-      invalidImage: '⚠️ يرجى اختيار صورة صالحة',
-      orderStatusChanged: (id, st) => `✅ تم تحديث حالة الطلب #${id} إلى "${st}"`,
-      cmsSaved: '💖 تم حفظ تعديلات واجهة المتجر بنجاح!',
-      lpUpdated: '✅ تم تحديث العرض الترويجي',
-      lpCreated: '🚀 تم إنشاء صفحة الهبوط الجديدة',
-      prodUpdated: '✅ تم حفظ تعديلات المنتج',
-      prodCreated: '👠 تمت إضافة الحذاء الجديد للمتجر',
-      thresholdSaved: '✅ تم حفظ سقف التوصيل المجاني',
-      wilayaAdded: (name) => `✅ تمت إضافة ولاية ${name}`,
-      langSwitched: '🌐 تم التبديل إلى اللغة العربية',
+      photoUploaded: 'تم رفع الصورة بنجاح',
+      galleryAdded: (n) => `تمت إضافة ${n} صور`,
+      prodPhotoUpdated: (name) => `تم تحديث صورة "${name}" فوراً`,
+      invalidImage: 'يرجى اختيار صورة صالحة',
+      orderStatusChanged: (id, st) => `تم تحديث حالة الطلب #${id} إلى "${st}"`,
+      cmsSaved: 'تم حفظ تعديلات واجهة المتجر بنجاح',
+      lpUpdated: 'تم تحديث العرض الترويجي',
+      lpCreated: 'تم إنشاء صفحة الهبوط الجديدة',
+      prodUpdated: 'تم حفظ تعديلات المنتج',
+      prodCreated: 'تمت إضافة الحذاء الجديد للمتجر',
+      thresholdSaved: 'تم حفظ سقف التوصيل المجاني',
+      wilayaAdded: (name) => `تمت إضافة ولاية ${name}`,
+      langSwitched: 'تم التبديل إلى اللغة العربية',
     },
   },
   fr: {
     brandSubtitle: 'Panneau d’Administration & CMS Complet',
     viewStore: 'Voir la Boutique',
     logout: 'Quitter',
-    switchLangBtn: '🌐 العربية',
+    switchLangBtn: 'العربية',
     tabs: {
       inventory: 'Produits & Stock',
       inventoryShort: 'Produits',
@@ -220,7 +220,7 @@ const ADMIN_I18N = {
       cmsShort: 'Vitrine',
       landing: 'Landing Pages',
       landingShort: 'Offres',
-      shipping: 'Livraison',
+      shipping: 'Livraison & Wilayas',
       shippingShort: 'Livraison',
     },
     kpi: {
@@ -236,14 +236,14 @@ const ADMIN_I18N = {
       activeWilayas: (n) => `${n} wilayas actives`,
     },
     inv: {
-      lowStockAlert: (names) => `⚠️ Alerte stock faible (moins de 5 pièces) : ${names}`,
+      lowStockAlert: (names) => `Alerte stock faible (moins de 5 pièces) : ${names}`,
       productsBadge: (n) => `${n} produits`,
-      editProdTitle: (name) => `✏️ Modifier le produit : ${name}`,
-      addProdTitle: '➕ Ajouter une nouvelle chaussure',
+      editProdTitle: (name) => `Modifier le produit : ${name}`,
+      addProdTitle: '+ Ajouter une nouvelle chaussure',
       prodFormSub: 'Importez la photo directement depuis votre téléphone ou PC et fixez le prix',
       cancelEdit: 'Annuler',
       mainPhotoLabel: 'Photo principale (Appuyez pour importer depuis votre téléphone)',
-      uploadTapTitle: '📷 Appuyez ici pour choisir une photo (Galerie ou Caméra)',
+      uploadTapTitle: 'Appuyez ici pour choisir une photo (Galerie ou Caméra)',
       uploadTapSub: 'Sans lien URL — Importation directe et rapide',
       uploadBtn: 'Importer',
       nameArLabel: 'Nom de la chaussure (Arabe)',
@@ -254,25 +254,25 @@ const ADMIN_I18N = {
       priceLabel: 'Prix (DA)',
       stockLabel: 'Quantité en stock',
       galleryLabel: 'Photos supplémentaires pour la galerie (Optionnel)',
-      galleryTapTitle: (n) => `🖼️ Ajouter d’autres angles (${n} photos importées)`,
+      galleryTapTitle: (n) => `Ajouter d’autres angles (${n} photos importées)`,
       galleryTapSub: 'Sélection multiple possible depuis votre téléphone',
-      galleryBtn: '➕ Photos',
-      saveProdChanges: '💾 Enregistrer les modifications',
-      addProdNow: '➕ Ajouter au catalogue maintenant',
+      galleryBtn: '+ Photos',
+      saveProdChanges: 'Enregistrer les modifications',
+      addProdNow: '+ Ajouter au catalogue maintenant',
       currentProdsTitle: (n) => `Catalogue & Contrôle Rapide du Stock (${n})`,
       currentProdsSub: 'Appuyez sur (+) ou (-) pour ajuster le stock, ou sur la photo pour la remplacer',
-      searchPlaceholder: '🔍 Rechercher un modèle...',
-      changePhotoBtn: '📷 Changer',
+      searchPlaceholder: 'Rechercher un modèle...',
+      changePhotoBtn: 'Changer',
       outOfStock: 'Épuisé (0)',
-      lowStockBadge: (n) => `⚠️ Faible (${n})`,
+      lowStockBadge: (n) => `Faible (${n})`,
       inStockBadge: (n) => `En stock (${n})`,
       editBtn: 'Modifier',
       deleteBtn: 'Supprimer',
     },
     orders: {
-      title: (n) => `🛍️ Commandes Clients (${n})`,
+      title: (n) => `Commandes Clients (${n})`,
       sub: 'Changez le statut en un clic ou appelez directement le client depuis la carte',
-      addDemoBtn: '➕ Commande test',
+      addDemoBtn: '+ Commande test',
       allFilter: (n) => `Toutes (${n})`,
       emptyOrders: 'Aucune commande avec ce statut pour le moment',
       totalAmount: 'Montant Total',
@@ -286,14 +286,14 @@ const ADMIN_I18N = {
       },
     },
     cms: {
-      livePreviewBanner: '👁️ Aperçu en direct de la boutique (Mise à jour instantanée)',
+      livePreviewBanner: 'Aperçu en direct de la boutique (Mise à jour instantanée)',
       navLinksPreview: 'Accueil · Talons · Sneakers',
-      formTitle: '🎨 Personnaliser les textes et images de la vitrine',
+      formTitle: 'Personnaliser les textes et images de la vitrine',
       formSub: 'Modifiez le nom, la barre d’annonce, la bannière Hero et les avantages',
-      saveBtn: '💾 Enregistrer',
+      saveBtn: 'Enregistrer',
       storeNameLabel: 'Nom de la boutique',
       logoLabel: 'Changer le logo (Depuis le téléphone)',
-      logoUploadTitle: '📷 Importer le logo',
+      logoUploadTitle: 'Importer le logo',
       chooseBtn: 'Choisir',
       annSwitchTitle: 'Afficher la barre d’annonce rose en haut du site',
       annSwitchSub: 'Pour annoncer la livraison gratuite ou les promotions',
@@ -302,15 +302,15 @@ const ADMIN_I18N = {
       heroBtnLabel: 'Texte du bouton d’action',
       heroSubLabel: 'Sous-titre de la bannière',
       heroImgLabel: 'Image de la bannière principale (Importation directe)',
-      heroImgTitle: '🖼️ Appuyez pour importer une nouvelle image de bannière',
+      heroImgTitle: 'Appuyez pour importer une nouvelle image de bannière',
       heroImgSub: 'S’affiche immédiatement dans l’aperçu ci-dessus',
-      featLabel: (i) => `Avantage ${i} (Icône & Titre)`,
+      featLabel: (i) => `Avantage ${i} (Symbole & Titre)`,
       featDescLabel: (i) => `Description de l’avantage ${i}`,
-      saveAllCmsBtn: '💾 Enregistrer et appliquer à la boutique',
+      saveAllCmsBtn: 'Enregistrer et appliquer à la boutique',
     },
     lp: {
-      editTitle: (t) => `✏️ Modifier l’offre : ${t}`,
-      createTitle: '🚀 Créer une Landing Page promotionnelle',
+      editTitle: (t) => `Modifier l’offre : ${t}`,
+      createTitle: '+ Créer une Landing Page promotionnelle',
       sub: 'Page dédiée à une offre spéciale avec formulaire de commande rapide intégré',
       cancelBtn: 'Annuler',
       offerTitleLabel: 'Titre de l’offre promotionnelle',
@@ -319,22 +319,22 @@ const ADMIN_I18N = {
       origPriceLabel: 'Prix initial avant remise (DA)',
       discPriceLabel: 'Prix promo (DA)',
       mainImgLabel: 'Photo principale de l’offre (Depuis téléphone)',
-      mainImgTitle: '📷 Importer la photo',
+      mainImgTitle: 'Importer la photo',
       mainImgSub: 'Depuis la galerie',
       galleryLabel: 'Galerie photos de l’offre',
-      galleryTitle: (n) => `🖼️ Ajouter à la galerie (${n})`,
+      galleryTitle: (n) => `Ajouter à la galerie (${n})`,
       gallerySub: 'Sélection multiple',
-      addPhotosBtn: '➕ Photos',
+      addPhotosBtn: '+ Photos',
       descLabel: 'Description marketing de l’offre',
       descPlaceholder: 'Décrivez les avantages du modèle et de la promotion...',
-      updateBtn: '💾 Mettre à jour la Landing Page',
-      createBtn: '➕ Créer et publier la Landing Page',
+      updateBtn: 'Mettre à jour la Landing Page',
+      createBtn: '+ Créer et publier la Landing Page',
       activeListTitle: (n) => `Landing Pages Actives (${n})`,
       activeListSub: 'Cliquez sur "Aperçu" pour tester le formulaire de commande rapide',
-      previewBtn: '👁️ Aperçu de l’offre',
-      modalHeader: (slug) => `✨ Aperçu de la Landing Page (${slug})`,
-      closeModal: 'Fermer ✕',
-      quickOrderTitle: '🛍️ Commandez maintenant — Paiement à la livraison',
+      previewBtn: 'Aperçu de l’offre',
+      modalHeader: (slug) => `Aperçu de la Landing Page (${slug})`,
+      closeModal: 'Fermer',
+      quickOrderTitle: 'Commandez maintenant — Paiement à la livraison',
       quickOrderSub: 'Remplissez vos coordonnées pour recevoir votre colis à domicile',
       fullNamePlaceholder: 'Nom et Prénom *',
       phonePlaceholder: 'Numéro de téléphone *',
@@ -342,20 +342,20 @@ const ADMIN_I18N = {
       confirmQuickOrder: (price) => `Confirmer la commande — ${price}`,
     },
     ship: {
-      title: '🚚 Seuil de livraison gratuite & Ajout de Wilaya',
-      sub: 'Définissez le montant à partir duquel la livraison devient gratuite',
+      title: 'Ajouter une nouvelle Wilaya',
+      sub: 'Ajoutez une wilaya avec ses tarifs de livraison à domicile et stop-desk',
       thresholdLabel: 'Seuil de livraison gratuite (DA)',
-      saveThresholdBtn: '💾 Enregistrer le seuil',
+      saveThresholdBtn: 'Enregistrer le seuil',
       addWilayaLabel: 'Ajouter une wilaya (Code & Nom)',
       wilayaNamePlaceholder: 'Nom de la wilaya (ex: Béjaïa)',
       feesLabel: 'Tarifs Domicile & Stop-Desk (DA)',
       homePlaceholder: 'Domicile 600',
       deskPlaceholder: 'Stop-Desk 400',
-      addBtn: '➕ Ajouter',
+      addBtn: '+ Ajouter la wilaya',
       ratesListTitle: (n) => `Tarifs de livraison par Wilaya (${n})`,
       ratesListSub: 'Modifiez directement les tarifs, sauvegarde automatique',
-      homeFeeLabel: '🏠 À Domicile (DA)',
-      deskFeeLabel: '🏢 Stop-Desk (DA)',
+      homeFeeLabel: 'À Domicile (DA)',
+      deskFeeLabel: 'Stop-Desk (DA)',
     },
     toasts: {
       loggedOut: 'Déconnexion réussie — Retour à la boutique',
@@ -364,19 +364,19 @@ const ADMIN_I18N = {
       newOrderAdded: (id) => `Nouvelle commande #${id} enregistrée`,
       orderDeleted: 'Commande supprimée',
       wilayaDeleted: 'Wilaya supprimée',
-      photoUploaded: '📷 Photo importée avec succès',
-      galleryAdded: (n) => `🖼️ ${n} photos ajoutées`,
-      prodPhotoUpdated: (name) => `✅ Photo de "${name}" mise à jour`,
-      invalidImage: '⚠️ Veuillez sélectionner une image valide',
-      orderStatusChanged: (id, st) => `✅ Statut de #${id} changé en "${st}"`,
-      cmsSaved: '💖 Modifications de la vitrine enregistrées !',
-      lpUpdated: '✅ Offre promotionnelle mise à jour',
-      lpCreated: '🚀 Nouvelle Landing Page créée',
-      prodUpdated: '✅ Produit mis à jour avec succès',
-      prodCreated: '👠 Nouveau modèle ajouté à la boutique',
-      thresholdSaved: '✅ Seuil de livraison gratuite enregistré',
-      wilayaAdded: (name) => `✅ Wilaya ${name} ajoutée`,
-      langSwitched: '🌐 Langue changée en Français',
+      photoUploaded: 'Photo importée avec succès',
+      galleryAdded: (n) => `${n} photos ajoutées`,
+      prodPhotoUpdated: (name) => `Photo de "${name}" mise à jour`,
+      invalidImage: 'Veuillez sélectionner une image valide',
+      orderStatusChanged: (id, st) => `Statut de #${id} changé en "${st}"`,
+      cmsSaved: 'Modifications de la vitrine enregistrées',
+      lpUpdated: 'Offre promotionnelle mise à jour',
+      lpCreated: 'Nouvelle Landing Page créée',
+      prodUpdated: 'Produit mis à jour avec succès',
+      prodCreated: 'Nouveau modèle ajouté à la boutique',
+      thresholdSaved: 'Seuil de livraison gratuite enregistré',
+      wilayaAdded: (name) => `Wilaya ${name} ajoutée`,
+      langSwitched: 'Langue changée en Français',
     },
   },
 };
@@ -521,31 +521,50 @@ const DEFAULT_CMS = {
   googleTagId: '',
   features: [
     {
-      icon: '🚚',
+      icon: '01',
       title: 'توصيل سريع 69 ولاية · Livraison 69 Wilayas',
       desc: 'شحن مباشر لباب المنزل أو المكتب خلال 24-48 ساعة',
     },
     {
-      icon: '🤝',
+      icon: '02',
       title: 'الدفع عند الاستلام · Paiement à la livraison',
       desc: 'معاينة الطلبية والتأكد من المقاس قبل الدفع بكل أمان',
     },
     {
-      icon: '💖',
+      icon: '03',
       title: 'ضمان الاستبدال · Échange garanti',
       desc: 'إمكانية استبدال المقاس مجاناً خلال 7 أيام من الاستلام',
     },
   ],
 };
 
+const INITIAL_DEFAULT_WILAYAS = WILAYAS.map((w) => ({ ...w }));
+
 function ensureAll69Wilayas(savedRates) {
+  if (Array.isArray(savedRates) && savedRates.length > 0 && savedRates.length !== 58) {
+    return savedRates
+      .filter((r) => r && r.code)
+      .map((r) => {
+        const cleanCode = String(r.code).trim().padStart(2, '0');
+        const foundDefault = INITIAL_DEFAULT_WILAYAS.find((w) => w.code === cleanCode);
+        const homeFee = Number(r.homeFee ?? foundDefault?.fee ?? 500);
+        return {
+          code: cleanCode,
+          name: r.name || foundDefault?.name_ar || r.name_fr || cleanCode,
+          name_fr: r.name_fr || foundDefault?.name_fr || r.name || cleanCode,
+          homeFee,
+          deskFee: Number(r.deskFee ?? Math.max(250, homeFee - 150)),
+        };
+      });
+  }
+
   const mapByCode = new Map();
   if (Array.isArray(savedRates)) {
     savedRates.forEach((r) => {
-      if (r && r.code) mapByCode.set(String(r.code).padStart(2, '0'), r);
+      if (r && r.code) mapByCode.set(String(r.code).trim().padStart(2, '0'), r);
     });
   }
-  const merged = WILAYAS.map((w) => {
+  const merged = INITIAL_DEFAULT_WILAYAS.map((w) => {
     const existing = mapByCode.get(w.code);
     if (existing) {
       mapByCode.delete(w.code);
@@ -835,22 +854,22 @@ export const adminState = {
 
   draftCategoryImage: IMAGES.talons,
 
-  // حالة مسودة إضافة/تعديل المنتج التفصيلية (الأقسام الـ 3 + التوليد الذكي)
+  // حالة مسودة إضافة/تعديل المنتج التفصيلية
   draftProductBrief: '',
   draftGeneratedPreview: null,
-  draftProductImage: IMAGES.talons,
+  draftProductImage: '',
   draftProductGallery: [],
   draftProductForm: {
     name: '',
     name_fr: '',
-    slug: 'sandale-beige-talon',
-    category: 'Sandales',
+    slug: '',
+    category: '',
     description_ar: '',
     description_fr: '',
-    originalPrice: 6200,
-    discountPrice: 4790,
+    originalPrice: '',
+    discountPrice: '',
     isVisible: true,
-    isNew: true,
+    isNew: false,
     isBestSeller: false,
     isSpecialOffer: false,
     colorName: 'Beige',
@@ -859,6 +878,7 @@ export const adminState = {
     sizeTo: 41,
     defaultSizeStock: 5,
     sizeStock: buildSizeStockRange(36, 41, 5),
+    variants: [],
   },
 
   draftLandingMainImage: IMAGES.talons,
@@ -929,6 +949,13 @@ export const adminState = {
   })(),
 
   syncWithStorefront() {
+    if (Array.isArray(this.cms?.features)) {
+      this.cms.features = this.cms.features.map((f, idx) => ({
+        ...f,
+        icon: String(f.icon || '').replace(/\p{Extended_Pictographic}/gu, '').trim() || `0${idx + 1}`,
+      }));
+    }
+
     if (Array.isArray(this.categories) && this.categories.length > 0) {
       CATEGORIES.length = 0;
       this.categories.forEach((cat) => {
@@ -937,6 +964,21 @@ export const adminState = {
           ar: `${cat.name_ar} (${cat.name_fr || cat.id})`,
           fr: `${cat.name_fr || cat.id} (${cat.name_ar})`,
         };
+      });
+    }
+
+    if (Array.isArray(this.shipping?.rates) && this.shipping.rates.length > 0) {
+      WILAYAS.length = 0;
+      this.shipping.rates.forEach((r) => {
+        if (!r || !r.code) return;
+        const cleanCode = String(r.code).trim().padStart(2, '0');
+        WILAYAS.push({
+          code: cleanCode,
+          name_ar: r.name || r.name_fr || cleanCode,
+          name_fr: r.name_fr || r.name || cleanCode,
+          fee: Number(r.homeFee ?? 500),
+          deskFee: Number(r.deskFee ?? 350),
+        });
       });
     }
 
@@ -1132,35 +1174,30 @@ export function renderAdminDashboard() {
   const tabs = [
     {
       id: 'inventory',
-      icon: '📦',
       label: tr.tabs.inventory,
       shortLabel: tr.tabs.inventoryShort,
       badge: adminState.inventory.length,
     },
     {
       id: 'orders',
-      icon: '🛍️',
       label: tr.tabs.orders,
       shortLabel: tr.tabs.ordersShort,
       badge: adminState.orders.length,
     },
     {
       id: 'cms',
-      icon: '🎨',
       label: tr.tabs.cms,
       shortLabel: tr.tabs.cmsShort,
       badge: 'CMS',
     },
     {
       id: 'landing',
-      icon: '🚀',
       label: tr.tabs.landing,
       shortLabel: tr.tabs.landingShort,
       badge: adminState.landingPages.length,
     },
     {
       id: 'shipping',
-      icon: '🚚',
       label: tr.tabs.shipping,
       shortLabel: tr.tabs.shippingShort,
       badge: adminState.shipping.rates.length,
@@ -1193,7 +1230,6 @@ export function renderAdminDashboard() {
               data-adm-action="close-admin"
               class="adm-btn adm-btn-pink adm-btn-sm"
             >
-              <span>👁️</span>
               <span>${tr.viewStore}</span>
             </button>
             <button
@@ -1217,7 +1253,6 @@ export function renderAdminDashboard() {
                 data-tab="${tab.id}"
                 class="adm-tab-pill ${adminState.activeTab === tab.id ? 'active' : ''}"
               >
-                <span>${tab.icon}</span>
                 <span>${tab.label}</span>
                 <span class="adm-tab-pill-badge">${tab.badge}</span>
               </button>
@@ -1290,7 +1325,6 @@ export function renderAdminDashboard() {
               data-tab="${tab.id}"
               class="adm-bottom-nav-btn ${adminState.activeTab === tab.id ? 'active' : ''}"
             >
-              <span class="adm-bnav-icon">${tab.icon}</span>
               <span class="adm-bnav-label">${tab.shortLabel}</span>
             </button>
           `
@@ -1345,7 +1379,7 @@ ${sizeRows}`;
 }
 
 /**
- * القسم 1: إدارة المنتجات والمخزون (واجهة مريحة للعين — الكتالوج أولاً + نموذج مبسط مع إخفاء الخيارات المتقدمة)
+ * القسم 1: إدارة المنتجات والمخزون
  */
 function renderInventorySection() {
   const tr = t();
@@ -1357,15 +1391,531 @@ function renderInventorySection() {
     : null;
 
   const isFormVisible = Boolean(adminState.isProductFormOpen || editingProd);
-  const showAdvanced = Boolean(adminState.showAdvancedProductFields);
 
   const df = adminState.draftProductForm;
-  const currentProdImg =
-    adminState.draftProductImage || (editingProd ? editingProd.image : IMAGES.talons);
-  const currentProdGallery = adminState.draftProductGallery || [];
+  const variants = Array.isArray(df.variants) ? df.variants : [];
 
-  const sizeMap = df.sizeStock || buildSizeStockRange(df.sizeFrom, df.sizeTo, df.defaultSizeStock);
-  const totalCalculatedStock = sumSizeStock(sizeMap);
+  // دمج الصورة الرئيسية ومعرض الصور في مصفوفة واحدة لعرضها والتحكم بها بسهولة
+  const galleryList = Array.isArray(adminState.draftProductGallery)
+    ? [...adminState.draftProductGallery]
+    : [];
+  if (adminState.draftProductImage && !galleryList.includes(adminState.draftProductImage)) {
+    galleryList.unshift(adminState.draftProductImage);
+  }
+
+  // خيارات التصنيفات المتاحة
+  const categoryOptions = [];
+  const seenCats = new Set();
+  if (Array.isArray(adminState.categories)) {
+    adminState.categories.forEach((c) => {
+      if (c && c.id && !seenCats.has(c.id)) {
+        seenCats.add(c.id);
+        categoryOptions.push({
+          id: c.id,
+          label: isFr ? c.name_fr || c.name_ar : c.name_ar || c.name_fr,
+        });
+      }
+    });
+  }
+  Object.keys(CATEGORY_LABELS).forEach((catId) => {
+    if (!seenCats.has(catId)) {
+      seenCats.add(catId);
+      categoryOptions.push({
+        id: catId,
+        label: CATEGORY_LABELS[catId][lang] || catId,
+      });
+    }
+  });
+
+  if (isFormVisible) {
+    return `
+      <div class="adm-new-prod-page" style="max-width:1040px; margin:0 auto;">
+        <!-- شريط العنوان العلوي: منتج جديد + زر العودة لكل المنتجات -->
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.25rem;">
+          <h2 style="font-size:1.55rem; font-weight:800; color:#18181b; margin:0;">
+            ${editingProd ? (isFr ? `Modifier : ${getProdDisplayName(editingProd)}` : `تعديل المنتج : ${getProdDisplayName(editingProd)}`) : (isFr ? 'Nouveau produit' : 'منتج جديد')}
+          </h2>
+          <button
+            type="button"
+            data-adm-action="cancel-product-edit"
+            style="background:#fff; color:#18181b; border:1px solid #27272a; border-radius:4px; padding:0.48rem 1rem; font-size:0.86rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem;"
+          >
+            <span>${isFr ? '← Tous les produits' : '← كل المنتجات'}</span>
+          </button>
+        </div>
+
+        <form id="adm-product-form" style="display:flex; flex-direction:column; gap:1.25rem;">
+          <!-- 1. المعلومات الأساسية -->
+          <div style="background:#fff; border:1px solid #e6e1d6; border-radius:6px; padding:1.5rem;">
+            <h3 style="font-size:1.02rem; font-weight:800; color:#18181b; margin:0 0 1.15rem 0;">
+              ${isFr ? 'Informations de base' : 'المعلومات الأساسية'}
+            </h3>
+
+            <div class="adm-form-grid" style="gap:1rem;">
+              <div class="adm-field">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Nom en arabe *' : 'الاسم بالعربية *'}</label>
+                <input
+                  name="name"
+                  type="text"
+                  class="adm-input"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  value="${df.name || ''}"
+                  required
+                />
+              </div>
+
+              <div class="adm-field">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">Nom en français *</label>
+                <input
+                  name="name_fr"
+                  type="text"
+                  dir="ltr"
+                  class="adm-input"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  value="${df.name_fr || ''}"
+                  required
+                />
+              </div>
+
+              <div class="adm-field">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Lien (slug) *' : 'الرابط (slug) *'}</label>
+                <input
+                  name="slug"
+                  type="text"
+                  dir="ltr"
+                  placeholder="sandale-beige"
+                  class="adm-input"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff; text-align:left;"
+                  value="${df.slug || ''}"
+                  required
+                />
+              </div>
+
+              <div class="adm-field">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Catégorie' : 'التصنيف'}</label>
+                <select
+                  name="category"
+                  class="adm-select"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                >
+                  <option value="" ${!df.category ? 'selected' : ''}>${isFr ? '-- Aucune --' : '-- بدون --'}</option>
+                  ${categoryOptions
+                    .map(
+                      (c) =>
+                        `<option value="${c.id}" ${df.category === c.id ? 'selected' : ''}>${c.label}</option>`
+                    )
+                    .join('')}
+                </select>
+              </div>
+
+              <div class="adm-field">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Description en arabe' : 'الوصف بالعربية'}</label>
+                <textarea
+                  name="description_ar"
+                  rows="4"
+                  class="adm-textarea"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff; min-height:105px;"
+                >${df.description_ar || ''}</textarea>
+              </div>
+
+              <div class="adm-field">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">Description en français</label>
+                <textarea
+                  name="description_fr"
+                  rows="4"
+                  dir="ltr"
+                  class="adm-textarea"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff; min-height:105px;"
+                >${df.description_fr || ''}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. السعر والعرض -->
+          <div style="background:#fff; border:1px solid #e6e1d6; border-radius:6px; padding:1.5rem;">
+            <h3 style="font-size:1.02rem; font-weight:800; color:#18181b; margin:0 0 1.15rem 0;">
+              ${isFr ? 'Prix et affichage' : 'السعر والعرض'}
+            </h3>
+
+            <div class="adm-form-grid" style="gap:1rem;">
+              <div class="adm-field">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Prix original (DA) *' : 'السعر الأصلي (د.ج) *'}</label>
+                <input
+                  name="originalPrice"
+                  type="number"
+                  min="0"
+                  class="adm-input"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  value="${df.originalPrice !== undefined && df.originalPrice !== null ? df.originalPrice : ''}"
+                  required
+                />
+              </div>
+
+              <div class="adm-field">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Prix remisé (optionnel)' : 'سعر التخفيض (اختياري)'}</label>
+                <input
+                  name="discountPrice"
+                  type="number"
+                  min="0"
+                  class="adm-input"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  value="${df.discountPrice !== undefined && df.discountPrice !== null ? df.discountPrice : ''}"
+                />
+              </div>
+            </div>
+
+            <!-- خيارات العرض (Checkboxes) -->
+            <div style="display:flex; align-items:center; flex-wrap:wrap; gap:1.5rem; margin-top:1.1rem;">
+              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.88rem; font-weight:600; color:#27272a; cursor:pointer;">
+                <input
+                  type="checkbox"
+                  name="isVisible"
+                  style="width:16px; height:16px; accent-color:#18181b; cursor:pointer;"
+                  ${df.isVisible !== false ? 'checked' : ''}
+                />
+                <span>${isFr ? 'Visible en boutique' : 'ظاهر في المتجر'}</span>
+              </label>
+
+              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.88rem; font-weight:600; color:#27272a; cursor:pointer;">
+                <input
+                  type="checkbox"
+                  name="isNew"
+                  style="width:16px; height:16px; accent-color:#18181b; cursor:pointer;"
+                  ${df.isNew ? 'checked' : ''}
+                />
+                <span>${isFr ? 'Nouvel arrivage' : 'وصل حديثاً'}</span>
+              </label>
+
+              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.88rem; font-weight:600; color:#27272a; cursor:pointer;">
+                <input
+                  type="checkbox"
+                  name="isBestSeller"
+                  style="width:16px; height:16px; accent-color:#18181b; cursor:pointer;"
+                  ${df.isBestSeller ? 'checked' : ''}
+                />
+                <span>${isFr ? 'Meilleures ventes' : 'الأكثر مبيعاً'}</span>
+              </label>
+
+              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.88rem; font-weight:600; color:#27272a; cursor:pointer;">
+                <input
+                  type="checkbox"
+                  name="isSpecialOffer"
+                  style="width:16px; height:16px; accent-color:#18181b; cursor:pointer;"
+                  ${df.isSpecialOffer ? 'checked' : ''}
+                />
+                <span>${isFr ? 'En vedette' : 'مميز'}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 3. صور المنتج -->
+          <div style="background:#fff; border:1px solid #e6e1d6; border-radius:6px; padding:1.5rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+              <div>
+                <h3 style="font-size:1.02rem; font-weight:800; color:#18181b; margin:0;">
+                  ${isFr ? 'Photos du produit' : 'صور المنتج'}
+                </h3>
+                <p style="font-size:0.78rem; color:#71717a; margin:0.2rem 0 0 0;">
+                  ${isFr ? 'Ajoutez une ou plusieurs photos (format portrait 4:5 recommandé). La première photo sera la photo principale.' : 'أضف صورة أو عدة صور للمنتج (تظهر بمقاس إنستغرام 4:5). الصورة الأولى تكون هي الصورة الرئيسية.'}
+                </p>
+              </div>
+
+              <label
+                for="adm-prod-gallery-input"
+                style="position:relative; background:#fff; color:#18181b; border:1px solid #27272a; border-radius:4px; padding:0.5rem 1rem; font-size:0.84rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem;"
+              >
+                <span>${isFr ? '+ Ajouter des photos' : '+ رفع صور من الجهاز'}</span>
+                <input
+                  id="adm-prod-gallery-input"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style="display:none;"
+                />
+              </label>
+            </div>
+
+            <!-- إضافة رابط صورة مباشر (اختياري) -->
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">
+              <input
+                id="adm-prod-image-url-input"
+                type="url"
+                dir="ltr"
+                placeholder="${isFr ? 'Ou collez un lien image direct (https://...)' : 'أو ألصق رابط صورة مباشر هنا (https://...)'}"
+                class="adm-input"
+                style="flex:1; min-width:220px; border-radius:4px; border-color:#d6d1c7; background:#fff;"
+              />
+              <button
+                type="button"
+                data-adm-action="add-prod-image-url"
+                style="background:#f5f2eb; color:#18181b; border:1px solid #d6d1c7; border-radius:4px; padding:0.5rem 1rem; font-size:0.82rem; font-weight:700; cursor:pointer;"
+              >
+                ${isFr ? '+ Ajouter le lien' : '+ إضافة الرابط'}
+              </button>
+            </div>
+
+            <!-- شبكة معاينة صور المنتج المرفوعة -->
+            ${
+              galleryList.length > 0
+                ? `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(125px, 1fr)); gap:0.85rem;">
+                    ${galleryList
+                      .map(
+                        (imgSrc, idx) => `
+                        <div style="position:relative; border:1px solid ${idx === 0 ? '#18181b' : '#e4e4e7'}; border-radius:6px; overflow:hidden; background:#fafaf9;">
+                          <div style="aspect-ratio:4/5; width:100%; overflow:hidden; background:#f4f4f5;">
+                            <img
+                              src="${imgSrc}"
+                              alt="Product ${idx + 1}"
+                              referrerpolicy="no-referrer"
+                              style="width:100%; height:100%; object-fit:cover; display:block;"
+                            />
+                          </div>
+                          <div style="padding:0.35rem 0.45rem; display:flex; align-items:center; justify-content:space-between; gap:0.25rem; background:#fff; border-top:1px solid #f4f4f5;">
+                            ${
+                              idx === 0
+                                ? `<span style="font-size:0.68rem; font-weight:800; color:#18181b; background:#ebe5dc; padding:0.15rem 0.45rem; border-radius:3px;">${isFr ? 'Principale' : 'الرئيسية'}</span>`
+                                : `<button
+                                    type="button"
+                                    data-adm-action="set-main-prod-img"
+                                    data-index="${idx}"
+                                    style="font-size:0.68rem; font-weight:700; color:#52525b; background:transparent; border:1px solid #d4d4d8; border-radius:3px; padding:0.12rem 0.4rem; cursor:pointer;"
+                                  >
+                                    ${isFr ? 'Définir principale' : 'جعلها رئيسية'}
+                                  </button>`
+                            }
+                            <button
+                              type="button"
+                              data-adm-action="remove-prod-gallery-img"
+                              data-index="${idx}"
+                              title="${isFr ? 'Supprimer' : 'حذف الصورة'}"
+                              style="width:22px; height:22px; border-radius:4px; border:1px solid #fecdd3; background:#fff1f2; color:#e11d48; font-weight:800; font-size:0.8rem; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </div>
+                      `
+                      )
+                      .join('')}
+                  </div>`
+                : `<div style="border:1px dashed #d6d1c7; border-radius:6px; padding:1.5rem; text-align:center; color:#71717a; font-size:0.86rem; background:#faf9f6;">
+                    ${isFr ? 'Aucune photo ajoutée. Cliquez sur « + Ajouter des photos » pour importer les images du produit.' : 'لم تتم إضافة صور للمنتج بعد. اضغط على «+ رفع صور من الجهاز» لإضافة صور الحذاء.'}
+                  </div>`
+            }
+          </div>
+
+          <!-- 4. المقاسات والألوان والمخزون -->
+          <div style="background:#fff; border:1px solid #e6e1d6; border-radius:6px; padding:1.5rem;">
+            <h3 style="font-size:1.02rem; font-weight:800; color:#18181b; margin:0 0 1.15rem 0;">
+              ${isFr ? 'Pointures, couleurs et stock' : 'المقاسات والألوان والمخزون'}
+            </h3>
+
+            <!-- السطر 1: اللون + درجة اللون -->
+            <div style="display:flex; align-items:flex-end; gap:0.85rem; flex-wrap:wrap; margin-bottom:1rem;">
+              <div class="adm-field" style="flex:1; min-width:220px;">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Couleur' : 'اللون'}</label>
+                <input
+                  id="adm-variant-color-name"
+                  name="colorName"
+                  type="text"
+                  class="adm-input"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  value="${df.colorName || 'Beige'}"
+                />
+              </div>
+
+              <div class="adm-field" style="width:auto;">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Nuance' : 'درجة اللون'}</label>
+                <input
+                  id="adm-color-picker"
+                  name="colorHex"
+                  type="color"
+                  value="${df.colorHex || '#D2B48C'}"
+                  style="width:58px; height:40px; padding:3px; border:1px solid #d6d1c7; border-radius:4px; background:#fff; cursor:pointer; display:block;"
+                />
+              </div>
+            </div>
+
+            <!-- السطر 2: من المقاس | إلى المقاس | الكمية لكل مقاس -->
+            <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem; margin-bottom:1rem;">
+              <div class="adm-field">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'De la pointure' : 'من المقاس'}</label>
+                <input
+                  id="adm-size-from"
+                  name="sizeFrom"
+                  type="number"
+                  min="30"
+                  max="48"
+                  class="adm-input"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  value="${df.sizeFrom ?? 36}"
+                />
+              </div>
+
+              <div class="adm-field">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? "Jusqu'à la pointure" : 'إلى المقاس'}</label>
+                <input
+                  id="adm-size-to"
+                  name="sizeTo"
+                  type="number"
+                  min="30"
+                  max="48"
+                  class="adm-input"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  value="${df.sizeTo ?? 41}"
+                />
+              </div>
+
+              <div class="adm-field">
+                <label class="adm-label" style="font-weight:600; color:#52525b;">${isFr ? 'Quantité par pointure' : 'الكمية لكل مقاس'}</label>
+                <input
+                  id="adm-default-size-stock"
+                  name="defaultSizeStock"
+                  type="number"
+                  min="0"
+                  class="adm-input"
+                  style="border-radius:4px; border-color:#d6d1c7; background:#fff;"
+                  value="${df.defaultSizeStock ?? 5}"
+                />
+              </div>
+            </div>
+
+            <!-- السطر 3: أزرار توليد المقاسات لهذا اللون + سطر يدوي -->
+            <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.15rem;">
+              <button
+                type="button"
+                data-adm-action="generate-variant-rows"
+                style="background:#fff; color:#18181b; border:1px solid #27272a; border-radius:4px; padding:0.5rem 1rem; font-size:0.84rem; font-weight:700; cursor:pointer;"
+              >
+                ${isFr ? 'Générer les pointures pour cette couleur' : 'توليد المقاسات لهذا اللون'}
+              </button>
+
+              <button
+                type="button"
+                data-adm-action="add-manual-variant-row"
+                style="background:#fff; color:#18181b; border:1px solid #27272a; border-radius:4px; padding:0.5rem 1rem; font-size:0.84rem; font-weight:700; cursor:pointer;"
+              >
+                ${isFr ? '+ Ligne manuelle' : '+ سطر يدوي'}
+              </button>
+            </div>
+
+            <!-- السطر 4: جدول المقاسات والألوان والكميات -->
+            <div style="border:1px solid #e6e1d6; border-radius:4px; overflow-x:auto;">
+              <table style="width:100%; border-collapse:collapse; font-size:0.86rem;">
+                <thead>
+                  <tr style="background:#ebe5dc; color:#27272a; font-weight:800;">
+                    <th style="padding:0.65rem 0.75rem; text-align:right; border-bottom:1px solid #dfd9ce;">${isFr ? 'Pointure' : 'المقاس'}</th>
+                    <th style="padding:0.65rem 0.75rem; text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Couleur' : 'اللون'}</th>
+                    <th style="padding:0.65rem 0.75rem; text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Nuance' : 'درجة'}</th>
+                    <th style="padding:0.65rem 0.75rem; text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Quantité' : 'الكمية'}</th>
+                    <th style="padding:0.65rem 0.75rem; text-align:center; border-bottom:1px solid #dfd9ce;">${isFr ? 'Actif' : 'مفعل'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${
+                    variants.length === 0
+                      ? `<tr>
+                          <td colspan="5" style="padding:1.65rem 1rem; text-align:center; color:#71717a; font-size:0.86rem; background:#fff;">
+                            ${isFr ? 'Ajoutez des pointures et des couleurs.' : 'أضف مقاسات وألواناً.'}
+                          </td>
+                        </tr>`
+                      : variants
+                          .map(
+                            (v, vIdx) => `
+                            <tr style="border-bottom:1px solid #f0ece3; background:#fff;">
+                              <td style="padding:0.5rem 0.75rem; text-align:right;">
+                                <input
+                                  type="number"
+                                  min="30"
+                                  max="48"
+                                  data-variant-idx="${vIdx}"
+                                  data-variant-field="size"
+                                  value="${v.size}"
+                                  class="adm-input"
+                                  style="width:76px; padding:0.32rem 0.5rem; border-radius:4px; border-color:#d6d1c7; text-align:center; font-weight:700;"
+                                />
+                              </td>
+                              <td style="padding:0.5rem 0.75rem; text-align:center;">
+                                <input
+                                  type="text"
+                                  data-variant-idx="${vIdx}"
+                                  data-variant-field="colorName"
+                                  value="${v.colorName || 'Beige'}"
+                                  class="adm-input"
+                                  style="width:130px; margin:0 auto; padding:0.32rem 0.5rem; border-radius:4px; border-color:#d6d1c7; text-align:center;"
+                                />
+                              </td>
+                              <td style="padding:0.5rem 0.75rem; text-align:center;">
+                                <input
+                                  type="color"
+                                  data-variant-idx="${vIdx}"
+                                  data-variant-field="colorHex"
+                                  value="${v.colorHex || '#D2B48C'}"
+                                  style="width:42px; height:30px; padding:2px; border:1px solid #d6d1c7; border-radius:4px; background:#fff; cursor:pointer; vertical-align:middle;"
+                                />
+                              </td>
+                              <td style="padding:0.5rem 0.75rem; text-align:center;">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  data-variant-idx="${vIdx}"
+                                  data-variant-field="quantity"
+                                  value="${v.quantity ?? 5}"
+                                  class="adm-input"
+                                  style="width:84px; margin:0 auto; padding:0.32rem 0.5rem; border-radius:4px; border-color:#d6d1c7; text-align:center; font-weight:700;"
+                                />
+                              </td>
+                              <td style="padding:0.5rem 0.75rem; text-align:center;">
+                                <div style="display:inline-flex; align-items:center; justify-content:center; gap:0.65rem;">
+                                  <input
+                                    type="checkbox"
+                                    data-variant-idx="${vIdx}"
+                                    data-variant-field="active"
+                                    style="width:16px; height:16px; accent-color:#18181b; cursor:pointer;"
+                                    ${v.active !== false ? 'checked' : ''}
+                                  />
+                                  <button
+                                    type="button"
+                                    data-adm-action="remove-variant-row"
+                                    data-index="${vIdx}"
+                                    title="${isFr ? 'Supprimer la ligne' : 'حذف السطر'}"
+                                    style="background:transparent; border:none; color:#a1a1aa; font-size:1.05rem; font-weight:800; cursor:pointer; line-height:1; padding:0 0.2rem;"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          `
+                          )
+                          .join('')
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- شريط الحفظ السفلي -->
+          <div style="display:flex; align-items:center; justify-content:flex-start; gap:0.75rem;">
+            <button
+              type="submit"
+              style="background:#18181b; color:#fff; border:1px solid #18181b; border-radius:4px; padding:0.7rem 1.75rem; font-size:0.92rem; font-weight:800; cursor:pointer;"
+            >
+              ${editingProd ? (isFr ? 'Enregistrer les modifications' : 'حفظ التعديلات') : (isFr ? 'Enregistrer le produit' : 'حفظ المنتج')}
+            </button>
+
+            <button
+              type="button"
+              data-adm-action="cancel-product-edit"
+              style="background:#fff; color:#18181b; border:1px solid #d6d1c7; border-radius:4px; padding:0.7rem 1.25rem; font-size:0.88rem; font-weight:700; cursor:pointer;"
+            >
+              ${isFr ? 'Annuler' : 'إلغاء'}
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+  }
 
   const lowStockItems = adminState.inventory.filter((p) => Number(p.stock) < 5);
 
@@ -1376,7 +1926,7 @@ function renderInventorySection() {
       (p.name && p.name.toLowerCase().includes(q)) ||
       (p.name_fr && p.name_fr.toLowerCase().includes(q)) ||
       (p.slug && p.slug.toLowerCase().includes(q)) ||
-      p.category.toLowerCase().includes(q)
+      (p.category && p.category.toLowerCase().includes(q))
   );
 
   return `
@@ -1389,365 +1939,10 @@ function renderInventorySection() {
         : ''
     }
 
-    <!-- نافذة إضافة / تعديل المنتج (تظهر فقط عند الطلب لتبقى اللوحة هادئة ومريحة للعين) -->
-    ${
-      isFormVisible
-        ? `
-      <div class="adm-card" style="border-color:rgba(216, 27, 96, 0.25);">
-        <div class="adm-card-head">
-          <div>
-            <h2 class="adm-card-title">
-              ${editingProd ? tr.inv.editProdTitle(getProdDisplayName(editingProd)) : tr.inv.addProdTitle}
-            </h2>
-            <p class="adm-card-sub">
-              ${
-                isFr
-                  ? 'Mode simple : 4 champs essentiels seulement (le reste est généré automatiquement).'
-                  : 'الوضع المريح والمبسط: 4 خانات أساسية فقط، أو اكتب اسم الحذاء ليُكمل المساعد الذكي الباقي تلقائياً.'
-              }
-            </p>
-          </div>
-          <button
-            type="button"
-            data-adm-action="cancel-product-edit"
-            class="adm-btn adm-btn-outline adm-btn-sm"
-          >
-            ${isFr ? '✕ Fermer' : '✕ إغلاق النافذة'}
-          </button>
-        </div>
-
-        <!-- شريط التوليد السريع بضغطة واحدة -->
-        <div style="background:#faf7f8; border:1px solid #ece7ea; border-radius:12px; padding:0.85rem 1rem; margin-bottom:1.25rem;">
-          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.55rem;">
-            <label for="adm-product-brief-input" style="font-size:0.8rem; font-weight:700; color:#18181b;">
-              ${
-                isFr
-                  ? '✨ Remplissage automatique en 1 clic (optionnel) :'
-                  : '✨ تعبئة ذكية بضغطة واحدة (اكتب نوع الحذاء ولونه فقط):'
-              }
-            </label>
-            <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
-              <button type="button" data-adm-action="quick-brief-preset" data-brief="صندل بيج بكعب عالي مريح للسهرات" class="adm-btn adm-btn-soft adm-btn-sm" style="font-size:0.7rem; padding:0.2rem 0.55rem;">
-                ${isFr ? 'Sandale Beige' : 'صندل بيج'}
-              </button>
-              <button type="button" data-adm-action="quick-brief-preset" data-brief="حذاء كعب عالي كلاسيك أسود ملكي للسهرات" class="adm-btn adm-btn-soft adm-btn-sm" style="font-size:0.7rem; padding:0.2rem 0.55rem;">
-                ${isFr ? 'Escarpin Noir' : 'كعب أسود'}
-              </button>
-              <button type="button" data-adm-action="quick-brief-preset" data-brief="حذاء رياضي سنيكرز أبيض ناصع مريح للمشي" class="adm-btn adm-btn-soft adm-btn-sm" style="font-size:0.7rem; padding:0.2rem 0.55rem;">
-                ${isFr ? 'Sneakers Blanc' : 'سنيكرز أبيض'}
-              </button>
-            </div>
-          </div>
-
-          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-            <input
-              id="adm-product-brief-input"
-              type="text"
-              class="adm-input"
-              style="flex:1; min-width:200px;"
-              placeholder="${
-                isFr
-                  ? 'Ex: Sandale beige à talon confortable...'
-                  : 'مثال: صندل بيج بكعب مريح للسهرات...'
-              }"
-              value="${adminState.draftProductBrief || ''}"
-            />
-            <button
-              type="button"
-              data-adm-action="generate-from-brief"
-              class="adm-btn adm-btn-pink adm-btn-sm"
-              style="padding:0.6rem 1rem;"
-            >
-              ${isFr ? '⚡ Remplir pour moi' : '⚡ املأ الحقول تلقائياً'}
-            </button>
-          </div>
-        </div>
-
-        <form id="adm-product-form" class="adm-form-grid">
-          <!-- الخانات الـ 4 الأساسية المريحة للعين فقط -->
-          <div class="adm-field full">
-            <label class="adm-label">${tr.inv.mainPhotoLabel}</label>
-            <div class="adm-upload-box">
-              <div class="adm-upload-left">
-                <img
-                  id="adm-prod-img-preview"
-                  src="${currentProdImg}"
-                  alt="Product"
-                  referrerpolicy="no-referrer"
-                  class="adm-upload-thumb"
-                />
-                <div>
-                  <span class="adm-upload-title">${tr.inv.uploadTapTitle}</span>
-                  <span class="adm-upload-sub">${tr.inv.uploadTapSub}</span>
-                </div>
-              </div>
-              <span class="adm-btn adm-btn-pink adm-btn-sm">${tr.inv.uploadBtn}</span>
-              <input
-                id="adm-prod-file-input"
-                type="file"
-                accept="image/*"
-                class="adm-file-hidden"
-              />
-            </div>
-          </div>
-
-          <div class="adm-field">
-            <label class="adm-label">${isFr ? 'Nom de la chaussure' : 'اسم الحذاء'}</label>
-            <input
-              name="name"
-              type="text"
-              class="adm-input"
-              placeholder="مثال: صندل بيج بكعب أنيق"
-              value="${df.name || ''}"
-              required
-            />
-          </div>
-
-          <div class="adm-field">
-            <label class="adm-label">${isFr ? 'Catégorie' : 'التصنيف'}</label>
-            <select name="category" class="adm-select">
-              ${Object.keys(CATEGORY_LABELS)
-                .map(
-                  (catId) =>
-                    `<option value="${catId}" ${df.category === catId ? 'selected' : ''}>${CATEGORY_LABELS[catId][lang]}</option>`
-                )
-                .join('')}
-            </select>
-          </div>
-
-          <div class="adm-field">
-            <label class="adm-label">${isFr ? 'Prix de vente (DA)' : 'سعر البيع (د.ج)'}</label>
-            <input
-              name="discountPrice"
-              type="number"
-              min="100"
-              class="adm-input"
-              placeholder="4790"
-              value="${df.discountPrice || df.originalPrice || 4790}"
-              required
-            />
-          </div>
-
-          <div class="adm-field">
-            <label class="adm-label">${isFr ? 'Couleur & Stock par pointure (36–41)' : 'اللون والكمية لكل مقاس (36–41)'}</label>
-            <div style="display:flex; gap:0.5rem;">
-              <select name="colorName" class="adm-select" style="flex:1;">
-                ${['Beige', 'Noir', 'Rose', 'Blanc', 'Doré', 'Rouge']
-                  .map(
-                    (cName) =>
-                      `<option value="${cName}" ${df.colorName === cName ? 'selected' : ''}>${cName}</option>`
-                  )
-                  .join('')}
-              </select>
-              <input
-                id="adm-default-size-stock"
-                name="defaultSizeStock"
-                type="number"
-                min="0"
-                class="adm-input"
-                style="width:95px; text-align:center;"
-                title="${isFr ? 'Stock par pointure' : 'الكمية لكل مقاس'}"
-                value="${df.defaultSizeStock ?? 5}"
-              />
-            </div>
-          </div>
-
-          <!-- زر اختياري لإظهار أو إخفاء التفاصيل المتقدمة (يبقى مغلقاً افتراضياً لراحة العين) -->
-          <div class="adm-field full" style="padding-top:0.25rem;">
-            <button
-              type="button"
-              data-adm-action="toggle-advanced-product-fields"
-              class="adm-btn adm-btn-soft adm-btn-sm"
-              style="width:100%; justify-content:space-between; padding:0.65rem 1rem;"
-            >
-              <span>
-                ${
-                  isFr
-                    ? '⚙️ Options avancées (Traduction FR, Slug, Prix barré, Pointures détaillées, Galerie)'
-                    : '⚙️ خيارات متقدمة إضافية (الاسم والوصف بالفرنسية، السعر قبل الخصم، وجدول المقاسات التفصيلي)'
-                }
-              </span>
-              <span>${showAdvanced ? '▲' : '▼'}</span>
-            </button>
-          </div>
-
-          ${
-            showAdvanced
-              ? `
-              <!-- التفاصيل المتقدمة الكاملة (تظهر فقط عند رغبة المستخدم) -->
-              <div class="adm-field full" style="background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:1rem;">
-                ${
-                  adminState.draftGeneratedPreview
-                    ? `
-                    <div style="margin-bottom:1rem; background:#fff; border:1px solid #ece7ea; border-radius:10px; padding:0.75rem;">
-                      <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; margin-bottom:0.4rem;">
-                        <span style="font-size:0.75rem; font-weight:700; color:#18181b;">
-                          ${isFr ? '📋 Fiche complète générée :' : '📋 بطاقة المنتج الكاملة بالتنسيق الثلاثي:'}
-                        </span>
-                        <button type="button" data-adm-action="copy-generated-spec" class="adm-btn adm-btn-soft adm-btn-sm">
-                          ${isFr ? 'Copier' : 'نسخ النص'}
-                        </button>
-                      </div>
-                      <pre id="adm-generated-spec-text" style="margin:0; white-space:pre-wrap; font-family:inherit; font-size:0.74rem; line-height:1.6; color:#3f3f46; max-height:160px; overflow-y:auto;">${formatGeneratedProductSpec(adminState.draftGeneratedPreview)}</pre>
-                    </div>
-                  `
-                    : ''
-                }
-
-                <div class="adm-form-grid">
-                  <div class="adm-field">
-                    <label class="adm-label">Nom en français</label>
-                    <input name="name_fr" type="text" class="adm-input" value="${df.name_fr || ''}" />
-                  </div>
-
-                  <div class="adm-field">
-                    <label class="adm-label">Slug (URL)</label>
-                    <input name="slug" type="text" dir="ltr" class="adm-input" value="${df.slug || 'sandale-beige-talon'}" />
-                  </div>
-
-                  <div class="adm-field">
-                    <label class="adm-label">${isFr ? 'Description (Arabe)' : 'الوصف بالعربية'}</label>
-                    <textarea name="description_ar" rows="2" class="adm-textarea">${df.description_ar || ''}</textarea>
-                  </div>
-
-                  <div class="adm-field">
-                    <label class="adm-label">Description en français</label>
-                    <textarea name="description_fr" rows="2" dir="ltr" class="adm-textarea">${df.description_fr || ''}</textarea>
-                  </div>
-
-                  <div class="adm-field">
-                    <label class="adm-label">${isFr ? 'Prix initial avant remise (DA)' : 'السعر الأصلي قبل التخفيض (د.ج)'}</label>
-                    <input name="originalPrice" type="number" min="100" class="adm-input" value="${df.originalPrice ?? 6200}" />
-                  </div>
-
-                  <div class="adm-field">
-                    <label class="adm-label">${isFr ? 'Code Couleur (Hex)' : 'كود اللون (Hex Code)'}</label>
-                    <div style="display:flex; align-items:center; gap:0.5rem;">
-                      <input id="adm-color-picker" type="color" value="${df.colorHex || '#D2B48C'}" style="width:42px; height:38px; border:1px solid #d4d4d8; border-radius:8px; cursor:pointer; background:#fff; padding:2px;" />
-                      <input id="adm-color-hex-input" name="colorHex" type="text" dir="ltr" class="adm-input" value="${df.colorHex || '#D2B48C'}" />
-                    </div>
-                  </div>
-
-                  <div class="adm-field full">
-                    <label class="adm-label">${isFr ? "Options d'affichage" : 'خيارات العرض في المتجر'}</label>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.5rem;">
-                      <select name="isVisible" class="adm-select">
-                        <option value="yes" ${df.isVisible !== false ? 'selected' : ''}>${isFr ? 'Visible : Oui' : 'ظاهر في المتجر: نعم'}</option>
-                        <option value="no" ${df.isVisible === false ? 'selected' : ''}>${isFr ? 'Visible : Non' : 'ظاهر في المتجر: لا'}</option>
-                      </select>
-                      <select name="isNew" class="adm-select">
-                        <option value="yes" ${df.isNew ? 'selected' : ''}>${isFr ? 'Nouveau : Oui' : 'وصل حديثاً: نعم'}</option>
-                        <option value="no" ${!df.isNew ? 'selected' : ''}>${isFr ? 'Nouveau : Non' : 'وصل حديثاً: لا'}</option>
-                      </select>
-                      <select name="isBestSeller" class="adm-select">
-                        <option value="yes" ${df.isBestSeller ? 'selected' : ''}>${isFr ? 'Best-seller : Oui' : 'الأكثر مبيعاً: نعم'}</option>
-                        <option value="no" ${!df.isBestSeller ? 'selected' : ''}>${isFr ? 'Best-seller : Non' : 'الأكثر مبيعاً: لا'}</option>
-                      </select>
-                      <select name="isSpecialOffer" class="adm-select">
-                        <option value="yes" ${df.isSpecialOffer ? 'selected' : ''}>${isFr ? 'En vedette : Oui' : 'مميز: نعم'}</option>
-                        <option value="no" ${!df.isSpecialOffer ? 'selected' : ''}>${isFr ? 'En vedette : Non' : 'مميز: لا'}</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="adm-field full">
-                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.4rem;">
-                      <label class="adm-label" style="margin:0;">
-                        ${isFr ? 'Pointures & Quantités (De / À)' : 'نطاق المقاسات وجدول الكميات التفصيلي'}
-                      </label>
-                      <div style="display:flex; align-items:center; gap:0.4rem;">
-                        <input id="adm-size-from" name="sizeFrom" type="number" min="34" max="44" class="adm-input" style="width:64px; padding:0.3rem; text-align:center;" value="${df.sizeFrom || 36}" />
-                        <span>–</span>
-                        <input id="adm-size-to" name="sizeTo" type="number" min="34" max="44" class="adm-input" style="width:64px; padding:0.3rem; text-align:center;" value="${df.sizeTo || 41}" />
-                        <button type="button" data-adm-action="apply-default-size-stock" class="adm-btn adm-btn-soft adm-btn-sm">
-                          ${isFr ? 'Appliquer stock' : 'تطبيق الكمية'}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)); gap:0.45rem;">
-                      ${Object.entries(sizeMap)
-                        .map(
-                          ([sz, qty]) => `
-                          <div style="background:#fff; border:1px solid #e4e4e7; border-radius:8px; padding:0.4rem; text-align:center;">
-                            <div style="font-size:0.72rem; font-weight:700; color:#71717a; margin-bottom:0.2rem;">${sz}</div>
-                            <input
-                              type="number"
-                              min="0"
-                              data-adm-size-qty="${sz}"
-                              name="size_qty_${sz}"
-                              value="${qty}"
-                              class="adm-input"
-                              style="text-align:center; padding:0.25rem; font-weight:700;"
-                            />
-                          </div>
-                        `
-                        )
-                        .join('')}
-                    </div>
-                  </div>
-
-                  <div class="adm-field full">
-                    <label class="adm-label">${tr.inv.galleryLabel}</label>
-                    <div class="adm-upload-box" style="padding:0.6rem 0.85rem;">
-                      <span class="adm-upload-title" style="font-size:0.78rem;">${tr.inv.galleryTapTitle(currentProdGallery.length)}</span>
-                      <span class="adm-btn adm-btn-soft adm-btn-sm">${tr.inv.galleryBtn}</span>
-                      <input id="adm-prod-gallery-input" type="file" accept="image/*" multiple class="adm-file-hidden" />
-                    </div>
-                    ${
-                      currentProdGallery.length > 0
-                        ? `<div class="adm-thumbs-row">
-                            ${currentProdGallery
-                              .map(
-                                (gImg, idx) => `
-                                <div class="adm-thumb-chip">
-                                  <img src="${gImg}" alt="Gallery ${idx + 1}" referrerpolicy="no-referrer" />
-                                  <button type="button" data-adm-action="remove-prod-gallery-img" data-index="${idx}" class="adm-thumb-del">×</button>
-                                </div>
-                              `
-                              )
-                              .join('')}
-                          </div>`
-                        : ''
-                    }
-                  </div>
-                </div>
-              </div>
-            `
-              : `
-              <!-- حقول مخفية تحفظ جميع القيم المولدة تلقائياً دون إزعاج عين المستخدم -->
-              <input type="hidden" name="name_fr" value="${df.name_fr || df.name || ''}" />
-              <input type="hidden" name="slug" value="${df.slug || 'sandale-beige-talon'}" />
-              <input type="hidden" name="description_ar" value="${df.description_ar || ''}" />
-              <input type="hidden" name="description_fr" value="${df.description_fr || ''}" />
-              <input type="hidden" name="originalPrice" value="${df.originalPrice ?? 6200}" />
-              <input type="hidden" name="colorHex" value="${df.colorHex || '#D2B48C'}" />
-              <input type="hidden" name="isVisible" value="${df.isVisible !== false ? 'yes' : 'no'}" />
-              <input type="hidden" name="isNew" value="${df.isNew ? 'yes' : 'no'}" />
-              <input type="hidden" name="isBestSeller" value="${df.isBestSeller ? 'yes' : 'no'}" />
-              <input type="hidden" name="isSpecialOffer" value="${df.isSpecialOffer ? 'yes' : 'no'}" />
-              <input type="hidden" name="sizeFrom" value="${df.sizeFrom || 36}" />
-              <input type="hidden" name="sizeTo" value="${df.sizeTo || 41}" />
-            `
-          }
-
-          <input type="hidden" id="adm-calculated-stock-input" name="stock" value="${totalCalculatedStock}" />
-
-          <div class="adm-field full">
-            <button type="submit" class="adm-btn adm-btn-pink" style="width:100%; padding:0.85rem; font-size:0.9rem;">
-              ${editingProd ? tr.inv.saveProdChanges : tr.inv.addProdNow}
-            </button>
-          </div>
-        </form>
-      </div>
-    `
-        : ''
-    }
-
     <!-- قسم التحكم بالفئات / الأقسام (إضافة، تعديل، تغيير صورة، حذف) -->
     ${renderCategoryManagerCard()}
 
-    <!-- قائمة المنتجات الحالية (تظهر مباشرة وبشكل مريح وواضح) -->
+    <!-- قائمة المنتجات الحالية -->
     <div class="adm-card">
       <div class="adm-card-head">
         <div>
@@ -1764,17 +1959,13 @@ function renderInventorySection() {
             placeholder="${tr.inv.searchPlaceholder}"
             value="${adminState.inventorySearch}"
           />
-          ${
-            !isFormVisible
-              ? `<button
-                  type="button"
-                  data-adm-action="toggle-product-form"
-                  class="adm-btn adm-btn-pink"
-                >
-                  ${tr.inv.addProdTitle}
-                </button>`
-              : ''
-          }
+          <button
+            type="button"
+            data-adm-action="toggle-product-form"
+            class="adm-btn adm-btn-pink"
+          >
+            ${tr.inv.addProdTitle}
+          </button>
         </div>
       </div>
 
@@ -1800,7 +1991,7 @@ function renderCategoryManagerCard() {
       <div class="adm-card-head">
         <div>
           <h2 class="adm-card-title">
-            🗂️ ${isFr ? `Gestion des Catégories (${adminState.categories.length})` : `التحكم بالفئات والأقسام (${adminState.categories.length})`}
+            ${isFr ? `Gestion des Catégories (${adminState.categories.length})` : `التحكم بالفئات والأقسام (${adminState.categories.length})`}
           </h2>
           <p class="adm-card-sub">
             ${isFr ? 'Ajoutez, renommez ou changez les photos des catégories affichées sur la boutique' : 'أضف فئة جديدة، عدّل أسماء الفئات أو غيّر صورها الدائرية في المتجر'}
@@ -1809,10 +2000,10 @@ function renderCategoryManagerCard() {
         ${
           !isCatFormOpen
             ? `<button type="button" data-adm-action="toggle-category-form" class="adm-btn adm-btn-soft adm-btn-sm">
-                ➕ ${isFr ? 'Nouvelle Catégorie' : 'إضافة فئة جديدة'}
+                ${isFr ? '+ Nouvelle Catégorie' : '+ إضافة فئة جديدة'}
               </button>`
             : `<button type="button" data-adm-action="cancel-category-edit" class="adm-btn adm-btn-outline adm-btn-sm">
-                ✕ ${isFr ? 'Fermer' : 'إغلاق'}
+                ${isFr ? 'Fermer' : 'إغلاق'}
               </button>`
         }
       </div>
@@ -1861,7 +2052,7 @@ function renderCategoryManagerCard() {
               <div class="adm-upload-box" style="padding:0.45rem 0.75rem;">
                 <div class="adm-upload-left">
                   <img id="adm-cat-img-preview" src="${catPreviewImg}" alt="Category" referrerpolicy="no-referrer" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--adm-pink);" />
-                  <span class="adm-upload-title" style="font-size:0.78rem;">📷 ${isFr ? 'Choisir une photo' : 'رفع صورة الفئة'}</span>
+                  <span class="adm-upload-title" style="font-size:0.78rem;">${isFr ? 'Choisir une photo' : 'رفع صورة الفئة'}</span>
                 </div>
                 <span class="adm-btn adm-btn-soft adm-btn-sm">${isFr ? 'Importer' : 'اختيار'}</span>
                 <input id="adm-cat-file-input" type="file" accept="image/*" class="adm-file-hidden" />
@@ -1870,7 +2061,7 @@ function renderCategoryManagerCard() {
 
             <div class="adm-field full">
               <button type="submit" class="adm-btn adm-btn-pink" style="width:100%;">
-                ${editingCat ? (isFr ? '💾 Mettre à jour la catégorie' : '💾 حفظ تعديلات الفئة') : (isFr ? '➕ Ajouter la catégorie' : '➕ إضافة الفئة للمتجر الآن')}
+                ${editingCat ? (isFr ? 'Mettre à jour la catégorie' : 'حفظ تعديلات الفئة') : (isFr ? '+ Ajouter la catégorie' : '+ إضافة الفئة للمتجر الآن')}
               </button>
             </div>
           </form>
@@ -1878,25 +2069,25 @@ function renderCategoryManagerCard() {
           : ''
       }
 
-      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:0.65rem;">
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:0.85rem;">
         ${adminState.categories
           .map(
             (cat) => `
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:0.6rem; background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:0.55rem 0.75rem;">
-              <div style="display:flex; align-items:center; gap:0.6rem; min-width:0;">
-                <img src="${cat.image}" alt="${cat.name_ar}" referrerpolicy="no-referrer" style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid rgba(216,27,96,0.3); flex-shrink:0;" />
-                <div style="min-width:0;">
-                  <strong style="font-size:0.84rem; color:var(--adm-text-dark); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:0.65rem 0.85rem;">
+              <div style="display:flex; align-items:center; gap:0.65rem; min-width:0; flex:1;">
+                <img src="${cat.image}" alt="${cat.name_ar}" referrerpolicy="no-referrer" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid rgba(216,27,96,0.3); flex-shrink:0;" />
+                <div style="min-width:0; flex:1;">
+                  <strong style="font-size:0.88rem; color:var(--adm-text-dark); display:block; line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                     ${isFr ? cat.name_fr : cat.name_ar}
                   </strong>
-                  <span style="font-size:0.72rem; color:var(--adm-text-muted); display:block;">
+                  <span style="font-size:0.75rem; color:var(--adm-text-muted); display:block; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                     ${isFr ? cat.name_ar : cat.name_fr}
                   </span>
                 </div>
               </div>
-              <div style="display:flex; gap:0.25rem; flex-shrink:0;">
-                <button type="button" data-adm-action="edit-category" data-id="${cat.id}" class="adm-btn adm-btn-soft adm-btn-sm" style="padding:0.25rem 0.5rem;">✏️</button>
-                <button type="button" data-adm-action="delete-category" data-id="${cat.id}" class="adm-btn adm-btn-danger adm-btn-sm" style="padding:0.25rem 0.5rem;">🗑️</button>
+              <div style="display:flex; align-items:center; gap:0.35rem; flex-shrink:0;">
+                <button type="button" data-adm-action="edit-category" data-id="${cat.id}" class="adm-btn adm-btn-soft adm-btn-sm" style="padding:0.32rem 0.65rem; font-size:0.76rem; font-weight:700;">${isFr ? 'Modifier' : 'تعديل'}</button>
+                <button type="button" data-adm-action="delete-category" data-id="${cat.id}" class="adm-btn adm-btn-danger adm-btn-sm" style="padding:0.32rem 0.65rem; font-size:0.76rem; font-weight:700;">${isFr ? 'Supprimer' : 'حذف'}</button>
               </div>
             </div>
           `
@@ -2007,7 +2198,24 @@ function renderInventoryCards(productsList) {
               >−</button>
             </div>
 
-            <div style="display:flex; gap:0.35rem;">
+            <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+              <a
+                href="./index.html?product=${encodeURIComponent(p.slug || p.id)}"
+                target="_blank"
+                rel="noopener"
+                class="adm-btn adm-btn-outline adm-btn-sm"
+                style="text-decoration:none;"
+              >
+                ${isFr ? 'Voir' : 'الرابط'}
+              </a>
+              <button
+                type="button"
+                data-adm-action="copy-product-link"
+                data-slug="${p.slug || p.id}"
+                class="adm-btn adm-btn-outline adm-btn-sm"
+              >
+                ${isFr ? 'Copier' : 'نسخ'}
+              </button>
               <button
                 type="button"
                 data-adm-action="edit-product"
@@ -2117,7 +2325,7 @@ function renderOrdersSection() {
                         class="adm-btn adm-btn-soft adm-btn-sm"
                         style="text-decoration:none;"
                       >
-                        📞 ${order.phone}
+                        ${order.phone}
                       </a>
                     </div>
 
@@ -2158,7 +2366,7 @@ function renderOrdersSection() {
                           data-id="${order.id}"
                           class="adm-btn adm-btn-danger adm-btn-sm"
                         >
-                          🗑️
+                          ${tr.inv.deleteBtn}
                         </button>
                       </div>
                     </div>
@@ -2269,83 +2477,83 @@ function renderCMSSection() {
           </div>
         </div>
 
-        <!-- 📞 معلومات الهاتف، مكان المحل، وأيقونات التواصل الاجتماعي في أسفل الموقع -->
+        <!-- معلومات الهاتف، مكان المحل، وروابط التواصل الاجتماعي في أسفل الموقع -->
         <div class="adm-field full" style="background:#fdf5f7; border:1px solid rgba(216,27,96,0.2); border-radius:12px; padding:1rem;">
           <h3 style="margin:0 0 0.75rem; font-size:0.9rem; font-weight:800; color:var(--adm-text-dark);">
-            📍 ${isFr ? 'Contact, Adresse du Magasin & Réseaux Sociaux (Pied de page)' : 'رقم الهاتف، مكان المحل، وأيقونات التواصل الاجتماعي (أسفل الموقع)'}
+            ${isFr ? 'Contact, Adresse du Magasin & Réseaux Sociaux (Pied de page)' : 'رقم الهاتف، مكان المحل، وروابط التواصل الاجتماعي (أسفل الموقع)'}
           </h3>
           <div class="adm-form-grid">
             <div class="adm-field">
-              <label class="adm-label">📞 ${isFr ? 'Numéro de téléphone du magasin' : 'رقم هاتف المحل'}</label>
+              <label class="adm-label">${isFr ? 'Numéro de téléphone du magasin' : 'رقم هاتف المحل'}</label>
               <input name="phone" type="tel" dir="ltr" class="adm-input" value="${c.phone || '0550 12 34 56'}" placeholder="0550 12 34 56" />
             </div>
 
             <div class="adm-field">
-              <label class="adm-label">💬 ${isFr ? 'Numéro WhatsApp' : 'رقم واتساب للتواصل السريع'}</label>
+              <label class="adm-label">${isFr ? 'Numéro WhatsApp' : 'رقم واتساب للتواصل السريع'}</label>
               <input name="whatsappNumber" type="text" dir="ltr" class="adm-input" value="${c.whatsappNumber || '213550123456'}" placeholder="213550123456" />
             </div>
 
             <div class="adm-field">
-              <label class="adm-label">📍 ${isFr ? 'Adresse du magasin (Arabe)' : 'مكان المحل / العنوان (بالعربية)'}</label>
+              <label class="adm-label">${isFr ? 'Adresse du magasin (Arabe)' : 'مكان المحل / العنوان (بالعربية)'}</label>
               <input name="location_ar" type="text" class="adm-input" value="${c.location_ar || 'الجزائر العاصمة — باب الزوار، المركز التجاري'}" />
             </div>
 
             <div class="adm-field">
-              <label class="adm-label">📍 ${isFr ? 'Adresse du magasin (Français)' : 'مكان المحل (بالفرنسية)'}</label>
+              <label class="adm-label">${isFr ? 'Adresse du magasin (Français)' : 'مكان المحل (بالفرنسية)'}</label>
               <input name="location_fr" type="text" class="adm-input" value="${c.location_fr || 'Alger — Bab Ezzouar, Centre Commercial'}" />
             </div>
 
             <div class="adm-field">
-              <label class="adm-label">📸 Instagram URL</label>
+              <label class="adm-label">Instagram URL</label>
               <input name="instagramUrl" type="text" dir="ltr" class="adm-input" value="${c.instagramUrl || 'https://instagram.com/shoestyle.dz'}" />
             </div>
 
             <div class="adm-field">
-              <label class="adm-label">📘 Facebook URL</label>
+              <label class="adm-label">Facebook URL</label>
               <input name="facebookUrl" type="text" dir="ltr" class="adm-input" value="${c.facebookUrl || 'https://facebook.com/shoestyle.dz'}" />
             </div>
 
             <div class="adm-field full">
-              <label class="adm-label">🎵 TikTok URL</label>
+              <label class="adm-label">TikTok URL</label>
               <input name="tiktokUrl" type="text" dir="ltr" class="adm-input" value="${c.tiktokUrl || 'https://tiktok.com/@shoestyle.dz'}" />
             </div>
           </div>
         </div>
 
-        <!-- 🎯 بيكسل الإعلانات وتتبع المبيعات (Facebook / TikTok / Snapchat / Google) -->
+        <!-- بيكسل الإعلانات وتتبع المبيعات (Facebook / TikTok / Snapchat / Google) -->
         <div class="adm-field full" style="background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:1rem;">
           <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
             <div>
               <h3 style="margin:0; font-size:0.9rem; font-weight:800; color:var(--adm-text-dark);">
-                🎯 ${isFr ? 'Pixels Publicitaires (Facebook, TikTok, Snapchat)' : 'بيكسل الإعلانات وتتبع الحملات الإعلانية (Ad Pixels)'}
+                ${isFr ? 'Pixels Publicitaires (Facebook, TikTok, Snapchat)' : 'بيكسل الإعلانات وتتبع الحملات الإعلانية (Ad Pixels)'}
               </h3>
               <p style="margin:0.15rem 0 0; font-size:0.75rem; color:var(--adm-text-muted);">
                 ${isFr ? 'Suivi automatique des événements PageView, AddToCart et Purchase sur la boutique et les Landing Pages' : 'يتم تفعيل تتبع الزيارات (PageView) وإضافة السلة (AddToCart) والطلبات المؤكدة (Purchase) تلقائياً'}
               </p>
             </div>
             <span class="adm-badge adm-badge-delivered">
-              ${c.fbPixelId || c.tiktokPixelId || c.snapPixelId ? (isFr ? '🟢 Pixel Actif' : '🟢 البيكسل مفعل') : (isFr ? '⚪ Prêt à configurer' : '⚪ جاهز للربط')}
+              ${c.fbPixelId || c.tiktokPixelId || c.snapPixelId ? (isFr ? 'Pixel Actif' : 'البيكسل مفعل') : (isFr ? 'Prêt à configurer' : 'جاهز للربط')}
             </span>
           </div>
 
           <div class="adm-form-grid">
             <div class="adm-field">
-              <label class="adm-label">📘 Facebook / Meta Pixel ID</label>
+              <label class="adm-label">Facebook / Meta Pixel ID</label>
               <input name="fbPixelId" type="text" dir="ltr" class="adm-input" placeholder="Ex: 123456789012345" value="${c.fbPixelId || ''}" />
             </div>
 
             <div class="adm-field">
-              <label class="adm-label">🎵 TikTok Pixel ID</label>
+              <label class="adm-label">TikTok Pixel ID</label>
               <input name="tiktokPixelId" type="text" dir="ltr" class="adm-input" placeholder="Ex: C8ABCDEF123456" value="${c.tiktokPixelId || ''}" />
             </div>
 
             <div class="adm-field">
-              <label class="adm-label">👻 Snapchat Pixel ID</label>
+              <label class="adm-label">Snapchat Pixel ID</label>
               <input name="snapPixelId" type="text" dir="ltr" class="adm-input" placeholder="Ex: a1b2c3d4-e5f6-7890" value="${c.snapPixelId || ''}" />
             </div>
 
             <div class="adm-field">
-              <label class="adm-label">📊 Google Tag / Analytics ID</label>
+              <label class="adm-label">Google Tag / Analytics ID</label>
               <input name="googleTagId" type="text" dir="ltr" class="adm-input" placeholder="Ex: G-XXXXXXXXXX" value="${c.googleTagId || ''}" />
             </div>
           </div>
@@ -2355,7 +2563,7 @@ function renderCMSSection() {
         <div class="adm-field full">
           <details style="background:#fafafa; border:1px solid #ece7ea; border-radius:10px; padding:0.75rem 1rem;">
             <summary style="cursor:pointer; font-size:0.82rem; font-weight:700; color:var(--adm-text-body);">
-              ${isFr ? '⚙️ Modifier les 3 cartes d’avantages (Optionnel)' : '⚙️ تعديل بطاقات المميزات الثلاث أسفل البانر (اختياري)'}
+              ${isFr ? 'Modifier les 3 cartes d’avantages (Optionnel)' : 'تعديل بطاقات المميزات الثلاث أسفل البانر (اختياري)'}
             </summary>
             <div class="adm-form-grid" style="margin-top:0.85rem;">
               ${c.features
@@ -2430,7 +2638,7 @@ function renderLandingBuilderSection() {
         <div style="background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:0.85rem 1rem; margin-bottom:1.15rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
           <div>
             <strong style="font-size:0.84rem; color:var(--adm-text-dark); display:block;">
-              ⚡ ${isFr ? 'Importation rapide depuis votre catalogue :' : 'تعبئة ذكية من منتجات متجرك بضغطة واحدة:'}
+              ${isFr ? 'Importation rapide depuis votre catalogue :' : 'تعبئة ذكية من منتجات متجرك بضغطة واحدة:'}
             </strong>
             <span style="font-size:0.74rem; color:var(--adm-text-muted);">
               ${isFr ? 'Sélectionnez une chaussure pour remplir automatiquement les photos, prix et textes' : 'اختر أي حذاء من متجرك وسيتم ملء الصور والأسعار والوصف التسويقي تلقائياً'}
@@ -2592,7 +2800,7 @@ function renderLandingBuilderSection() {
                   <div style="flex:1; min-width:0;">
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:0.4rem; margin-bottom:0.25rem;">
                       <span class="adm-badge adm-badge-delivered" style="font-size:0.68rem;">
-                        🟢 ${isFr ? 'Active · Prête Ads' : 'نشطة · جاهزة للإعلانات'}
+                        ${isFr ? 'Active · Prête Ads' : 'نشطة · جاهزة للإعلانات'}
                       </span>
                       <span dir="ltr" style="font-size:0.72rem; color:var(--adm-text-muted); font-family:monospace;">
                         ?lp=${lp.id}
@@ -2643,7 +2851,7 @@ function renderLandingBuilderSection() {
                     class="adm-btn adm-btn-soft adm-btn-sm"
                     style="text-decoration:none;"
                   >
-                    🌐 ${isFr ? 'Ouvrir la page' : 'فتح الصفحة'}
+                    ${isFr ? 'Ouvrir la page' : 'فتح الصفحة'}
                   </a>
                   <button
                     type="button"
@@ -2651,7 +2859,7 @@ function renderLandingBuilderSection() {
                     data-id="${lp.id}"
                     class="adm-btn adm-btn-outline adm-btn-sm"
                   >
-                    🔗 ${isFr ? 'Copier Lien' : 'نسخ الرابط'}
+                    ${isFr ? 'Copier Lien' : 'نسخ الرابط'}
                   </button>
                 </div>
 
@@ -2662,7 +2870,7 @@ function renderLandingBuilderSection() {
                     data-id="${lp.id}"
                     class="adm-btn adm-btn-outline adm-btn-sm"
                   >
-                    ✏️
+                    ${tr.inv.editBtn}
                   </button>
                   <button
                     type="button"
@@ -2670,7 +2878,7 @@ function renderLandingBuilderSection() {
                     data-id="${lp.id}"
                     class="adm-btn adm-btn-danger adm-btn-sm"
                   >
-                    🗑️
+                    ${tr.inv.deleteBtn}
                   </button>
                 </div>
               </div>
@@ -2708,7 +2916,7 @@ function renderLandingPreviewModal() {
       <div style="background:#18181b; color:#fff; padding:0.75rem 1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
         <div style="display:flex; align-items:center; gap:0.6rem;">
           <span style="background:var(--adm-pink); color:#fff; font-size:0.72rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">
-            🔥 ${isFr ? 'OFFRE FLASH COD' : 'صفحة هبوط عالية التحويل'}
+            ${isFr ? 'OFFRE FLASH COD' : 'صفحة هبوط عالية التحويل'}
           </span>
           <strong style="font-size:0.84rem; color:#fbcfe8;">${tr.lp.modalHeader(lp.slug)}</strong>
         </div>
@@ -2721,7 +2929,7 @@ function renderLandingPreviewModal() {
             class="adm-btn adm-btn-soft adm-btn-sm"
             style="padding:0.3rem 0.65rem; font-size:0.74rem;"
           >
-            🔗 ${isFr ? 'Copier le lien pub' : 'نسخ رابط الإعلان'}
+            ${isFr ? 'Copier le lien pub' : 'نسخ رابط الإعلان'}
           </button>
           <a
             href="${liveUrl}"
@@ -2730,7 +2938,7 @@ function renderLandingPreviewModal() {
             class="adm-btn adm-btn-pink adm-btn-sm"
             style="padding:0.3rem 0.65rem; font-size:0.74rem; text-decoration:none;"
           >
-            🌐 ${isFr ? 'Voir sur la boutique' : 'فتح في المتجر'}
+            ${isFr ? 'Voir sur la boutique' : 'فتح في المتجر'}
           </a>
           <button
             type="button"
@@ -2746,10 +2954,10 @@ function renderLandingPreviewModal() {
       <!-- شريط العد التنازلي الترويجي -->
       <div style="background:#fdf2f6; border-bottom:1px solid #f5d0de; padding:0.5rem 1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; font-size:0.76rem;">
         <span style="font-weight:700; color:#be123c;">
-          ⏳ ${isFr ? 'Offre limitée — Plus que 5 pièces disponibles à ce prix !' : 'عرض محدود جداً — بقي 5 قطع فقط في المخزون بهذا السعر!'}
+          ${isFr ? 'Offre limitée — Plus que 5 pièces disponibles à ce prix !' : 'عرض محدود جداً — بقي 5 قطع فقط في المخزون بهذا السعر!'}
         </span>
         <span style="font-weight:800; color:#15803d;">
-          ✓ ${isFr ? 'Paiement à la livraison · Livraison 69 Wilayas' : 'الدفع عند الاستلام · توصيل سريع 69 ولاية'}
+          ${isFr ? 'Paiement à la livraison · Livraison 69 Wilayas' : 'الدفع عند الاستلام · توصيل سريع 69 ولاية'}
         </span>
       </div>
 
@@ -2779,13 +2987,7 @@ function renderLandingPreviewModal() {
               .join('')}
           </div>
 
-          <div style="margin-top:0.75rem; display:flex; align-items:center; gap:0.4rem; font-size:0.76rem;">
-            <span style="color:#fbbf24; font-size:0.9rem;">★★★★★</span>
-            <strong>4.9/5</strong>
-            <span style="color:var(--adm-text-muted);">(${isFr ? '184 avis clientes vérifiés' : '184 تقييم موثق من الزبونات'})</span>
-          </div>
-
-          <h3 style="font-size:1.15rem; font-weight:800; margin:0.35rem 0; color:var(--adm-text-dark);">${lp.title}</h3>
+          <h3 style="font-size:1.15rem; font-weight:800; margin:0.65rem 0 0.35rem; color:var(--adm-text-dark);">${lp.title}</h3>
 
           <div style="display:flex; align-items:baseline; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.6rem;">
             <strong style="font-size:1.4rem; color:var(--adm-pink);">${formatDA(disc, lang)}</strong>
@@ -2808,16 +3010,16 @@ function renderLandingPreviewModal() {
           <!-- بطاقات الثقة الـ 4 -->
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; font-size:0.74rem;">
             <div style="background:#fafafa; border:1px solid #ece7ea; border-radius:10px; padding:0.55rem 0.7rem;">
-              <strong>✨ ${isFr ? 'Qualité supérieure' : 'خامة مريحة وفاخرة'}</strong>
+              <strong>${isFr ? 'Qualité supérieure' : 'خامة مريحة وفاخرة'}</strong>
             </div>
             <div style="background:#fafafa; border:1px solid #ece7ea; border-radius:10px; padding:0.55rem 0.7rem;">
-              <strong>🤝 ${isFr ? 'Vérification avant paiement' : 'معاينة الطرد قبل الدفع'}</strong>
+              <strong>${isFr ? 'Vérification avant paiement' : 'معاينة الطرد قبل الدفع'}</strong>
             </div>
             <div style="background:#fafafa; border:1px solid #ece7ea; border-radius:10px; padding:0.55rem 0.7rem;">
-              <strong>🚚 ${isFr ? 'Livraison 69 Wilayas' : 'توصيل سريع 69 ولاية'}</strong>
+              <strong>${isFr ? 'Livraison 69 Wilayas' : 'توصيل سريع 69 ولاية'}</strong>
             </div>
             <div style="background:#fafafa; border:1px solid #ece7ea; border-radius:10px; padding:0.55rem 0.7rem;">
-              <strong>🔄 ${isFr ? 'Échange garanti 7j' : 'ضمان استبدال المقاس'}</strong>
+              <strong>${isFr ? 'Échange garanti 7j' : 'ضمان استبدال المقاس'}</strong>
             </div>
           </div>
         </div>
@@ -2836,10 +3038,10 @@ function renderLandingPreviewModal() {
               </label>
               <select name="bundleQty" id="adm-lp-modal-bundle" data-unit-price="${disc}" class="adm-select" style="font-weight:700; border-color:var(--adm-pink);">
                 <option value="1">
-                  🥿 ${isFr ? `1 Paire — ${formatDA(disc, 'fr')}` : `زوج واحد (حذاء واحد) — ${formatDA(disc, 'ar')}`}
+                  ${isFr ? `1 Paire — ${formatDA(disc, 'fr')}` : `زوج واحد (حذاء واحد) — ${formatDA(disc, 'ar')}`}
                 </option>
                 <option value="2">
-                  👠👠 ${isFr ? `Pack 2 Paires (-500 DA + Livraison Gratuite) — ${formatDA(pack2Price, 'fr')}` : `عرض زوجين (خصم 500 د.ج + توصيل مجاني 🎁) — ${formatDA(pack2Price, 'ar')}`}
+                  ${isFr ? `Pack 2 Paires (-500 DA + Livraison Gratuite) — ${formatDA(pack2Price, 'fr')}` : `عرض زوجين (خصم 500 د.ج + توصيل مجاني) — ${formatDA(pack2Price, 'ar')}`}
                 </option>
               </select>
             </div>
@@ -2880,15 +3082,15 @@ function renderLandingPreviewModal() {
                   .join('')}
               </select>
               <select name="deliveryType" class="adm-select">
-                <option value="À Domicile / للمنزل">🏠 ${isFr ? 'À Domicile' : 'توصيل للمنزل'}</option>
-                <option value="Stop-Desk / للمكتب">🏢 ${isFr ? 'Stop-Desk' : 'مكتب التوصيل'}</option>
+                <option value="À Domicile / للمنزل">${isFr ? 'À Domicile' : 'توصيل للمنزل'}</option>
+                <option value="Stop-Desk / للمكتب">${isFr ? 'Stop-Desk' : 'مكتب التوصيل'}</option>
               </select>
             </div>
 
             <input name="address" type="text" required class="adm-input" placeholder="${tr.lp.addressPlaceholder}" />
 
             <button type="submit" class="adm-btn adm-btn-pink" style="width:100%; padding:0.85rem; font-size:0.92rem;">
-              🛍️ ${tr.lp.confirmQuickOrder(formatDA(disc, lang))}
+              ${tr.lp.confirmQuickOrder(formatDA(disc, lang))}
             </button>
           </form>
         </div>
@@ -2898,7 +3100,7 @@ function renderLandingPreviewModal() {
 }
 
 /**
- * القسم 5: إعدادات الشحن وأسعار التوصيل لجميع الـ 69 ولاية (بدون سقف التوصيل المجاني)
+ * القسم 5: إعدادات الشحن وأسعار التوصيل وإضافة ولاية جديدة
  */
 function renderShippingSection() {
   const tr = t();
@@ -2918,7 +3120,90 @@ function renderShippingSection() {
     ? indexedRates
     : indexedRates.slice(0, 12);
 
+  const nextSuggestedCode = String(adminState.shipping.rates.length + 1).padStart(2, '0');
+
   return `
+    <!-- بطاقة إضافة ولاية جديدة -->
+    <div class="adm-card" style="margin-bottom:1.1rem;">
+      <div class="adm-card-head" style="margin-bottom:0.85rem;">
+        <div>
+          <h2 class="adm-card-title">${isFr ? 'Ajouter une nouvelle wilaya' : 'إضافة ولاية جديدة'}</h2>
+          <p class="adm-card-sub">
+            ${isFr ? 'Ajoutez une wilaya avec son code, son nom et ses tarifs de livraison (Domicile & Stop-Desk)' : 'أدخل رقم الولاية واسمها وسعر التوصيل للمنزل وللمكتب لإضافتها فوراً إلى قائمة التوصيل'}
+          </p>
+        </div>
+      </div>
+
+      <form id="adm-add-wilaya-form" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.75rem; align-items:end;">
+        <div class="adm-field">
+          <label class="adm-label">${isFr ? 'Code Wilaya *' : 'رقم / رمز الولاية *'}</label>
+          <input
+            name="code"
+            type="text"
+            dir="ltr"
+            required
+            placeholder="${nextSuggestedCode}"
+            class="adm-input"
+          />
+        </div>
+
+        <div class="adm-field">
+          <label class="adm-label">${isFr ? 'Nom (Arabe) *' : 'اسم الولاية (بالعربية) *'}</label>
+          <input
+            name="name"
+            type="text"
+            required
+            placeholder="${isFr ? 'Ex: بجاية' : 'مثال: بجاية'}"
+            class="adm-input"
+          />
+        </div>
+
+        <div class="adm-field">
+          <label class="adm-label">${isFr ? 'Nom (Français)' : 'الاسم بالفرنسية (اختياري)'}</label>
+          <input
+            name="name_fr"
+            type="text"
+            dir="ltr"
+            placeholder="Ex: Béjaïa"
+            class="adm-input"
+          />
+        </div>
+
+        <div class="adm-field">
+          <label class="adm-label">${tr.ship.homeFeeLabel}</label>
+          <input
+            name="homeFee"
+            type="number"
+            min="0"
+            step="50"
+            value="600"
+            required
+            class="adm-input"
+          />
+        </div>
+
+        <div class="adm-field">
+          <label class="adm-label">${tr.ship.deskFeeLabel}</label>
+          <input
+            name="deskFee"
+            type="number"
+            min="0"
+            step="50"
+            value="400"
+            required
+            class="adm-input"
+          />
+        </div>
+
+        <div class="adm-field">
+          <button type="submit" class="adm-btn adm-btn-pink" style="width:100%; padding:0.65rem 1rem;">
+            ${tr.ship.addBtn}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- قائمة أسعار التوصيل حسب الولايات -->
     <div class="adm-card">
       <div class="adm-card-head">
         <div>
@@ -2930,8 +3215,8 @@ function renderShippingSection() {
             id="adm-shipping-search"
             type="search"
             class="adm-input"
-            style="width:210px; padding:0.5rem 0.8rem;"
-            placeholder="${isFr ? '🔍 Chercher une wilaya...' : '🔍 ابحث عن اسم أو رقم الولاية...'}"
+            style="width:220px; padding:0.5rem 0.8rem;"
+            placeholder="${isFr ? 'Chercher une wilaya...' : 'ابحث عن اسم أو رقم الولاية...'}"
             value="${adminState.shippingSearch || ''}"
           />
         </div>
@@ -2949,8 +3234,8 @@ function renderShippingSection() {
                   data-adm-action="delete-wilaya"
                   data-index="${idx}"
                   class="adm-btn adm-btn-danger adm-btn-sm"
-                  style="padding:0.2rem 0.5rem;"
-                >✕</button>
+                  style="padding:0.2rem 0.55rem;"
+                >${tr.inv.deleteBtn}</button>
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
                 <div>
@@ -2992,11 +3277,11 @@ function renderShippingSection() {
               ${
                 adminState.showAllWilayas
                   ? isFr
-                    ? 'Réduire la liste ▲'
-                    : 'طي القائمة (عرض 12 ولاية فقط) ▲'
+                    ? 'Réduire la liste'
+                    : 'طي القائمة (عرض 12 ولاية فقط)'
                   : isFr
-                  ? `Afficher les ${adminState.shipping.rates.length} wilayas ▼`
-                  : `عرض جميع الولايات (${adminState.shipping.rates.length} ولاية) ▼`
+                  ? `Afficher les ${adminState.shipping.rates.length} wilayas`
+                  : `عرض جميع الولايات (${adminState.shipping.rates.length} ولاية)`
               }
             </button>
           </div>
@@ -3116,11 +3401,35 @@ export function setupAdminEvents() {
       }
 
       case 'toggle-product-form': {
+        adminState.editingProductId = null;
         adminState.isProductFormOpen = !adminState.isProductFormOpen;
-        renderAdminDashboard();
         if (adminState.isProductFormOpen) {
+          adminState.draftProductImage = '';
+          adminState.draftProductGallery = [];
+          adminState.draftProductForm = {
+            name: '',
+            name_fr: '',
+            slug: '',
+            category: '',
+            description_ar: '',
+            description_fr: '',
+            originalPrice: '',
+            discountPrice: '',
+            isVisible: true,
+            isNew: false,
+            isBestSeller: false,
+            isSpecialOffer: false,
+            colorName: 'Beige',
+            colorHex: '#D2B48C',
+            sizeFrom: 36,
+            sizeTo: 41,
+            defaultSizeStock: 5,
+            sizeStock: buildSizeStockRange(36, 41, 5),
+            variants: [],
+          };
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+        renderAdminDashboard();
         break;
       }
 
@@ -3153,13 +3462,13 @@ export function setupAdminEvents() {
 
       case 'delete-category': {
         if (adminState.categories.length <= 1) {
-          showToast(getLang() === 'fr' ? '⚠️ Gardez au moins une catégorie' : '⚠️ يجب الإبقاء على فئة واحدة على الأقل');
+          showToast(getLang() === 'fr' ? 'Gardez au moins une catégorie' : 'يجب الإبقاء على فئة واحدة على الأقل');
           break;
         }
         adminState.categories = adminState.categories.filter((c) => c.id !== id);
         adminState.saveAll();
         renderAdminDashboard();
-        showToast(getLang() === 'fr' ? '🗑️ Catégorie supprimée' : '🗑️ تم حذف الفئة بنجاح');
+        showToast(getLang() === 'fr' ? 'Catégorie supprimée' : 'تم حذف الفئة بنجاح');
         break;
       }
 
@@ -3234,118 +3543,140 @@ export function setupAdminEvents() {
         }
         showToast(
           getLang() === 'fr'
-            ? `🔗 Lien de l'offre copié : ${shareUrl}`
-            : `🔗 تم نسخ رابط صفحة الهبوط للإعلانات بنجاح!`
+            ? `Lien de l'offre copié : ${shareUrl}`
+            : `تم نسخ رابط صفحة الهبوط للإعلانات بنجاح`
         );
         break;
       }
 
-      case 'quick-brief-preset': {
-        const presetText = btn.getAttribute('data-brief') || '';
-        adminState.draftProductBrief = presetText;
-        const generated = generateProductFromBrief(presetText);
-        adminState.draftGeneratedPreview = generated;
-        adminState.draftProductImage = generated.image;
-        adminState.draftProductForm = {
-          name: generated.name,
-          name_fr: generated.name_fr,
-          slug: generated.slug,
-          category: generated.category,
-          description_ar: generated.description_ar,
-          description_fr: generated.description_fr,
-          originalPrice: generated.originalPrice,
-          discountPrice: generated.discountPrice,
-          isVisible: generated.isVisible,
-          isNew: generated.isNew,
-          isBestSeller: generated.isBestSeller,
-          isSpecialOffer: generated.isSpecialOffer,
-          colorName: generated.colorName,
-          colorHex: generated.colorHex,
-          sizeFrom: generated.sizeFrom,
-          sizeTo: generated.sizeTo,
-          defaultSizeStock: generated.defaultSizeStock,
-          sizeStock: { ...generated.sizeStock },
-        };
-        renderAdminDashboard();
-        showToast(
-          getLang() === 'fr'
-            ? '✨ Tous les champs du produit ont été générés et remplis !'
-            : '✨ تم استخراج وتوليد وتجهيز جميع حقول المنتج بنجاح!'
-        );
-        break;
-      }
-
-      case 'generate-from-brief': {
-        const briefInp = document.getElementById('adm-product-brief-input');
-        const rawText =
-          briefInp instanceof HTMLInputElement
-            ? briefInp.value.trim()
-            : adminState.draftProductBrief;
-        adminState.draftProductBrief = rawText || 'صندل بيج بكعب أنيق ومريح للسهرات';
-        const generated = generateProductFromBrief(adminState.draftProductBrief);
-        adminState.draftGeneratedPreview = generated;
-        adminState.draftProductImage = generated.image;
-        adminState.draftProductForm = {
-          name: generated.name,
-          name_fr: generated.name_fr,
-          slug: generated.slug,
-          category: generated.category,
-          description_ar: generated.description_ar,
-          description_fr: generated.description_fr,
-          originalPrice: generated.originalPrice,
-          discountPrice: generated.discountPrice,
-          isVisible: generated.isVisible,
-          isNew: generated.isNew,
-          isBestSeller: generated.isBestSeller,
-          isSpecialOffer: generated.isSpecialOffer,
-          colorName: generated.colorName,
-          colorHex: generated.colorHex,
-          sizeFrom: generated.sizeFrom,
-          sizeTo: generated.sizeTo,
-          defaultSizeStock: generated.defaultSizeStock,
-          sizeStock: { ...generated.sizeStock },
-        };
-        renderAdminDashboard();
-        showToast(
-          getLang() === 'fr'
-            ? '✨ Fiche produit complète générée avec succès !'
-            : '✨ تم توليد وتعبئة جميع حقول المنتج تلقائياً بنجاح!'
-        );
-        break;
-      }
-
-      case 'copy-generated-spec': {
-        const text = formatGeneratedProductSpec(adminState.draftGeneratedPreview);
-        if (text && navigator.clipboard) {
-          navigator.clipboard.writeText(text).catch(() => {});
+      case 'copy-product-link': {
+        const slug = btn.getAttribute('data-slug') || id;
+        if (!slug) break;
+        const prodUrl = new URL(`./index.html?product=${encodeURIComponent(slug)}`, window.location.href).href;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(prodUrl).catch(() => {});
         }
         showToast(
           getLang() === 'fr'
-            ? '📋 Fiche produit copiée dans le presse-papiers !'
-            : '📋 تم نسخ بطاقة المنتج المنسقة إلى الحافظة!'
+            ? `Lien du produit copié : ${prodUrl}`
+            : `تم نسخ رابط المنتج المستقل بنجاح`
         );
         break;
       }
 
-      case 'apply-default-size-stock': {
+      case 'generate-variant-rows': {
         const df = adminState.draftProductForm;
+        const colorInp = document.getElementById('adm-variant-color-name');
+        const hexInp = document.getElementById('adm-color-picker');
         const fromInp = document.getElementById('adm-size-from');
         const toInp = document.getElementById('adm-size-to');
-        const defInp = document.getElementById('adm-default-size-stock');
-        const sFrom = fromInp instanceof HTMLInputElement ? Number(fromInp.value || 36) : df.sizeFrom;
-        const sTo = toInp instanceof HTMLInputElement ? Number(toInp.value || 41) : df.sizeTo;
-        const defQty = defInp instanceof HTMLInputElement ? Number(defInp.value || 5) : df.defaultSizeStock;
+        const qtyInp = document.getElementById('adm-default-size-stock');
 
-        df.sizeFrom = Math.min(sFrom, sTo);
-        df.sizeTo = Math.max(sFrom, sTo);
-        df.defaultSizeStock = Math.max(0, defQty);
-        df.sizeStock = buildSizeStockRange(df.sizeFrom, df.sizeTo, df.defaultSizeStock);
+        const cName =
+          (colorInp instanceof HTMLInputElement ? colorInp.value.trim() : df.colorName) || 'Beige';
+        const cHex =
+          (hexInp instanceof HTMLInputElement ? hexInp.value.trim() : df.colorHex) || '#D2B48C';
+        const rawFrom = fromInp instanceof HTMLInputElement ? Number(fromInp.value || 36) : Number(df.sizeFrom || 36);
+        const rawTo = toInp instanceof HTMLInputElement ? Number(toInp.value || 41) : Number(df.sizeTo || 41);
+        const sFrom = Math.max(30, Math.min(48, Math.min(rawFrom, rawTo)));
+        const sTo = Math.max(30, Math.min(48, Math.max(rawFrom, rawTo)));
+        const defQty = Math.max(
+          0,
+          qtyInp instanceof HTMLInputElement ? Number(qtyInp.value ?? 5) : Number(df.defaultSizeStock ?? 5)
+        );
+
+        df.colorName = cName;
+        df.colorHex = cHex;
+        df.sizeFrom = sFrom;
+        df.sizeTo = sTo;
+        df.defaultSizeStock = defQty;
+
+        if (!Array.isArray(df.variants)) df.variants = [];
+
+        for (let sz = sFrom; sz <= sTo; sz++) {
+          const existingIdx = df.variants.findIndex(
+            (v) =>
+              Number(v.size) === sz &&
+              String(v.colorName || '').trim().toLowerCase() === cName.toLowerCase()
+          );
+          if (existingIdx !== -1) {
+            df.variants[existingIdx].colorHex = cHex;
+            df.variants[existingIdx].quantity = defQty;
+            df.variants[existingIdx].active = true;
+          } else {
+            df.variants.push({
+              size: sz,
+              colorName: cName,
+              colorHex: cHex,
+              quantity: defQty,
+              active: true,
+            });
+          }
+        }
+
         renderAdminDashboard();
         showToast(
           getLang() === 'fr'
-            ? `Quantité (${df.defaultSizeStock} pcs) appliquée aux pointures ${df.sizeFrom}–${df.sizeTo}`
-            : `تم تطبيق الكمية الافتراضية (${df.defaultSizeStock} قطع) على المقاسات من ${df.sizeFrom} إلى ${df.sizeTo}`
+            ? `Pointures ${sFrom} à ${sTo} générées pour la couleur ${cName}`
+            : `تم توليد المقاسات من ${sFrom} إلى ${sTo} للون ${cName}`
         );
+        break;
+      }
+
+      case 'add-manual-variant-row': {
+        const df = adminState.draftProductForm;
+        if (!Array.isArray(df.variants)) df.variants = [];
+        const lastRow = df.variants[df.variants.length - 1];
+        const nextSize = lastRow ? Math.min(48, Number(lastRow.size || 36) + 1) : Number(df.sizeFrom || 36);
+        df.variants.push({
+          size: nextSize,
+          colorName: df.colorName || 'Beige',
+          colorHex: df.colorHex || '#D2B48C',
+          quantity: Number(df.defaultSizeStock ?? 5),
+          active: true,
+        });
+        renderAdminDashboard();
+        break;
+      }
+
+      case 'remove-variant-row': {
+        const idx = Number(btn.getAttribute('data-index'));
+        const df = adminState.draftProductForm;
+        if (Array.isArray(df.variants) && !Number.isNaN(idx)) {
+          df.variants.splice(idx, 1);
+          renderAdminDashboard();
+        }
+        break;
+      }
+
+      case 'add-prod-image-url': {
+        const urlInp = document.getElementById('adm-prod-image-url-input');
+        const rawUrl = urlInp instanceof HTMLInputElement ? urlInp.value.trim() : '';
+        if (!rawUrl) {
+          showToast(getLang() === 'fr' ? 'Entrez un lien image valide' : 'يرجى إدخال رابط صورة صحيح');
+          break;
+        }
+        if (!Array.isArray(adminState.draftProductGallery)) {
+          adminState.draftProductGallery = [];
+        }
+        if (adminState.draftProductImage && !adminState.draftProductGallery.includes(adminState.draftProductImage)) {
+          adminState.draftProductGallery.unshift(adminState.draftProductImage);
+        }
+        adminState.draftProductGallery.push(rawUrl);
+        adminState.draftProductImage = adminState.draftProductGallery[0] || rawUrl;
+        renderAdminDashboard();
+        showToast(t().toasts.photoUploaded);
+        break;
+      }
+
+      case 'set-main-prod-img': {
+        const idx = Number(btn.getAttribute('data-index'));
+        if (Array.isArray(adminState.draftProductGallery) && !Number.isNaN(idx) && adminState.draftProductGallery[idx]) {
+          const [chosen] = adminState.draftProductGallery.splice(idx, 1);
+          adminState.draftProductGallery.unshift(chosen);
+          adminState.draftProductImage = chosen;
+          renderAdminDashboard();
+        }
         break;
       }
 
@@ -3354,32 +3685,72 @@ export function setupAdminEvents() {
         if (prod) {
           adminState.editingProductId = id;
           adminState.isProductFormOpen = true;
-          adminState.draftProductImage = prod.image;
-          adminState.draftProductGallery = Array.isArray(prod.gallery)
-            ? [...prod.gallery]
-            : [prod.image];
+          const gallery =
+            Array.isArray(prod.gallery) && prod.gallery.length > 0
+              ? [...prod.gallery]
+              : prod.image
+              ? [prod.image]
+              : [];
+          adminState.draftProductImage = gallery[0] || prod.image || '';
+          adminState.draftProductGallery = gallery;
 
           const szFrom = prod.sizeFrom || 36;
           const szTo = prod.sizeTo || 41;
           const defQty = prod.defaultSizeStock ?? 5;
+          const primaryColor =
+            prod.colorName || (Array.isArray(prod.colors) && prod.colors[0]) || 'Beige';
+          const primaryHex =
+            prod.colorHex || COLOR_SWATCHES[primaryColor]?.hex || '#D2B48C';
+
+          let variants = [];
+          if (Array.isArray(prod.variants) && prod.variants.length > 0) {
+            variants = prod.variants.map((v) => ({ ...v }));
+          } else {
+            const szStockMap =
+              prod.sizeStock && Object.keys(prod.sizeStock).length > 0
+                ? prod.sizeStock
+                : buildSizeStockRange(szFrom, szTo, defQty);
+            const colorsArr =
+              Array.isArray(prod.colors) && prod.colors.length > 0
+                ? prod.colors
+                : [primaryColor];
+            colorsArr.forEach((cName) => {
+              const hex = COLOR_SWATCHES[cName]?.hex || primaryHex;
+              Object.entries(szStockMap).forEach(([sz, qty]) => {
+                variants.push({
+                  size: Number(sz),
+                  colorName: cName,
+                  colorHex: hex,
+                  quantity: Number(qty),
+                  active: true,
+                });
+              });
+            });
+          }
+
+          const origVal = prod.originalPrice || prod.price || '';
+          const discVal =
+            prod.discountPrice && prod.discountPrice < (prod.originalPrice || prod.price)
+              ? prod.discountPrice
+              : prod.price && prod.originalPrice && prod.price < prod.originalPrice
+              ? prod.price
+              : '';
+
           adminState.draftProductForm = {
             name: prod.name || '',
             name_fr: prod.name_fr || prod.name || '',
-            slug: prod.slug || 'sandale-beige-talon',
-            category: prod.category || 'Talons',
+            slug: prod.slug || '',
+            category: prod.category || '',
             description_ar: prod.description_ar || '',
             description_fr: prod.description_fr || '',
-            originalPrice: prod.originalPrice || prod.price || 5800,
-            discountPrice:
-              prod.discountPrice && prod.discountPrice < (prod.originalPrice || prod.price)
-                ? prod.discountPrice
-                : prod.price,
+            originalPrice: origVal,
+            discountPrice: discVal,
             isVisible: prod.isVisible !== false,
-            isNew: Boolean(prod.isNew ?? true),
+            isNew: Boolean(prod.isNew ?? false),
             isBestSeller: Boolean(prod.isBestSeller ?? false),
             isSpecialOffer: Boolean(prod.isSpecialOffer ?? false),
-            colorName: prod.colorName || (Array.isArray(prod.colors) && prod.colors[0]) || 'Beige',
-            colorHex: prod.colorHex || '#D2B48C',
+            colorName: primaryColor,
+            colorHex: primaryHex,
             sizeFrom: szFrom,
             sizeTo: szTo,
             defaultSizeStock: defQty,
@@ -3387,6 +3758,7 @@ export function setupAdminEvents() {
               prod.sizeStock && Object.keys(prod.sizeStock).length > 0
                 ? { ...prod.sizeStock }
                 : buildSizeStockRange(szFrom, szTo, defQty),
+            variants,
           };
           renderAdminDashboard();
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3399,19 +3771,19 @@ export function setupAdminEvents() {
         adminState.isProductFormOpen = false;
         adminState.showAdvancedProductFields = false;
         adminState.draftGeneratedPreview = null;
-        adminState.draftProductImage = IMAGES.talons;
+        adminState.draftProductImage = '';
         adminState.draftProductGallery = [];
         adminState.draftProductForm = {
           name: '',
           name_fr: '',
-          slug: 'sandale-beige-talon',
-          category: 'Sandales',
+          slug: '',
+          category: '',
           description_ar: '',
           description_fr: '',
-          originalPrice: 6200,
-          discountPrice: 4790,
+          originalPrice: '',
+          discountPrice: '',
           isVisible: true,
-          isNew: true,
+          isNew: false,
           isBestSeller: false,
           isSpecialOffer: false,
           colorName: 'Beige',
@@ -3420,6 +3792,7 @@ export function setupAdminEvents() {
           sizeTo: 41,
           defaultSizeStock: 5,
           sizeStock: buildSizeStockRange(36, 41, 5),
+          variants: [],
         };
         renderAdminDashboard();
         break;
@@ -3428,7 +3801,11 @@ export function setupAdminEvents() {
       case 'remove-prod-gallery-img': {
         const idx = Number(btn.getAttribute('data-index'));
         if (!Number.isNaN(idx)) {
+          if (adminState.draftProductImage && !adminState.draftProductGallery.includes(adminState.draftProductImage)) {
+            adminState.draftProductGallery.unshift(adminState.draftProductImage);
+          }
           adminState.draftProductGallery.splice(idx, 1);
+          adminState.draftProductImage = adminState.draftProductGallery[0] || '';
           renderAdminDashboard();
         }
         break;
@@ -3494,10 +3871,6 @@ export function setupAdminEvents() {
     const target = e.target;
     if (!(target instanceof HTMLElement)) return;
 
-    if (target instanceof HTMLInputElement && target.id === 'adm-product-brief-input') {
-      adminState.draftProductBrief = target.value;
-    }
-
     if (target instanceof HTMLInputElement && target.id === 'adm-shipping-search') {
       adminState.shippingSearch = target.value;
       const tabSec = document.getElementById('adm-tab-shipping');
@@ -3512,37 +3885,28 @@ export function setupAdminEvents() {
       return;
     }
 
-    // تزامن حقول نموذج المنتج (الأقسام الـ 3) مع المسودة الحية
+    // تزامن حقول نموذج المنتج مع المسودة الحية
     if (target.closest('#adm-product-form')) {
       const df = adminState.draftProductForm;
 
+      // تزامن تعديلات جدول المقاسات والألوان المباشرة
+      if (target.hasAttribute('data-variant-idx')) {
+        const vIdx = Number(target.getAttribute('data-variant-idx'));
+        const vField = target.getAttribute('data-variant-field');
+        if (Array.isArray(df.variants) && df.variants[vIdx] && vField) {
+          if (vField === 'active' && target instanceof HTMLInputElement) {
+            df.variants[vIdx].active = target.checked;
+          } else if ((vField === 'size' || vField === 'quantity') && target instanceof HTMLInputElement) {
+            df.variants[vIdx][vField] = Math.max(0, Number(target.value || 0));
+          } else if (target instanceof HTMLInputElement) {
+            df.variants[vIdx][vField] = target.value;
+          }
+        }
+        return;
+      }
+
       if (target instanceof HTMLInputElement && target.id === 'adm-color-picker') {
         df.colorHex = target.value;
-        const hexText = document.getElementById('adm-color-hex-input');
-        if (hexText instanceof HTMLInputElement) hexText.value = target.value;
-      } else if (target instanceof HTMLInputElement && target.id === 'adm-color-hex-input') {
-        df.colorHex = target.value;
-        const picker = document.getElementById('adm-color-picker');
-        if (picker instanceof HTMLInputElement && /^#[0-9A-Fa-f]{6}$/.test(target.value.trim())) {
-          picker.value = target.value.trim();
-        }
-      } else if (target instanceof HTMLInputElement && target.hasAttribute('data-adm-size-qty')) {
-        const sz = target.getAttribute('data-adm-size-qty');
-        if (sz) {
-          df.sizeStock[sz] = Math.max(0, Number(target.value || 0));
-          const total = sumSizeStock(df.sizeStock);
-          const badge = document.getElementById('adm-total-size-stock-badge');
-          if (badge) {
-            badge.textContent =
-              getLang() === 'fr'
-                ? `Stock total calculé : ${total} pcs`
-                : `إجمالي المخزون المحسوب: ${total} قطعة`;
-          }
-          const hiddenTotal = document.getElementById('adm-calculated-stock-input');
-          if (hiddenTotal instanceof HTMLInputElement) {
-            hiddenTotal.value = String(total);
-          }
-        }
       } else if (
         target instanceof HTMLInputElement ||
         target instanceof HTMLTextAreaElement ||
@@ -3550,26 +3914,39 @@ export function setupAdminEvents() {
       ) {
         const fieldName = target.getAttribute('name');
         if (fieldName && fieldName in df) {
-          if (
-            fieldName === 'isVisible' ||
-            fieldName === 'isNew' ||
-            fieldName === 'isBestSeller' ||
-            fieldName === 'isSpecialOffer'
-          ) {
-            df[fieldName] = target.value === 'yes';
+          if (target instanceof HTMLInputElement && target.type === 'checkbox') {
+            df[fieldName] = target.checked;
           } else if (
             fieldName === 'originalPrice' ||
             fieldName === 'discountPrice' ||
-            fieldName === 'defaultSizeStock'
+            fieldName === 'defaultSizeStock' ||
+            fieldName === 'sizeFrom' ||
+            fieldName === 'sizeTo'
           ) {
             df[fieldName] = target.value === '' ? '' : Number(target.value);
-            if (fieldName === 'defaultSizeStock' && !adminState.showAdvancedProductFields) {
-              df.sizeStock = buildSizeStockRange(df.sizeFrom, df.sizeTo, Number(target.value || 5));
-            }
           } else {
             df[fieldName] = target.value;
+            // توليد تلقائي للـ slug عند كتابة الاسم بالفرنسية إذا كان حقل الـ slug فارغاً
+            if (fieldName === 'name_fr' && !adminState.editingProductId) {
+              const slugInp = document.querySelector('#adm-product-form input[name="slug"]');
+              if (slugInp instanceof HTMLInputElement && (!df.slug || df.slug === df._autoSlug)) {
+                const generatedSlug = target.value
+                  .toLowerCase()
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/^-|-$/g, '');
+                df.slug = generatedSlug;
+                df._autoSlug = generatedSlug;
+                slugInp.value = generatedSlug;
+              }
+            }
             if (fieldName === 'colorName' && COLOR_SWATCHES[target.value]?.hex) {
               df.colorHex = COLOR_SWATCHES[target.value].hex;
+              const picker = document.getElementById('adm-color-picker');
+              if (picker instanceof HTMLInputElement) {
+                picker.value = df.colorHex;
+              }
             }
           }
         }
@@ -3626,7 +4003,7 @@ export function setupAdminEvents() {
           (p.name && p.name.toLowerCase().includes(q)) ||
           (p.name_fr && p.name_fr.toLowerCase().includes(q)) ||
           (p.slug && p.slug.toLowerCase().includes(q)) ||
-          p.category.toLowerCase().includes(q)
+          (p.category && p.category.toLowerCase().includes(q))
       );
       const grid = document.getElementById('adm-inventory-grid');
       if (grid) grid.innerHTML = renderInventoryCards(filtered);
@@ -3650,23 +4027,24 @@ export function setupAdminEvents() {
     }
   });
 
-  // رفع الصور من الجهاز + تغيير حالة الطلبات + تغيير نطاق المقاسات
+  // رفع الصور من الجهاز + تغيير حالة الطلبات
   root.addEventListener('change', async (e) => {
     const target = e.target;
 
-    if (
-      target instanceof HTMLInputElement &&
-      (target.id === 'adm-size-from' || target.id === 'adm-size-to')
-    ) {
+    // تزامن الـ checkboxes في نموذج المنتج وجدول المقاسات
+    if (target instanceof HTMLInputElement && target.type === 'checkbox' && target.closest('#adm-product-form')) {
       const df = adminState.draftProductForm;
-      const fromEl = document.getElementById('adm-size-from');
-      const toEl = document.getElementById('adm-size-to');
-      const sFrom = fromEl instanceof HTMLInputElement ? Number(fromEl.value || 36) : 36;
-      const sTo = toEl instanceof HTMLInputElement ? Number(toEl.value || 41) : 41;
-      df.sizeFrom = Math.max(34, Math.min(44, Math.min(sFrom, sTo)));
-      df.sizeTo = Math.max(34, Math.min(44, Math.max(sFrom, sTo)));
-      df.sizeStock = buildSizeStockRange(df.sizeFrom, df.sizeTo, df.defaultSizeStock, df.sizeStock);
-      renderAdminDashboard();
+      if (target.hasAttribute('data-variant-idx')) {
+        const vIdx = Number(target.getAttribute('data-variant-idx'));
+        if (Array.isArray(df.variants) && df.variants[vIdx]) {
+          df.variants[vIdx].active = target.checked;
+        }
+      } else {
+        const fieldName = target.getAttribute('name');
+        if (fieldName && fieldName in df) {
+          df[fieldName] = target.checked;
+        }
+      }
       return;
     }
 
@@ -3678,14 +4056,25 @@ export function setupAdminEvents() {
         if (target.id === 'adm-prod-file-input') {
           const dataUrl = await readAndCompressImageFile(files[0]);
           adminState.draftProductImage = dataUrl;
-          const previewEl = document.getElementById('adm-prod-img-preview');
-          if (previewEl instanceof HTMLImageElement) previewEl.src = dataUrl;
+          if (!Array.isArray(adminState.draftProductGallery)) {
+            adminState.draftProductGallery = [dataUrl];
+          } else if (!adminState.draftProductGallery.includes(dataUrl)) {
+            adminState.draftProductGallery.unshift(dataUrl);
+          }
+          renderAdminDashboard();
           showToast(t().toasts.photoUploaded);
         } else if (target.id === 'adm-prod-gallery-input') {
+          if (!Array.isArray(adminState.draftProductGallery)) {
+            adminState.draftProductGallery = [];
+          }
+          if (adminState.draftProductImage && !adminState.draftProductGallery.includes(adminState.draftProductImage)) {
+            adminState.draftProductGallery.unshift(adminState.draftProductImage);
+          }
           for (const f of files) {
             const dataUrl = await readAndCompressImageFile(f);
             adminState.draftProductGallery.push(dataUrl);
           }
+          adminState.draftProductImage = adminState.draftProductGallery[0] || '';
           renderAdminDashboard();
           showToast(t().toasts.galleryAdded(files.length));
         } else if (target.hasAttribute('data-adm-row-img-upload')) {
@@ -3787,8 +4176,8 @@ export function setupAdminEvents() {
         }
         showToast(
           getLang() === 'fr'
-            ? '⚡ Données du produit importées dans la Landing Page !'
-            : '⚡ تم استيراد بيانات وصور الحذاء إلى صفحة الهبوط تلقائياً!'
+            ? 'Données du produit importées dans la Landing Page'
+            : 'تم استيراد بيانات وصور الحذاء إلى صفحة الهبوط تلقائياً'
         );
       }
       return;
@@ -3845,7 +4234,7 @@ export function setupAdminEvents() {
         snapPixelId: String(fd.get('snapPixelId') || '').trim(),
         googleTagId: String(fd.get('googleTagId') || '').trim(),
         features: [0, 1, 2].map((idx) => ({
-          icon: String(fd.get(`featIcon_${idx}`) || '✨').trim(),
+          icon: String(fd.get(`featIcon_${idx}`) || `0${idx + 1}`).trim(),
           title: String(fd.get(`featTitle_${idx}`) || '').trim(),
           desc: String(fd.get(`featDesc_${idx}`) || '').trim(),
         })),
@@ -3878,10 +4267,10 @@ export function setupAdminEvents() {
         const idx = adminState.categories.findIndex((c) => c.id === adminState.editingCategoryId);
         if (idx !== -1) adminState.categories[idx] = catPayload;
         adminState.editingCategoryId = null;
-        showToast(getLang() === 'fr' ? '✅ Catégorie mise à jour !' : '✅ تم تحديث الفئة بنجاح!');
+        showToast(getLang() === 'fr' ? 'Catégorie mise à jour' : 'تم تحديث الفئة بنجاح');
       } else {
         adminState.categories.push(catPayload);
-        showToast(getLang() === 'fr' ? '✅ Nouvelle catégorie ajoutée !' : '✅ تمت إضافة الفئة الجديدة للمتجر!');
+        showToast(getLang() === 'fr' ? 'Nouvelle catégorie ajoutée' : 'تمت إضافة الفئة الجديدة للمتجر');
       }
       adminState.isCategoryFormOpen = false;
       adminState.saveAll();
@@ -3920,74 +4309,134 @@ export function setupAdminEvents() {
       syncLandingPageToSupabase(payload);
       renderAdminDashboard();
     } else if (form.id === 'adm-product-form') {
-      const uploadedImage = adminState.draftProductImage || IMAGES.talons;
-      const uploadedGallery =
-        adminState.draftProductGallery && adminState.draftProductGallery.length > 0
-          ? [uploadedImage, ...adminState.draftProductGallery]
-          : [uploadedImage];
+      const df = adminState.draftProductForm;
 
-      const nameAr = String(fd.get('name') || '').trim();
-      const autoGenerated = generateProductFromBrief(nameAr);
-      const nameFr = String(fd.get('name_fr') || autoGenerated.name_fr || nameAr).trim();
-      const rawSlug = String(fd.get('slug') || autoGenerated.slug || 'sandale-beige-talon')
+      const nameAr = String(fd.get('name') || df.name || '').trim();
+      const nameFr = String(fd.get('name_fr') || df.name_fr || nameAr).trim();
+      const rawSlug = String(fd.get('slug') || df.slug || nameFr || 'sandale-beige')
         .trim()
         .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9-]+/g, '-')
         .replace(/^-|-$/g, '');
-      const category = String(fd.get('category') || 'Talons');
-      const descriptionAr = String(fd.get('description_ar') || autoGenerated.description_ar).trim();
-      const descriptionFr = String(fd.get('description_fr') || autoGenerated.description_fr).trim();
 
-      const rawDiscount = Number(fd.get('discountPrice') || 0);
-      const rawOriginal = Number(fd.get('originalPrice') || 0);
-      const finalPrice = rawDiscount > 0 ? rawDiscount : rawOriginal > 0 ? rawOriginal : 4990;
-      const originalPrice = rawOriginal > finalPrice ? rawOriginal : Math.round(finalPrice * 1.25);
-      const discountPercent = Math.max(
-        5,
-        Math.round(((originalPrice - finalPrice) / originalPrice) * 100)
-      );
+      const rawCat = String(fd.get('category') || df.category || '').trim();
+      const category =
+        rawCat || (adminState.categories[0] ? adminState.categories[0].id : 'Sandales');
 
-      const isVisible = fd.get('isVisible') !== 'no';
-      const isNew = fd.get('isNew') !== 'no';
-      const isBestSeller = fd.get('isBestSeller') === 'yes';
-      const isSpecialOffer = fd.get('isSpecialOffer') === 'yes';
+      const descriptionAr = String(fd.get('description_ar') || df.description_ar || '').trim();
+      const descriptionFr = String(fd.get('description_fr') || df.description_fr || '').trim();
 
-      const colorName = String(fd.get('colorName') || 'Beige').trim();
-      const colorHex = String(
-        fd.get('colorHex') || COLOR_SWATCHES[colorName]?.hex || '#D2B48C'
-      ).trim();
+      const rawOriginal = Number(fd.get('originalPrice') || df.originalPrice || 0);
+      const rawDiscount = Number(fd.get('discountPrice') || df.discountPrice || 0);
 
-      if (!COLOR_SWATCHES[colorName]) {
-        COLOR_SWATCHES[colorName] = {
-          hex: colorHex,
-          label_ar: colorName,
-          label_fr: colorName,
-        };
-      }
+      const finalPrice =
+        rawDiscount > 0 && (rawOriginal === 0 || rawDiscount <= rawOriginal)
+          ? rawDiscount
+          : rawOriginal > 0
+          ? rawOriginal
+          : 4900;
+      const originalPrice = rawOriginal > 0 ? rawOriginal : finalPrice;
+      const discountPrice = rawDiscount > 0 && rawDiscount < originalPrice ? rawDiscount : null;
+      const discountPercent =
+        discountPrice && originalPrice > discountPrice
+          ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100)
+          : 0;
 
-      const sFrom = Math.min(
-        Number(fd.get('sizeFrom') || 36),
-        Number(fd.get('sizeTo') || 41)
+      const isVisible = fd.has('isVisible');
+      const isNew = fd.has('isNew');
+      const isBestSeller = fd.has('isBestSeller');
+      const isSpecialOffer = fd.has('isSpecialOffer');
+
+      const colorName = String(fd.get('colorName') || df.colorName || 'Beige').trim() || 'Beige';
+      const colorHex = String(fd.get('colorHex') || df.colorHex || '#D2B48C').trim() || '#D2B48C';
+
+      const sFrom = Math.max(
+        30,
+        Math.min(
+          48,
+          Math.min(
+            Number(fd.get('sizeFrom') || df.sizeFrom || 36),
+            Number(fd.get('sizeTo') || df.sizeTo || 41)
+          )
+        )
       );
       const sTo = Math.max(
-        Number(fd.get('sizeFrom') || 36),
-        Number(fd.get('sizeTo') || 41)
+        30,
+        Math.min(
+          48,
+          Math.max(
+            Number(fd.get('sizeFrom') || df.sizeFrom || 36),
+            Number(fd.get('sizeTo') || df.sizeTo || 41)
+          )
+        )
       );
-      const defaultSizeStock = Math.max(0, Number(fd.get('defaultSizeStock') || 5));
+      const defaultSizeStock = Math.max(
+        0,
+        Number(fd.get('defaultSizeStock') ?? df.defaultSizeStock ?? 5)
+      );
+
+      let activeVariants = Array.isArray(df.variants)
+        ? df.variants.filter((v) => v && v.active !== false)
+        : [];
+
+      // إذا لم يضغط المستخدم على زر "توليد المقاسات لهذا اللون" بعد، نولّدها تلقائياً من المدخلات الحالية
+      if (activeVariants.length === 0) {
+        for (let sz = sFrom; sz <= sTo; sz++) {
+          activeVariants.push({
+            size: sz,
+            colorName,
+            colorHex,
+            quantity: defaultSizeStock,
+            active: true,
+          });
+        }
+      }
 
       const sizeStock = {};
-      const sizes = [];
-      for (let sz = sFrom; sz <= sTo; sz++) {
-        const qtyVal = fd.get(`size_qty_${sz}`);
-        const qty = qtyVal !== null ? Math.max(0, Number(qtyVal)) : defaultSizeStock;
-        sizeStock[sz] = qty;
-        sizes.push(sz);
-      }
+      const sizesSet = new Set();
+      const colorsSet = new Set();
+
+      activeVariants.forEach((v) => {
+        const sz = Number(v.size || 36);
+        const qty = Math.max(0, Number(v.quantity ?? defaultSizeStock));
+        const cName = String(v.colorName || colorName).trim() || 'Beige';
+        const cHex = String(v.colorHex || colorHex).trim() || '#D2B48C';
+
+        sizesSet.add(sz);
+        colorsSet.add(cName);
+        sizeStock[sz] = (sizeStock[sz] || 0) + qty;
+
+        if (!COLOR_SWATCHES[cName]) {
+          COLOR_SWATCHES[cName] = {
+            hex: cHex,
+            label_ar: cName,
+            label_fr: cName,
+          };
+        } else {
+          COLOR_SWATCHES[cName].hex = cHex;
+        }
+      });
+
+      const sizes = Array.from(sizesSet).sort((a, b) => a - b);
+      const colors = Array.from(colorsSet);
       const totalStock = sumSizeStock(sizeStock);
 
+      // معالجة صور المنتج
+      const galleryImages = Array.isArray(adminState.draftProductGallery)
+        ? [...adminState.draftProductGallery]
+        : [];
+      if (adminState.draftProductImage && !galleryImages.includes(adminState.draftProductImage)) {
+        galleryImages.unshift(adminState.draftProductImage);
+      }
+      const fallbackImg = IMAGES.sandales || IMAGES.talons;
+      const uploadedImage = galleryImages[0] || fallbackImg;
+      const uploadedGallery = galleryImages.length > 0 ? galleryImages : [uploadedImage];
+
       const payload = {
-        id: adminState.editingProductId || 'ss-' + Date.now().toString().slice(-3),
-        slug: rawSlug || 'sandale-beige-talon',
+        id: adminState.editingProductId || 'ss-' + Date.now().toString().slice(-4),
+        slug: rawSlug || 'sandale-beige',
         name: nameAr,
         name_fr: nameFr,
         category,
@@ -3995,20 +4444,21 @@ export function setupAdminEvents() {
         description_fr: descriptionFr,
         price: finalPrice,
         originalPrice,
-        discountPrice: finalPrice,
+        discountPrice: discountPrice ?? finalPrice,
         discountPercent,
         isVisible,
         isNew,
         isBestSeller,
         isSpecialOffer,
-        colorName,
+        colorName: colors[0] || colorName,
         colorHex,
-        colors: [colorName],
-        sizeFrom: sFrom,
-        sizeTo: sTo,
+        colors: colors.length > 0 ? colors : [colorName],
+        sizeFrom: sizes[0] || sFrom,
+        sizeTo: sizes[sizes.length - 1] || sTo,
         defaultSizeStock,
-        sizes,
+        sizes: sizes.length > 0 ? sizes : [36, 37, 38, 39, 40, 41],
         sizeStock,
+        variants: Array.isArray(df.variants) && df.variants.length > 0 ? df.variants : activeVariants,
         stock: totalStock,
         image: uploadedImage,
         gallery: uploadedGallery,
@@ -4026,23 +4476,33 @@ export function setupAdminEvents() {
 
       adminState.isProductFormOpen = false;
       adminState.showAdvancedProductFields = false;
+      adminState.draftProductImage = '';
       adminState.draftProductGallery = [];
       adminState.draftGeneratedPreview = payload;
       adminState.saveAll();
       syncProductToSupabase(payload);
       renderAdminDashboard();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (form.id === 'adm-add-wilaya-form') {
-      const code = String(fd.get('code') || '').trim();
+      const rawCode = String(fd.get('code') || '').trim();
+      const code = rawCode ? rawCode.padStart(2, '0') : '';
       const name = String(fd.get('name') || '').trim();
-      const homeFee = Number(fd.get('homeFee') || 500);
-      const deskFee = Number(fd.get('deskFee') || 350);
+      const name_fr = String(fd.get('name_fr') || '').trim() || name;
+      const homeFee = Math.max(0, Number(fd.get('homeFee') ?? 600));
+      const deskFee = Math.max(0, Number(fd.get('deskFee') ?? 400));
       if (code && name) {
-        const newRate = { code, name, name_fr: name, homeFee, deskFee };
-        adminState.shipping.rates.push(newRate);
+        const newRate = { code, name, name_fr, homeFee, deskFee };
+        const existingIdx = adminState.shipping.rates.findIndex((r) => r.code === code);
+        if (existingIdx !== -1) {
+          adminState.shipping.rates[existingIdx] = newRate;
+        } else {
+          adminState.shipping.rates.unshift(newRate);
+        }
+        adminState.shippingSearch = '';
         adminState.saveAll();
         syncShippingRateToSupabase(newRate);
         renderAdminDashboard();
-        showToast(t().toasts.wilayaAdded(name));
+        showToast(t().toasts.wilayaAdded(getLang() === 'fr' ? name_fr : name));
       }
     } else if (form.id === 'adm-lp-quick-order-form') {
       const lpId = form.getAttribute('data-lp-id');

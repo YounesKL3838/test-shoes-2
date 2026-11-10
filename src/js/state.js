@@ -88,6 +88,7 @@ export const store = {
   lpGalleryIndex: 0,
 
   selectedWilayaCode: '16',
+  checkoutDeliveryType: 'home', // 'home' | 'desk'
   lastConfirmedOrder: null,
   listeners: [],
 
@@ -122,6 +123,41 @@ export const store = {
     this.setLanguage(this.lang === 'fr' ? 'ar' : 'fr');
   },
 
+  syncUrlWithState(replace = false) {
+    if (typeof window === 'undefined' || !window.history) return;
+    try {
+      let targetUrl = window.location.pathname;
+      if (this.currentScreen === 'pdp') {
+        const prod = this.getActiveProduct();
+        const slugOrId = (prod && (prod.slug || prod.id)) || this.activeProductId;
+        if (slugOrId) {
+          targetUrl = `${window.location.pathname}?product=${encodeURIComponent(slugOrId)}`;
+        }
+      } else if (this.currentScreen === 'landing' && this.activeLandingId) {
+        targetUrl = `${window.location.pathname}?lp=${encodeURIComponent(this.activeLandingId)}`;
+      } else if (this.currentScreen === 'category' && this.activeCategory) {
+        targetUrl = `${window.location.pathname}?category=${encodeURIComponent(this.activeCategory)}`;
+      }
+
+      const currentFull = `${window.location.pathname}${window.location.search}`;
+      if (currentFull !== targetUrl) {
+        const stateObj = {
+          screen: this.currentScreen,
+          productId: this.activeProductId,
+          category: this.activeCategory,
+          landingId: this.activeLandingId,
+        };
+        if (replace) {
+          window.history.replaceState(stateObj, '', targetUrl);
+        } else {
+          window.history.pushState(stateObj, '', targetUrl);
+        }
+      }
+    } catch {
+      // Ignore history errors in restricted environments
+    }
+  },
+
   navigate(screen, options = {}) {
     if (screen !== this.currentScreen) {
       this.previousScreen = this.currentScreen;
@@ -131,8 +167,11 @@ export const store = {
       this.activeCategory = options.category;
     }
     if (options.productId) {
-      this.activeProductId = options.productId;
-      const prod = PRODUCTS.find((p) => p.id === options.productId);
+      const prod =
+        PRODUCTS.find(
+          (p) => p.id === options.productId || p.slug === options.productId
+        ) || null;
+      this.activeProductId = prod ? prod.id : options.productId;
       if (prod) {
         this.pdpSelectedColor = prod.colors[0] || 'Rose';
         this.pdpSelectedSize = prod.sizes.includes(37) ? 37 : prod.sizes[0];
@@ -146,6 +185,9 @@ export const store = {
       this.lpSelectedBundle = 1;
       this.lpDeliveryType = 'home';
       this.lpGalleryIndex = 0;
+    }
+    if (!options.skipUrlUpdate) {
+      this.syncUrlWithState(Boolean(options.replaceUrl));
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
     this.notify();
@@ -163,7 +205,9 @@ export const store = {
 
   getActiveProduct() {
     return (
-      PRODUCTS.find((p) => p.id === this.activeProductId) || PRODUCTS[0]
+      PRODUCTS.find(
+        (p) => p.id === this.activeProductId || p.slug === this.activeProductId
+      ) || PRODUCTS[0]
     );
   },
 
@@ -235,7 +279,7 @@ export const store = {
     this.notify();
   },
 
-  getCartDetails() {
+  getCartDetails(customShippingRates = null) {
     const items = this.cart
       .map((item, index) => {
         const product = PRODUCTS.find((p) => p.id === item.productId);
@@ -252,29 +296,54 @@ export const store = {
     const totalCount = items.reduce((sum, i) => sum + i.quantity, 0);
     const subtotal = items.reduce((sum, i) => sum + i.lineTotal, 0);
     const wilaya =
-      WILAYAS.find((w) => w.code === this.selectedWilayaCode) || WILAYAS[0];
-    const shippingFee = subtotal === 0 ? 0 : wilaya.fee;
+      WILAYAS.find((w) => w.code === this.selectedWilayaCode) || WILAYAS[15] || WILAYAS[0];
+    const customRate = Array.isArray(customShippingRates)
+      ? customShippingRates.find((r) => r.code === wilaya.code)
+      : null;
+
+    const homeFee = Number(customRate?.homeFee ?? wilaya.fee ?? 500);
+    const deskFee = Number(customRate?.deskFee ?? Math.max(250, homeFee - 150));
+    const deliveryType = this.checkoutDeliveryType === 'desk' ? 'desk' : 'home';
+    const shippingFee = subtotal === 0 ? 0 : deliveryType === 'desk' ? deskFee : homeFee;
     const total = subtotal + shippingFee;
 
     return {
       items,
       totalCount,
       subtotal,
+      homeFee,
+      deskFee,
+      deliveryType,
       shippingFee,
       total,
       wilaya,
     };
   },
 
-  submitOrder({ fullName, phone, wilayaCode, address }) {
-    const details = this.getCartDetails();
+  submitOrder({ fullName, phone, wilayaCode, address, deliveryType, customShippingRates = null }) {
+    if (wilayaCode) {
+      this.selectedWilayaCode = wilayaCode;
+    }
+    if (deliveryType === 'home' || deliveryType === 'desk') {
+      this.checkoutDeliveryType = deliveryType;
+    }
+
+    const details = this.getCartDetails(customShippingRates);
     if (details.items.length === 0) return null;
 
     const orderNumber = 'SS-' + Math.floor(1000 + Math.random() * 9000);
     const wilayaObj =
-      WILAYAS.find((w) => w.code === wilayaCode) || details.wilaya;
+      WILAYAS.find((w) => w.code === (wilayaCode || this.selectedWilayaCode)) || details.wilaya;
 
     const wilayaLabel = this.lang === 'ar' ? wilayaObj.name_ar : wilayaObj.name_fr;
+    const delivLabel =
+      details.deliveryType === 'desk'
+        ? this.lang === 'ar'
+          ? 'مكتب التوصيل Stop-Desk'
+          : 'Bureau Stop-Desk'
+        : this.lang === 'ar'
+        ? 'توصيل للمنزل'
+        : 'À Domicile';
 
     const itemsSummary = details.items
       .map(
@@ -283,19 +352,22 @@ export const store = {
       )
       .join(' + ');
 
+    const fullAddressWithType = `${address} (${delivLabel})`;
+
     const newOrder = {
       id: orderNumber,
       date: new Date().toISOString().slice(0, 10),
       fullName,
       phone,
       wilaya: `${wilayaObj.code} - ${wilayaLabel}`,
-      address,
+      address: fullAddressWithType,
+      deliveryType: details.deliveryType,
       itemsSummary,
       customer: {
         fullName,
         phone,
         wilaya: wilayaLabel,
-        address,
+        address: fullAddressWithType,
       },
       items: details.items.map((item) => ({
         name: this.lang === 'ar' ? item.product.name_ar : item.product.name_fr,

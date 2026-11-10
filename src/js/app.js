@@ -466,14 +466,14 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
       <div class="p-3 pt-2.5 flex flex-col flex-1 justify-between">
         <div>
           <h3 class="text-[14px] sm:text-[15px] font-bold text-[#18181B] leading-snug truncate">
-            <button
-              type="button"
+            <a
+              href="?product=${encodeURIComponent(product.slug || product.id)}"
               data-action="open-pdp"
               data-id="${product.id}"
-              class="text-start hover:text-[#DE1B61] transition-colors"
+              class="text-start hover:text-[#DE1B61] transition-colors block truncate"
             >
               ${prodName}
-            </button>
+            </a>
           </h3>
 
           <div class="mt-1 flex items-baseline gap-1.5 flex-wrap tabular-nums">
@@ -2138,7 +2138,7 @@ function renderLandingScreen() {
                   ${isAr ? 'الدفع عند الاستلام · توصيل سريع لجميع الـ 69 ولاية' : 'Paiement à la livraison · 69 Wilayas'}
                 </p>
               </div>
-              <span class="px-2.5 py-1 rounded-full bg-white text-[#DE1B61] text-xs font-extrabold tabular-nums">
+              <span id="lp-header-total-badge" class="px-2.5 py-1 rounded-full bg-white text-[#DE1B61] text-xs font-extrabold tabular-nums">
                 ${formatDA(pricing.total, store.lang)}
               </span>
             </div>
@@ -2148,7 +2148,7 @@ function renderLandingScreen() {
               <div class="bg-[#FDF5F7] p-3 rounded-xl border border-[#DE1B61]/15 space-y-3">
                 <div>
                   <label class="block text-xs font-extrabold text-[#18181B] mb-1.5">
-                    1. ${isAr ? 'اختاري المقاس (Pointure):' : 'Choisissez la pointure :'} <strong class="text-[#DE1B61] text-sm">${store.lpSelectedSize}</strong>
+                    1. ${isAr ? 'اختاري المقاس (Pointure):' : 'Choisissez la pointure :'} <strong id="lp-selected-size-label" class="text-[#DE1B61] text-sm">${store.lpSelectedSize}</strong>
                   </label>
                   <div class="grid grid-cols-6 gap-1.5 tabular-nums">
                     ${availableSizes
@@ -2175,7 +2175,7 @@ function renderLandingScreen() {
 
                 <div class="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-black/6">
                   <span class="text-xs font-extrabold text-[#18181B]">
-                    2. ${isAr ? 'اللون:' : 'Couleur :'} <strong class="text-[#DE1B61]">${selectedColorLabel}</strong>
+                    2. ${isAr ? 'اللون:' : 'Couleur :'} <strong id="lp-selected-color-label" class="text-[#DE1B61]">${selectedColorLabel}</strong>
                   </span>
                   <div class="flex items-center gap-2.5">
                     ${availableColors
@@ -2286,10 +2286,19 @@ function renderLandingScreen() {
                   </select>
 
                   <input
+                    id="lp-address-input"
                     name="address"
                     type="text"
                     required
-                    placeholder="${isAr ? '📍 البلدية أو الحي *' : '📍 Commune ou quartier *'}"
+                    placeholder="${
+                      store.lpDeliveryType === 'desk'
+                        ? isAr
+                          ? '📍 البلدية أو مكتب التوصيل *'
+                          : '📍 Commune ou bureau Stop-Desk *'
+                        : isAr
+                        ? '📍 البلدية أو الحي *'
+                        : '📍 Commune ou quartier *'
+                    }"
                     class="w-full px-3.5 py-3 rounded-xl bg-[#FAFAFA] border border-black/20 text-sm font-semibold text-[#18181B] focus:border-[#DE1B61] focus:bg-white focus:outline-none"
                   />
                 </div>
@@ -2300,14 +2309,14 @@ function renderLandingScreen() {
                     type="button"
                     data-action="lp-select-delivery"
                     data-delivery="home"
-                    class="p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between ${
+                    class="p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
                       store.lpDeliveryType === 'home'
                         ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/35 text-[#18181B]'
                         : 'border-black/15 bg-[#FAFAFA] text-[#52525B]'
                     }"
                   >
                     <span>🏠 ${isAr ? 'لباب المنزل' : 'Domicile'}</span>
-                    <strong class="text-[#DE1B61]">
+                    <strong id="lp-home-fee-label" class="text-[#DE1B61]">
                       ${pricing.isFreeShipping ? (isAr ? 'مجاني' : '0 DA') : formatDA(pricing.wilayaRate?.homeFee ?? 500, store.lang)}
                     </strong>
                   </button>
@@ -2316,41 +2325,67 @@ function renderLandingScreen() {
                     type="button"
                     data-action="lp-select-delivery"
                     data-delivery="desk"
-                    class="p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between ${
+                    class="p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
                       store.lpDeliveryType === 'desk'
                         ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/35 text-[#18181B]'
                         : 'border-black/15 bg-[#FAFAFA] text-[#52525B]'
                     }"
                   >
                     <span>🏢 ${isAr ? 'مكتب التوصيل' : 'Stop-Desk'}</span>
-                    <strong class="text-[#DE1B61]">
+                    <strong id="lp-desk-fee-label" class="text-[#DE1B61]">
                       ${pricing.isFreeShipping ? (isAr ? 'مجاني' : '0 DA') : formatDA(pricing.wilayaRate?.deskFee ?? 350, store.lang)}
                     </strong>
                   </button>
                 </div>
               </div>
 
-              <!-- 4. ملخص السعر النهائي الواضح -->
-              <div class="p-3 rounded-xl bg-[#FDF5F7] border border-[#DE1B61]/20 flex items-center justify-between tabular-nums">
-                <div>
-                  <span class="text-xs font-bold text-[#52525B] block">
-                    ${isAr ? 'المبلغ الإجمالي (شامل التوصيل):' : 'Total avec livraison :'}
-                  </span>
-                  <span class="text-[11px] text-[#15803D] font-bold">
-                    ✓ ${isAr ? 'الدفع عند استلام الطرد' : 'Paiement à la réception'}
-                  </span>
+              <!-- 4. ملخص المبلغ الفرعي وسعر التوصيل والمبلغ الإجمالي قبل تأكيد الطلبية -->
+              <div class="p-3.5 rounded-xl bg-[#FDF5F7] border border-[#DE1B61]/20 space-y-1.5 tabular-nums">
+                <div class="flex items-center justify-between text-xs text-[#52525B]">
+                  <span>${isAr ? 'المبلغ الفرعي (المنتج):' : 'Sous-total (Article) :'}</span>
+                  <strong id="lp-summary-subtotal" class="text-[#18181B]">${formatDA(pricing.subtotal, store.lang)}</strong>
                 </div>
-                <strong class="text-xl font-extrabold text-[#DE1B61]">
-                  ${formatDA(pricing.total, store.lang)}
-                </strong>
+                <div class="flex items-center justify-between text-xs text-[#52525B]">
+                  <span id="lp-summary-shipping-label">
+                    ${
+                      store.lpDeliveryType === 'desk'
+                        ? isAr
+                          ? 'التوصيل (إلى المكتب Stop-Desk):'
+                          : 'Livraison (Bureau Stop-Desk) :'
+                        : isAr
+                        ? 'التوصيل (إلى المنزل):'
+                        : 'Livraison (À Domicile) :'
+                    }
+                  </span>
+                  <strong id="lp-summary-shipping-fee" class="text-[#18181B]">
+                    ${
+                      pricing.isFreeShipping
+                        ? `<span class="text-[#15803D] font-extrabold">${isAr ? 'مجاني (0 د.ج)' : 'Gratuite (0 DA)'}</span>`
+                        : formatDA(pricing.shippingFee, store.lang)
+                    }
+                  </strong>
+                </div>
+                <div class="pt-2 border-t border-[#DE1B61]/15 flex items-center justify-between">
+                  <div>
+                    <span class="text-xs sm:text-sm font-extrabold text-[#18181B] block">
+                      ${isAr ? 'المبلغ الإجمالي للدفع:' : 'Total à payer :'}
+                    </span>
+                    <span class="text-[10px] text-[#15803D] font-bold">
+                      ✓ ${isAr ? 'الدفع عند استلام الطرد' : 'Paiement à la réception'}
+                    </span>
+                  </div>
+                  <strong id="lp-summary-total" class="text-lg sm:text-xl font-extrabold text-[#DE1B61]">
+                    ${formatDA(pricing.total, store.lang)}
+                  </strong>
+                </div>
               </div>
 
               <!-- 5. زر التأكيد الكبير والمريح للإبهام -->
               <button
                 type="submit"
-                class="w-full py-4 px-5 ss-btn-pink text-base font-extrabold flex items-center justify-center gap-2 shadow-md active:scale-98 transition-transform"
+                class="w-full py-4 px-5 ss-btn-pink text-base font-extrabold flex items-center justify-center gap-2 shadow-md active:scale-98 transition-transform cursor-pointer"
               >
-                <span>🛍️ ${isAr ? `تأكيد الطلب الآن — ${formatDA(pricing.total, 'ar')}` : `Confirmer la commande — ${formatDA(pricing.total, 'fr')}`}</span>
+                <span id="lp-submit-btn-label">🛍️ ${isAr ? `تأكيد الطلب الآن — ${formatDA(pricing.total, 'ar')}` : `Confirmer la commande — ${formatDA(pricing.total, 'fr')}`}</span>
               </button>
             </form>
           </div>
@@ -2361,7 +2396,7 @@ function renderLandingScreen() {
       <div class="lg:hidden fixed bottom-14 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#DE1B61]/20 px-4 py-2.5 flex items-center justify-between gap-3 shadow-lg">
         <div class="tabular-nums">
           <span class="text-[10px] font-bold text-[#71717A] block">${isAr ? 'السعر الإجمالي مع التوصيل' : 'Total livraison incluse'}</span>
-          <strong class="text-base font-extrabold text-[#DE1B61]">${formatDA(pricing.total, store.lang)}</strong>
+          <strong id="lp-sticky-total" class="text-base font-extrabold text-[#DE1B61]">${formatDA(pricing.total, store.lang)}</strong>
         </div>
         <button
           type="button"
@@ -2550,6 +2585,12 @@ function renderCartScreen() {
  */
 function renderCheckoutScreen() {
   const t = getT();
+  const isAr = store.lang === 'ar';
+  const customRates =
+    Array.isArray(adminState?.shipping?.rates) && adminState.shipping.rates.length > 0
+      ? adminState.shipping.rates
+      : null;
+  const details = store.getCartDetails(customRates);
 
   return `
     <div class="max-w-xl mx-auto px-5 py-5 animate-screen-enter">
@@ -2656,26 +2697,109 @@ function renderCheckoutScreen() {
           </select>
         </div>
 
+        <!-- خيار طريقة التوصيل: إلى المنزل أم إلى المكتب (Stop-Desk) -->
+        <div class="animate-stagger-item" style="--i: 4.5;">
+          <label class="block text-xs sm:text-sm font-semibold text-[#18181B] mb-1.5">
+            ${isAr ? 'طريقة التوصيل' : 'Mode de livraison'} <span class="text-[#DE1B61]">*</span>
+          </label>
+          <div class="grid grid-cols-2 gap-2.5 tabular-nums">
+            <button
+              type="button"
+              data-action="checkout-select-delivery"
+              data-delivery="home"
+              class="p-3 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${
+                details.deliveryType === 'home'
+                  ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/40 text-[#18181B] shadow-2xs'
+                  : 'border-black/15 bg-[#FAFAFA] text-[#52525B] hover:border-black/30'
+              }"
+            >
+              <span>🏠 ${isAr ? 'إلى المنزل' : 'À Domicile'}</span>
+              <strong id="checkout-home-fee-label" class="text-[#DE1B61]">${formatDA(details.homeFee, store.lang)}</strong>
+            </button>
+
+            <button
+              type="button"
+              data-action="checkout-select-delivery"
+              data-delivery="desk"
+              class="p-3 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${
+                details.deliveryType === 'desk'
+                  ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/40 text-[#18181B] shadow-2xs'
+                  : 'border-black/15 bg-[#FAFAFA] text-[#52525B] hover:border-black/30'
+              }"
+            >
+              <span>🏢 ${isAr ? 'إلى المكتب' : 'Stop-Desk'}</span>
+              <strong id="checkout-desk-fee-label" class="text-[#DE1B61]">${formatDA(details.deskFee, store.lang)}</strong>
+            </button>
+          </div>
+        </div>
+
         <div class="animate-stagger-item" style="--i: 5;">
-          <label for="checkout-address" class="block text-xs sm:text-sm font-semibold text-[#18181B] mb-1.5">
-            ${t.checkout.address} <span class="text-[#DE1B61]">*</span>
+          <label id="checkout-address-label" for="checkout-address" class="block text-xs sm:text-sm font-semibold text-[#18181B] mb-1.5">
+            ${
+              details.deliveryType === 'desk'
+                ? isAr
+                  ? 'البلدية / مكتب التوصيل الأقرب إليكِ'
+                  : 'Commune / Bureau de livraison souhaité'
+                : t.checkout.address
+            } <span class="text-[#DE1B61]">*</span>
           </label>
           <input
             id="checkout-address"
             name="address"
             type="text"
             required
-            placeholder="${t.checkout.addressPlaceholder}"
+            placeholder="${
+              details.deliveryType === 'desk'
+                ? isAr
+                  ? 'اكتبي اسم البلدية أو مكتب التوصيل...'
+                  : 'Indiquez votre commune ou bureau Stop-Desk...'
+                : t.checkout.addressPlaceholder
+            }"
             class="w-full px-4 py-3 rounded-xl bg-[#FAFAFA] border border-black/12 text-xs sm:text-sm text-[#18181B] placeholder:text-[#A1A1AA] transition-all focus:border-[#DE1B61] focus:bg-white"
           />
         </div>
 
-        <div class="pt-3 animate-stagger-item" style="--i: 6;">
+        <!-- ملخص المبلغ الفرعي وسعر التوصيل والمبلغ الإجمالي قبل تأكيد الطلبية -->
+        <div class="p-4 rounded-2xl bg-[#FDF5F7] border border-[#DE1B61]/20 space-y-2 tabular-nums animate-stagger-item" style="--i: 5.5;">
+          <div class="flex items-center justify-between text-xs sm:text-sm text-[#52525B]">
+            <span>${t.cart.subtotal} (${details.totalCount} ${isAr ? 'قطع' : 'articles'})</span>
+            <strong id="checkout-summary-subtotal" class="text-[#18181B]">${formatDA(details.subtotal, store.lang)}</strong>
+          </div>
+          <div class="flex items-center justify-between text-xs sm:text-sm text-[#52525B]">
+            <span id="checkout-summary-shipping-label">
+              ${t.cart.shipping} (${
+                details.deliveryType === 'desk'
+                  ? isAr
+                    ? 'إلى المكتب Stop-Desk'
+                    : 'Bureau Stop-Desk'
+                  : isAr
+                  ? 'إلى المنزل'
+                  : 'À Domicile'
+              })
+            </span>
+            <strong id="checkout-summary-shipping-fee" class="text-[#18181B]">${formatDA(details.shippingFee, store.lang)}</strong>
+          </div>
+          <div class="pt-2.5 border-t border-[#DE1B61]/15 flex items-center justify-between">
+            <div>
+              <span class="text-sm sm:text-base font-extrabold text-[#18181B] block">
+                ${t.cart.total}
+              </span>
+              <span class="text-[11px] text-[#15803D] font-bold">
+                ✓ ${isAr ? 'الدفع نقداً عند استلام الطلبية' : 'Paiement à la livraison'}
+              </span>
+            </div>
+            <strong id="checkout-summary-total" class="text-xl sm:text-2xl font-extrabold text-[#DE1B61]">
+              ${formatDA(details.total, store.lang)}
+            </strong>
+          </div>
+        </div>
+
+        <div class="pt-2 animate-stagger-item" style="--i: 6;">
           <button
             type="submit"
-            class="w-full py-3.5 px-6 ss-btn-pink text-sm sm:text-base flex items-center justify-center gap-2"
+            class="w-full py-3.5 px-6 ss-btn-pink text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>${t.checkout.continueBtn}</span>
+            <span id="checkout-submit-btn-label">${t.checkout.continueBtn} — ${formatDA(details.total, store.lang)}</span>
             <span>${getArrowNext()}</span>
           </button>
         </div>
@@ -2993,37 +3117,225 @@ function renderAll() {
 }
 
 /**
- * تحديث استمارة صفحة الهبوط بدون إعادة تحميل كامل للصفحة (مع الحفاظ على مدخلات الزبون)
+ * تحديث استمارة صفحة الهبوط موضعياً (In-Place DOM Update) بدون إعادة بناء الصفحة أو تشغيل أنيميشن التحديث
  */
 function refreshLandingScreenPreservingInputs() {
   if (store.currentScreen !== 'landing') return;
-  const mainEl = document.getElementById('app-main');
-  if (!mainEl) return;
+  const form = document.getElementById('storefront-lp-order-form');
+  if (!form) return;
 
-  const existingForm = document.getElementById('storefront-lp-order-form');
-  const savedName =
-    existingForm?.querySelector('input[name="fullName"]') instanceof HTMLInputElement
-      ? existingForm.querySelector('input[name="fullName"]').value
-      : '';
-  const savedPhone =
-    existingForm?.querySelector('input[name="phone"]') instanceof HTMLInputElement
-      ? existingForm.querySelector('input[name="phone"]').value
-      : '';
-  const savedAddr =
-    existingForm?.querySelector('input[name="address"]') instanceof HTMLInputElement
-      ? existingForm.querySelector('input[name="address"]').value
-      : '';
+  const lpId = form.getAttribute('data-lp-id') || store.activeLandingId;
+  const lp =
+    (adminState?.landingPages || []).find((item) => item.id === lpId) ||
+    adminState?.landingPages?.[0];
+  if (!lp) return;
 
-  mainEl.innerHTML = renderLandingScreen();
+  const isAr = store.lang === 'ar';
+  const pricing = calculateLandingOrderPricing(lp);
 
-  const newForm = document.getElementById('storefront-lp-order-form');
-  if (newForm) {
-    const nameInp = newForm.querySelector('input[name="fullName"]');
-    const phoneInp = newForm.querySelector('input[name="phone"]');
-    const addrInp = newForm.querySelector('input[name="address"]');
-    if (nameInp instanceof HTMLInputElement) nameInp.value = savedName;
-    if (phoneInp instanceof HTMLInputElement) phoneInp.value = savedPhone;
-    if (addrInp instanceof HTMLInputElement) addrInp.value = savedAddr;
+  // 1. تحديث المقاس المختار
+  const sizeLabel = document.getElementById('lp-selected-size-label');
+  if (sizeLabel) sizeLabel.textContent = String(store.lpSelectedSize);
+  form.querySelectorAll('[data-action="lp-select-size"]').forEach((btn) => {
+    const sz = Number(btn.getAttribute('data-size'));
+    const active = Number(store.lpSelectedSize) === sz;
+    btn.className = `py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition-all ${
+      active
+        ? 'border-2 border-[#DE1B61] bg-[#DE1B61] text-white shadow-xs'
+        : 'border-black/15 bg-white text-[#18181B]'
+    }`;
+  });
+
+  // 2. تحديث اللون المختار
+  const colorLabel = document.getElementById('lp-selected-color-label');
+  if (colorLabel) {
+    const sw = COLOR_SWATCHES[store.lpSelectedColor];
+    colorLabel.textContent = sw ? (isAr ? sw.label_ar : sw.label_fr) : store.lpSelectedColor;
+  }
+  form.querySelectorAll('[data-action="lp-select-color"]').forEach((btn) => {
+    const cName = btn.getAttribute('data-color');
+    const active = store.lpSelectedColor === cName;
+    btn.className = `ss-color-swatch ${active ? 'active' : 'border-black/15'}`;
+  });
+
+  // 3. تحديث أزرار الكمية (حذاء واحد / عرض زوجين)
+  form.querySelectorAll('[data-action="lp-select-bundle"]').forEach((btn) => {
+    const bVal = Number(btn.getAttribute('data-bundle'));
+    const active = store.lpSelectedBundle === bVal;
+    if (bVal === 1) {
+      btn.className = `p-2.5 rounded-xl border-2 text-start transition-all ${
+        active ? 'border-[#DE1B61] bg-[#FCE8EE]/40' : 'border-black/12 bg-[#FAFAFA]'
+      }`;
+    } else {
+      btn.className = `relative p-2.5 rounded-xl border-2 text-start transition-all ${
+        active ? 'border-[#DE1B61] bg-[#FCE8EE]/50' : 'border-black/12 bg-[#FAFAFA]'
+      }`;
+    }
+  });
+
+  // 4. تحديث أزرار التوصيل (منزل / مكتب) وحقل العنوان
+  form.querySelectorAll('[data-action="lp-select-delivery"]').forEach((btn) => {
+    const deliv = btn.getAttribute('data-delivery');
+    const active = store.lpDeliveryType === deliv;
+    btn.className = `p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
+      active
+        ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/35 text-[#18181B]'
+        : 'border-black/15 bg-[#FAFAFA] text-[#52525B]'
+    }`;
+  });
+
+  const homeFeeEl = document.getElementById('lp-home-fee-label');
+  if (homeFeeEl) {
+    homeFeeEl.textContent = pricing.isFreeShipping
+      ? isAr
+        ? 'مجاني'
+        : '0 DA'
+      : formatDA(pricing.wilayaRate?.homeFee ?? 500, store.lang);
+  }
+  const deskFeeEl = document.getElementById('lp-desk-fee-label');
+  if (deskFeeEl) {
+    deskFeeEl.textContent = pricing.isFreeShipping
+      ? isAr
+        ? 'مجاني'
+        : '0 DA'
+      : formatDA(pricing.wilayaRate?.deskFee ?? 350, store.lang);
+  }
+
+  const addrInput = document.getElementById('lp-address-input');
+  if (addrInput instanceof HTMLInputElement) {
+    addrInput.placeholder =
+      store.lpDeliveryType === 'desk'
+        ? isAr
+          ? '📍 البلدية أو مكتب التوصيل *'
+          : '📍 Commune ou bureau Stop-Desk *'
+        : isAr
+        ? '📍 البلدية أو الحي *'
+        : '📍 Commune ou quartier *';
+  }
+
+  // 5. تحديث ملخص الأسعار وزر التأكيد
+  const headerTotalBadge = document.getElementById('lp-header-total-badge');
+  if (headerTotalBadge) headerTotalBadge.textContent = formatDA(pricing.total, store.lang);
+
+  const subEl = document.getElementById('lp-summary-subtotal');
+  if (subEl) subEl.textContent = formatDA(pricing.subtotal, store.lang);
+
+  const shipLabelEl = document.getElementById('lp-summary-shipping-label');
+  if (shipLabelEl) {
+    shipLabelEl.textContent =
+      store.lpDeliveryType === 'desk'
+        ? isAr
+          ? 'التوصيل (إلى المكتب Stop-Desk):'
+          : 'Livraison (Bureau Stop-Desk) :'
+        : isAr
+        ? 'التوصيل (إلى المنزل):'
+        : 'Livraison (À Domicile) :';
+  }
+
+  const shipFeeEl = document.getElementById('lp-summary-shipping-fee');
+  if (shipFeeEl) {
+    shipFeeEl.innerHTML = pricing.isFreeShipping
+      ? `<span class="text-[#15803D] font-extrabold">${isAr ? 'مجاني (0 د.ج)' : 'Gratuite (0 DA)'}</span>`
+      : formatDA(pricing.shippingFee, store.lang);
+  }
+
+  const totalEl = document.getElementById('lp-summary-total');
+  if (totalEl) totalEl.textContent = formatDA(pricing.total, store.lang);
+
+  const submitBtnLabel = document.getElementById('lp-submit-btn-label');
+  if (submitBtnLabel) {
+    submitBtnLabel.textContent = `🛍️ ${
+      isAr
+        ? `تأكيد الطلب الآن — ${formatDA(pricing.total, 'ar')}`
+        : `Confirmer la commande — ${formatDA(pricing.total, 'fr')}`
+    }`;
+  }
+
+  const stickyTotalEl = document.getElementById('lp-sticky-total');
+  if (stickyTotalEl) stickyTotalEl.textContent = formatDA(pricing.total, store.lang);
+}
+
+/**
+ * تحديث شاشة إتمام الطلب (Checkout) موضعياً بدون تحديث الصفحة
+ */
+function refreshCheckoutScreenPreservingInputs() {
+  if (store.currentScreen !== 'checkout') return;
+  const form = document.getElementById('shoestyle-checkout-form');
+  if (!form) return;
+
+  const t = getT();
+  const isAr = store.lang === 'ar';
+  const customRates =
+    Array.isArray(adminState?.shipping?.rates) && adminState.shipping.rates.length > 0
+      ? adminState.shipping.rates
+      : null;
+  const details = store.getCartDetails(customRates);
+
+  // 1. تحديث أزرار التوصيل (منزل / مكتب) وأسعارها
+  form.querySelectorAll('[data-action="checkout-select-delivery"]').forEach((btn) => {
+    const deliv = btn.getAttribute('data-delivery');
+    const active = details.deliveryType === deliv;
+    btn.className = `p-3 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${
+      active
+        ? 'border-2 border-[#DE1B61] bg-[#FCE8EE]/40 text-[#18181B] shadow-2xs'
+        : 'border-black/15 bg-[#FAFAFA] text-[#52525B] hover:border-black/30'
+    }`;
+  });
+
+  const homeFeeEl = document.getElementById('checkout-home-fee-label');
+  if (homeFeeEl) homeFeeEl.textContent = formatDA(details.homeFee, store.lang);
+
+  const deskFeeEl = document.getElementById('checkout-desk-fee-label');
+  if (deskFeeEl) deskFeeEl.textContent = formatDA(details.deskFee, store.lang);
+
+  // 2. تحديث عنوان وعبارة حقل العنوان
+  const addrLabel = document.getElementById('checkout-address-label');
+  if (addrLabel) {
+    const labelText =
+      details.deliveryType === 'desk'
+        ? isAr
+          ? 'البلدية / مكتب التوصيل الأقرب إليكِ'
+          : 'Commune / Bureau de livraison souhaité'
+        : t.checkout.address;
+    addrLabel.innerHTML = `${labelText} <span class="text-[#DE1B61]">*</span>`;
+  }
+
+  const addrInput = document.getElementById('checkout-address');
+  if (addrInput instanceof HTMLInputElement) {
+    addrInput.placeholder =
+      details.deliveryType === 'desk'
+        ? isAr
+          ? 'اكتبي اسم البلدية أو مكتب التوصيل...'
+          : 'Indiquez votre commune ou bureau Stop-Desk...'
+        : t.checkout.addressPlaceholder;
+  }
+
+  // 3. تحديث ملخص المبلغ الفرعي وسعر التوصيل والمبلغ الإجمالي وزر التأكيد
+  const subEl = document.getElementById('checkout-summary-subtotal');
+  if (subEl) subEl.textContent = formatDA(details.subtotal, store.lang);
+
+  const shipLabelEl = document.getElementById('checkout-summary-shipping-label');
+  if (shipLabelEl) {
+    shipLabelEl.textContent = `${t.cart.shipping} (${
+      details.deliveryType === 'desk'
+        ? isAr
+          ? 'إلى المكتب Stop-Desk'
+          : 'Bureau Stop-Desk'
+        : isAr
+        ? 'إلى المنزل'
+        : 'À Domicile'
+    })`;
+  }
+
+  const shipFeeEl = document.getElementById('checkout-summary-shipping-fee');
+  if (shipFeeEl) shipFeeEl.textContent = formatDA(details.shippingFee, store.lang);
+
+  const totalEl = document.getElementById('checkout-summary-total');
+  if (totalEl) totalEl.textContent = formatDA(details.total, store.lang);
+
+  const submitBtnLabel = document.getElementById('checkout-submit-btn-label');
+  if (submitBtnLabel) {
+    submitBtnLabel.textContent = `${t.checkout.continueBtn} — ${formatDA(details.total, store.lang)}`;
   }
 }
 
@@ -3428,6 +3740,14 @@ function setupEvents() {
           e.preventDefault();
           break;
         }
+        if (
+          e instanceof MouseEvent &&
+          (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1)
+        ) {
+          // السماح بفتح رابط المنتج المستقل في تبويب جديد عند الضغط بـ Ctrl/Cmd أو زر الفأرة الأوسط
+          break;
+        }
+        e.preventDefault();
         if (!id) break;
         store.navigate('pdp', { productId: id });
         break;
@@ -3489,6 +3809,15 @@ function setupEvents() {
         break;
       }
 
+      case 'checkout-select-delivery': {
+        const deliv = target.getAttribute('data-delivery');
+        if (deliv === 'home' || deliv === 'desk') {
+          store.checkoutDeliveryType = deliv;
+          refreshCheckoutScreenPreservingInputs();
+        }
+        break;
+      }
+
       case 'lp-scroll-to-form': {
         const formAnchor = document.getElementById('lp-order-form-anchor');
         if (formAnchor) {
@@ -3538,6 +3867,7 @@ function setupEvents() {
       case 'select-category-pill': {
         const cat = target.getAttribute('data-category') || 'Talons';
         store.activeCategory = cat;
+        store.syncUrlWithState(true);
         updateCategoryInPlace(true);
         break;
       }
@@ -3601,6 +3931,15 @@ function setupEvents() {
       }
 
       case 'share-product': {
+        const prod = store.getActiveProduct();
+        const slugOrId = (prod && (prod.slug || prod.id)) || store.activeProductId;
+        const shareUrl = new URL(
+          `?product=${encodeURIComponent(slugOrId)}`,
+          window.location.href
+        ).href;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(shareUrl).catch(() => {});
+        }
         showToast(t.pdp.shareCopied);
         break;
       }
@@ -3654,6 +3993,7 @@ function setupEvents() {
       updateCategoryInPlace(false);
     } else if (target.id === 'checkout-wilaya') {
       store.selectedWilayaCode = target.value;
+      refreshCheckoutScreenPreservingInputs();
     } else if (target.id === 'lp-wilaya-select') {
       store.lpSelectedWilaya = target.value;
       refreshLandingScreenPreservingInputs();
@@ -3690,11 +4030,26 @@ function setupEvents() {
       const data = new FormData(form);
       const fullName = String(data.get('fullName') || '').trim();
       const phone = String(data.get('phone') || '').trim();
-      const wilayaCode = String(data.get('wilayaCode') || '16');
+      const wilayaCode = String(data.get('wilayaCode') || store.selectedWilayaCode || '16');
       const address = String(data.get('address') || '').trim();
 
       if (!fullName || !phone || !address) return;
-      const order = store.submitOrder({ fullName, phone, wilayaCode, address });
+      const customRates =
+        Array.isArray(adminState?.shipping?.rates) && adminState.shipping.rates.length > 0
+          ? adminState.shipping.rates
+          : null;
+      const order = store.submitOrder({
+        fullName,
+        phone,
+        wilayaCode,
+        address,
+        deliveryType: store.checkoutDeliveryType,
+        customShippingRates: customRates,
+      });
+      if (order && Array.isArray(adminState?.orders)) {
+        adminState.orders.unshift(order);
+        adminState.saveAll();
+      }
       trackAdPixelEvent('Purchase', {
         value: order?.total || 0,
         currency: 'DZD',
@@ -3988,30 +4343,78 @@ function setupEvents() {
 }
 
 /**
- * التحقق من رابط الصفحة (?lp=lp-101 أو ?offer=...) لفتح صفحة الهبوط مباشرة عند مشاركة الرابط
+ * التحقق من رابط الصفحة لفتح المنتج المستقل (?product=slug أو ?p=...) أو صفحة الهبوط (?lp=...) أو الفئة (?category=...)
  */
 function checkUrlForLandingPage() {
   try {
     const params = new URLSearchParams(window.location.search);
-    const lpParam = params.get('lp') || params.get('offer');
-    if (!lpParam) return;
+    const prodParam = (params.get('product') || params.get('p') || '').trim();
+    const lpParam = (params.get('lp') || params.get('offer') || '').trim();
+    const catParam = (params.get('category') || '').trim();
 
-    const lpList = adminState?.landingPages || [];
-    const matched = lpList.find(
-      (item) =>
-        item.id === lpParam ||
-        item.slug === lpParam ||
-        item.slug === `/offer/${lpParam}` ||
-        item.slug.replace('/offer/', '') === lpParam
-    );
-    if (matched) {
-      store.activeLandingId = matched.id;
-      store.currentScreen = 'landing';
+    if (prodParam) {
+      const cleanProd = prodParam.replace(/^\/+/, '').toLowerCase();
+      const catalog = getStoreCatalog();
+      const matchedProd = catalog.find(
+        (item) =>
+          String(item.id || '').toLowerCase() === cleanProd ||
+          String(item.slug || '').toLowerCase() === cleanProd
+      );
+      if (matchedProd) {
+        store.activeProductId = matchedProd.id;
+        store.pdpSelectedColor =
+          (Array.isArray(matchedProd.colors) && matchedProd.colors[0]) || 'Rose';
+        store.pdpSelectedSize =
+          Array.isArray(matchedProd.sizes) && matchedProd.sizes.includes(37)
+            ? 37
+            : (Array.isArray(matchedProd.sizes) && matchedProd.sizes[0]) || 37;
+        store.pdpGalleryIndex = 0;
+        store.currentScreen = 'pdp';
+        return;
+      }
+    }
+
+    if (lpParam) {
+      const lpList = adminState?.landingPages || [];
+      const matched = lpList.find(
+        (item) =>
+          item.id === lpParam ||
+          item.slug === lpParam ||
+          item.slug === `/offer/${lpParam}` ||
+          item.slug.replace('/offer/', '') === lpParam
+      );
+      if (matched) {
+        store.activeLandingId = matched.id;
+        store.currentScreen = 'landing';
+        return;
+      }
+    }
+
+    if (catParam) {
+      store.activeCategory = catParam;
+      store.currentScreen = 'category';
+      return;
     }
   } catch {
     // ignore URL parse error
   }
 }
+
+window.addEventListener('popstate', () => {
+  const params = new URLSearchParams(window.location.search);
+  if (
+    params.has('product') ||
+    params.has('p') ||
+    params.has('lp') ||
+    params.has('offer') ||
+    params.has('category')
+  ) {
+    checkUrlForLandingPage();
+  } else {
+    store.currentScreen = 'home';
+  }
+  renderAll();
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   initAdPixels();

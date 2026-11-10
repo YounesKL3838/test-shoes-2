@@ -72,6 +72,7 @@ export const COLOR_SWATCHES = {
 export const PRODUCTS = [
   {
     id: 'ss-01',
+    slug: 'escarpins-elegants',
     name_fr: 'Escarpins Élégants',
     name_ar: 'حذاء كعب أنيق',
     category: 'Talons',
@@ -90,6 +91,7 @@ export const PRODUCTS = [
   },
   {
     id: 'ss-02',
+    slug: 'baskets-mode',
     name_fr: 'Baskets Mode',
     name_ar: 'سنيكرز عصري',
     category: 'Sneakers',
@@ -108,6 +110,7 @@ export const PRODUCTS = [
   },
   {
     id: 'ss-03',
+    slug: 'escarpins-chic',
     name_fr: 'Escarpins Chic',
     name_ar: 'إسكربين شيك',
     category: 'Talons',
@@ -126,6 +129,7 @@ export const PRODUCTS = [
   },
   {
     id: 'ss-04',
+    slug: 'talons-classiques',
     name_fr: 'Talons Classiques',
     name_ar: 'كعب كلاسيكي نود',
     category: 'Talons',
@@ -144,6 +148,7 @@ export const PRODUCTS = [
   },
   {
     id: 'ss-05',
+    slug: 'sandales-fines-dorees',
     name_fr: 'Sandales Fines Dorées',
     name_ar: 'صندل ناعم بشرائط',
     category: 'Sandales',
@@ -162,6 +167,7 @@ export const PRODUCTS = [
   },
   {
     id: 'ss-06',
+    slug: 'escarpins-passion',
     name_fr: 'Escarpins Passion',
     name_ar: 'إسكربين أحمر براق',
     category: 'Talons',
@@ -180,6 +186,7 @@ export const PRODUCTS = [
   },
   {
     id: 'ss-07',
+    slug: 'bottines-elegance',
     name_fr: 'Bottines Élégance',
     name_ar: 'بوتين جلد أنيق',
     category: 'Bottes',
@@ -198,6 +205,7 @@ export const PRODUCTS = [
   },
   {
     id: 'ss-08',
+    slug: 'ballerines-douceur-rose',
     name_fr: 'Ballerines Douceur Rose',
     name_ar: 'باليرين ماري جين وردي',
     category: 'Ballerines',
