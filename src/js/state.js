@@ -45,6 +45,12 @@ export const store = {
   // 'home' | 'category' | 'pdp' | 'cart' | 'checkout' | 'confirmation' | 'wishlist' | 'account'
   currentScreen: 'home',
   previousScreen: 'home',
+  savedScrollPositions: {
+    home: 0,
+    category: 0,
+    wishlist: 0,
+  },
+  pendingScrollRestore: null,
   activeCategory: 'Talons',
   searchQuery: '',
   searchOpen: false,
@@ -146,6 +152,29 @@ export const store = {
   },
 
   navigate(screen, options = {}) {
+    if (typeof window !== 'undefined') {
+      const currentY =
+        window.scrollY ||
+        document.documentElement?.scrollTop ||
+        document.body?.scrollTop ||
+        0;
+      if (
+        this.currentScreen === 'home' ||
+        this.currentScreen === 'category' ||
+        this.currentScreen === 'wishlist'
+      ) {
+        this.savedScrollPositions[this.currentScreen] = currentY;
+      }
+    }
+
+    const fromProductDetail =
+      this.currentScreen === 'pdp' || this.currentScreen === 'landing';
+    const isReturningToFeed =
+      Boolean(options.restoreScroll) ||
+      (fromProductDetail &&
+        (screen === 'home' || screen === 'category' || screen === 'wishlist') &&
+        !options.category);
+
     if (screen !== this.currentScreen) {
       this.previousScreen = this.currentScreen;
     }
@@ -183,10 +212,16 @@ export const store = {
     if (!options.skipUrlUpdate) {
       this.syncUrlWithState(Boolean(options.replaceUrl));
     }
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-      if (document.documentElement) document.documentElement.scrollTop = 0;
-      if (document.body) document.body.scrollTop = 0;
+
+    if (isReturningToFeed) {
+      this.pendingScrollRestore = Number(this.savedScrollPositions[screen] || 0);
+    } else {
+      this.pendingScrollRestore = null;
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        if (document.documentElement) document.documentElement.scrollTop = 0;
+        if (document.body) document.body.scrollTop = 0;
+      }
     }
     this.notify();
   },
@@ -195,7 +230,11 @@ export const store = {
     if (this.currentScreen === 'checkout') {
       this.navigate('cart');
     } else if (this.currentScreen === 'pdp' || this.currentScreen === 'landing') {
-      this.navigate(this.previousScreen === 'category' ? 'category' : 'home');
+      const targetScreen =
+        this.previousScreen === 'category' || this.previousScreen === 'wishlist'
+          ? this.previousScreen
+          : 'home';
+      this.navigate(targetScreen, { restoreScroll: true });
     } else {
       this.navigate('home');
     }

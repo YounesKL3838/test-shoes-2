@@ -592,11 +592,18 @@ function renderHeader() {
 
   if (screen === 'category' || screen === 'wishlist' || screen === 'account') {
     const activeCatObj = CATEGORIES.find((c) => c.id === store.activeCategory);
-    const catName = activeCatObj
-      ? store.lang === 'ar'
-        ? activeCatObj.name_ar
-        : activeCatObj.name_fr
-      : t.nav.all;
+    const catName =
+      store.activeCategory === 'new'
+        ? t.sections.newArrivals
+        : store.activeCategory === 'bestSellers'
+        ? t.sections.bestSellers
+        : store.activeCategory === 'specialOffers'
+        ? t.sections.specialOffers
+        : activeCatObj
+        ? store.lang === 'ar'
+          ? activeCatObj.name_ar
+          : activeCatObj.name_fr
+        : t.nav.all;
 
     const title =
       screen === 'category'
@@ -861,7 +868,7 @@ function renderHomeScreen() {
             type="button"
             data-action="nav-screen"
             data-screen="category"
-            data-category="Tout"
+            data-category="new"
             class="text-xs sm:text-sm font-semibold text-[#DE1B61] hover:underline inline-flex items-center gap-1 group"
           >
             <span>${t.nav.seeAll}</span>
@@ -885,7 +892,7 @@ function renderHomeScreen() {
             type="button"
             data-action="nav-screen"
             data-screen="category"
-            data-category="Talons"
+            data-category="bestSellers"
             class="text-xs sm:text-sm font-semibold text-[#DE1B61] hover:underline inline-flex items-center gap-1 group"
           >
             <span>${t.nav.seeAll}</span>
@@ -909,7 +916,7 @@ function renderHomeScreen() {
             type="button"
             data-action="nav-screen"
             data-screen="category"
-            data-category="Talons"
+            data-category="specialOffers"
             class="text-xs sm:text-sm font-semibold text-[#DE1B61] hover:underline inline-flex items-center gap-1 group"
           >
             <span>${t.sections.enjoy}</span>
@@ -1249,10 +1256,68 @@ function renderStoreFooter() {
   `;
 }
 
+function getCategoryMeta(catId) {
+  const t = getT();
+  const isAr = store.lang === 'ar';
+  const defaultImg = CATEGORIES[0]?.image || IMAGES.talons;
+
+  if (catId === 'new') {
+    return {
+      id: 'new',
+      name: t.sections.newArrivals,
+      sub: isAr ? 'أحدث الموديلات المضافة حديثاً للمتجر' : 'Les derniers modèles ajoutés à la boutique',
+      image: defaultImg,
+    };
+  }
+  if (catId === 'bestSellers') {
+    return {
+      id: 'bestSellers',
+      name: t.sections.bestSellers,
+      sub: t.sections.bestSellersSub,
+      image: defaultImg,
+    };
+  }
+  if (catId === 'specialOffers') {
+    return {
+      id: 'specialOffers',
+      name: t.sections.specialOffers,
+      sub: t.sections.specialOffersSub,
+      image: defaultImg,
+    };
+  }
+
+  const activeCatObj = CATEGORIES.find((c) => c.id === catId) || CATEGORIES[0] || {
+    id: 'Tout',
+    name_ar: t.nav.all,
+    name_fr: t.nav.all,
+    subtitle_ar: '',
+    subtitle_fr: '',
+    image: defaultImg,
+  };
+
+  return {
+    id: activeCatObj.id,
+    name: catId === 'Tout' ? t.nav.all : isAr ? activeCatObj.name_ar : activeCatObj.name_fr,
+    sub: isAr ? activeCatObj.subtitle_ar : activeCatObj.subtitle_fr,
+    image: activeCatObj.image || defaultImg,
+  };
+}
+
 function getFilteredCategoryProducts() {
-  let filtered = PRODUCTS.filter((p) => {
-    const matchCat =
-      store.activeCategory === 'Tout' || p.category === store.activeCategory;
+  const filtered = PRODUCTS.filter((p) => {
+    let matchCat = false;
+    if (store.activeCategory === 'Tout') {
+      matchCat = true;
+    } else if (store.activeCategory === 'new') {
+      matchCat = Boolean(p.isNew);
+    } else if (store.activeCategory === 'bestSellers') {
+      matchCat = Boolean(p.isBestSeller);
+    } else if (store.activeCategory === 'specialOffers') {
+      matchCat = Boolean(p.isSpecialOffer);
+    } else {
+      matchCat = p.category === store.activeCategory;
+    }
+
     const matchPrice =
       store.filterPrice === 'all' ||
       (store.filterPrice === 'under-4500' && p.price <= 4500) ||
@@ -1271,14 +1336,6 @@ function getFilteredCategoryProducts() {
     return matchCat && matchPrice && matchSize && matchColor && matchSearch;
   });
 
-  if (
-    filtered.length === 0 &&
-    store.filterPrice === 'all' &&
-    store.filterColor === 'all'
-  ) {
-    filtered = PRODUCTS;
-  }
-
   return filtered;
 }
 
@@ -1287,12 +1344,20 @@ function getFilteredCategoryProducts() {
  */
 function renderCategoryScreen() {
   const t = getT();
-  const activeCatObj =
-    CATEGORIES.find((c) => c.id === store.activeCategory) || CATEGORIES[1];
+  const isAr = store.lang === 'ar';
+  const meta = getCategoryMeta(store.activeCategory);
   const filtered = getFilteredCategoryProducts();
 
-  const catName = store.lang === 'ar' ? activeCatObj.name_ar : activeCatObj.name_fr;
-  const catSub = store.lang === 'ar' ? activeCatObj.subtitle_ar : activeCatObj.subtitle_fr;
+  const pillList = [
+    { id: 'Tout', label: t.filters.allCategories },
+    { id: 'new', label: t.sections.newArrivals },
+    { id: 'bestSellers', label: t.sections.bestSellers },
+    { id: 'specialOffers', label: t.sections.specialOffers },
+    ...CATEGORIES.map((c) => ({
+      id: c.id,
+      label: isAr ? c.name_ar : c.name_fr,
+    })),
+  ];
 
   return `
     <div class="max-w-5xl mx-auto pb-8 animate-screen-enter">
@@ -1300,18 +1365,18 @@ function renderCategoryScreen() {
       <div class="relative h-36 sm:h-56 overflow-hidden bg-gradient-to-r from-[#F5E1E6] via-[#F9EBEF] to-[#F3E5E0]">
         <img
           id="cat-banner-img"
-          src="${activeCatObj.image}"
-          alt="${catName}"
+          src="${meta.image}"
+          alt="${meta.name}"
           referrerpolicy="no-referrer"
           class="w-full h-full object-cover object-left opacity-90 animate-hero-zoom transition-opacity duration-300"
         />
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-[#F9EBEF]/95 flex flex-col items-end justify-center pe-4 sm:pe-12 text-center">
           <div class="max-w-[190px] sm:max-w-xs animate-stagger-item" style="--i: 1;">
             <h2 id="cat-banner-title" class="font-script text-2xl sm:text-5xl font-bold text-[#18181B]">
-              ${store.activeCategory === 'Tout' ? t.nav.all : catName}
+              ${meta.name}
             </h2>
             <p id="cat-banner-sub" class="text-[11px] sm:text-sm font-medium text-[#3F3F46] mt-0.5">
-              ${catSub}
+              ${meta.sub || ''}
             </p>
             <!-- Ligne courbe rose avec petit cœur -->
             <svg class="w-24 sm:w-28 h-4 mx-auto mt-1 text-[#DE1B61]" viewBox="0 0 120 18" fill="none">
@@ -1324,30 +1389,23 @@ function renderCategoryScreen() {
 
       <!-- Sélecteur rapide de catégories -->
       <div class="px-3 sm:px-6 pt-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
-        ${['Tout', ...CATEGORIES.map((c) => c.id)]
-          .map((catId) => {
-            const catObj = CATEGORIES.find((c) => c.id === catId);
-            const label =
-              catId === 'Tout'
-                ? t.filters.allCategories
-                : store.lang === 'ar'
-                ? catObj?.name_ar
-                : catObj?.name_fr;
-            return `
+        ${pillList
+          .map(
+            (pill) => `
             <button
               type="button"
               data-action="select-category-pill"
-              data-category="${catId}"
+              data-category="${pill.id}"
               class="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                store.activeCategory === catId
+                store.activeCategory === pill.id
                   ? 'bg-[#18181B] text-white scale-105 shadow-xs'
                   : 'bg-[#F5F3F4] text-[#52525B] hover:text-[#18181B]'
               }"
             >
-              ${label}
+              ${pill.label}
             </button>
-          `;
-          })
+          `
+          )
           .join('')}
       </div>
 
@@ -1417,7 +1475,15 @@ function renderCategoryScreen() {
 
       <!-- Grille Produits -->
       <div id="category-products-grid" class="px-3 sm:px-6 pt-1 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
-        ${filtered.map((p, idx) => renderShoeStyleCard(p, idx)).join('')}
+        ${
+          filtered.length > 0
+            ? filtered.map((p, idx) => renderShoeStyleCard(p, idx)).join('')
+            : `<div class="col-span-2 lg:col-span-4 py-12 text-center bg-[#FDF5F7]/60 rounded-2xl border border-[#DE1B61]/15">
+                <p class="text-sm sm:text-base font-bold text-[#18181B]">
+                  ${isAr ? 'لا توجد منتجات في هذا القسم حالياً' : 'Aucun produit dans cette section pour le moment'}
+                </p>
+              </div>`
+        }
       </div>
     </div>
   `;
@@ -1715,7 +1781,7 @@ function renderCleanLandingPageUI() {
           </div>
 
           <!-- العمود الأيمن: عنوان المنتج وسعره واستمارة الزبون السريعة -->
-          <div id="lp-order-form-anchor" class="lg:col-span-5 bg-white rounded-3xl border border-[#EAE6E8] p-4 sm:p-6 shadow-2xs space-y-4">
+          <div id="lp-order-form-anchor" class="lg:col-span-5 bg-white rounded-3xl border border-[#EAE6E8] p-4 sm:p-6 shadow-2xs space-y-4 ss-order-panel-anim">
             
             <!-- معلومات المنتج والسعر العريض -->
             <div>
@@ -2080,7 +2146,7 @@ function renderCleanLandingPageUI() {
               <!-- 5. زر تأكيد الطلب الفوري -->
               <button
                 type="submit"
-                class="w-full py-4 px-6 rounded-2xl bg-[#DE1B61] hover:bg-[#C2185B] text-white text-base font-bold flex items-center justify-center shadow-lg shadow-[#DE1B61]/25 hover:shadow-[#DE1B61]/35 active:scale-99 transition-all cursor-pointer"
+                class="w-full py-4 px-6 rounded-2xl bg-[#DE1B61] hover:bg-[#C2185B] text-white text-base font-bold flex items-center justify-center shadow-lg shadow-[#DE1B61]/25 hover:shadow-[#DE1B61]/35 active:scale-99 transition-all cursor-pointer ss-btn-order-cta"
               >
                 <span id="lp-submit-btn-label">${
                   isAr
@@ -2299,7 +2365,7 @@ function renderPDPScreen() {
           </div>
 
           <!-- العمود الأيمن: تفاصيل الحذاء وخيارات الشراء وزر أضف إلى السلة -->
-          <div class="lg:col-span-5 bg-white rounded-3xl border border-[#EAE6E8] p-4 sm:p-6 shadow-2xs space-y-5">
+          <div class="lg:col-span-5 bg-white rounded-3xl border border-[#EAE6E8] p-4 sm:p-6 shadow-2xs space-y-5 ss-order-panel-anim">
             
             <!-- عنوان المنتج والتصنيف والشارة -->
             <div>
@@ -2414,7 +2480,7 @@ function renderPDPScreen() {
                 type="button"
                 data-action="pdp-add-to-cart"
                 ${isOutOfStock ? 'disabled' : ''}
-                class="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#DE1B61] to-[#E53575] hover:from-[#C71555] hover:to-[#DE1B61] active:scale-[0.98] text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-lg shadow-[#DE1B61]/25 transition-all cursor-pointer ${
+                class="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#DE1B61] to-[#E53575] hover:from-[#C71555] hover:to-[#DE1B61] active:scale-[0.98] text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-lg shadow-[#DE1B61]/25 transition-all cursor-pointer ss-btn-order-cta ${
                   isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''
                 }"
               >
@@ -2748,7 +2814,7 @@ function renderCheckoutScreen() {
       </div>
 
       <!-- Formulaire de commande -->
-      <form id="shoestyle-checkout-form" class="space-y-4">
+      <form id="shoestyle-checkout-form" class="space-y-4 ss-order-panel-anim">
         <div class="animate-stagger-item" style="--i: 2;">
           <label for="checkout-name" class="block text-xs sm:text-sm font-semibold text-[#18181B] mb-1.5">
             ${t.checkout.fullName} <span class="text-[#DE1B61]">*</span>
@@ -3177,8 +3243,12 @@ function renderAll() {
   document.documentElement.lang = store.lang;
   document.documentElement.dir = store.lang === 'ar' ? 'rtl' : 'ltr';
 
-  // دائماً عند تغيير الصفحة أو الدخول لمنتج جديد، تبدأ الصفحة من أعلى نقطة
-  if (typeof window !== 'undefined') {
+  const scrollTargetY =
+    store.pendingScrollRestore !== null && store.pendingScrollRestore !== undefined
+      ? Number(store.pendingScrollRestore)
+      : null;
+
+  if (scrollTargetY === null && typeof window !== 'undefined') {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     if (document.documentElement) document.documentElement.scrollTop = 0;
     if (document.body) document.body.scrollTop = 0;
@@ -3189,7 +3259,9 @@ function renderAll() {
 
   const mainEl = document.getElementById('app-main');
   if (!mainEl) return;
-  mainEl.scrollTop = 0;
+  if (scrollTargetY === null) {
+    mainEl.scrollTop = 0;
+  }
 
   switch (store.currentScreen) {
     case 'home':
@@ -3224,9 +3296,19 @@ function renderAll() {
   }
 
   if (typeof window !== 'undefined') {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    if (document.documentElement) document.documentElement.scrollTop = 0;
-    if (document.body) document.body.scrollTop = 0;
+    if (scrollTargetY !== null) {
+      store.pendingScrollRestore = null;
+      window.scrollTo({ top: scrollTargetY, left: 0, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop = scrollTargetY;
+      if (document.body) document.body.scrollTop = scrollTargetY;
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: scrollTargetY, left: 0, behavior: 'instant' });
+      });
+    } else {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+      if (document.body) document.body.scrollTop = 0;
+    }
   }
 
   requestAnimationFrame(() => initScrollReveal());
@@ -3676,15 +3758,20 @@ function updatePDPSizeInPlace(size) {
 }
 
 function updateCategoryInPlace(updateBanner = false) {
-  const t = getT();
+  const isAr = store.lang === 'ar';
   const filtered = getFilteredCategoryProducts();
 
   // Update products grid in-place
   const gridEl = document.getElementById('category-products-grid');
   if (gridEl) {
-    gridEl.innerHTML = filtered
-      .map((p, idx) => renderShoeStyleCard(p, idx))
-      .join('');
+    gridEl.innerHTML =
+      filtered.length > 0
+        ? filtered.map((p, idx) => renderShoeStyleCard(p, idx)).join('')
+        : `<div class="col-span-2 lg:col-span-4 py-12 text-center bg-[#FDF5F7]/60 rounded-2xl border border-[#DE1B61]/15">
+            <p class="text-sm sm:text-base font-bold text-[#18181B]">
+              ${isAr ? 'لا توجد منتجات في هذا القسم حالياً' : 'Aucun produit dans cette section pour le moment'}
+            </p>
+          </div>`;
   }
 
   // Update category pills active state
@@ -3701,30 +3788,23 @@ function updateCategoryInPlace(updateBanner = false) {
   });
 
   if (updateBanner) {
-    const activeCatObj =
-      CATEGORIES.find((c) => c.id === store.activeCategory) || CATEGORIES[1];
-    const catName =
-      store.lang === 'ar' ? activeCatObj.name_ar : activeCatObj.name_fr;
-    const catSub =
-      store.lang === 'ar' ? activeCatObj.subtitle_ar : activeCatObj.subtitle_fr;
-    const displayTitle =
-      store.activeCategory === 'Tout' ? t.nav.all : catName;
+    const meta = getCategoryMeta(store.activeCategory);
 
     const headerTitleEl = document.getElementById('header-screen-title');
-    if (headerTitleEl) headerTitleEl.textContent = displayTitle;
+    if (headerTitleEl) headerTitleEl.textContent = meta.name;
 
     const bannerTitleEl = document.getElementById('cat-banner-title');
-    if (bannerTitleEl) bannerTitleEl.textContent = displayTitle;
+    if (bannerTitleEl) bannerTitleEl.textContent = meta.name;
 
     const bannerSubEl = document.getElementById('cat-banner-sub');
-    if (bannerSubEl) bannerSubEl.textContent = catSub;
+    if (bannerSubEl) bannerSubEl.textContent = meta.sub || '';
 
     const bannerImgEl = document.getElementById('cat-banner-img');
-    if (bannerImgEl && bannerImgEl.getAttribute('src') !== activeCatObj.image) {
+    if (bannerImgEl && bannerImgEl.getAttribute('src') !== meta.image) {
       bannerImgEl.style.opacity = '0.35';
       setTimeout(() => {
-        bannerImgEl.src = activeCatObj.image;
-        bannerImgEl.alt = catName;
+        bannerImgEl.src = meta.image;
+        bannerImgEl.alt = meta.name;
         bannerImgEl.style.opacity = '0.9';
       }, 130);
     }
@@ -3888,11 +3968,7 @@ function setupEvents() {
         }
         e.preventDefault();
         if (!id) break;
-        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-        if (document.documentElement) document.documentElement.scrollTop = 0;
-        if (document.body) document.body.scrollTop = 0;
         store.navigate('pdp', { productId: id });
-        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         break;
       }
 
@@ -4587,6 +4663,8 @@ function checkUrlForLandingPage() {
 }
 
 window.addEventListener('popstate', () => {
+  const wasInProduct =
+    store.currentScreen === 'pdp' || store.currentScreen === 'landing';
   const params = new URLSearchParams(window.location.search);
   if (
     params.has('product') ||
@@ -4596,8 +4674,14 @@ window.addEventListener('popstate', () => {
     params.has('category')
   ) {
     checkUrlForLandingPage();
+    if (wasInProduct && store.currentScreen === 'category') {
+      store.pendingScrollRestore = Number(store.savedScrollPositions.category || 0);
+    }
   } else {
     store.currentScreen = 'home';
+    if (wasInProduct) {
+      store.pendingScrollRestore = Number(store.savedScrollPositions.home || 0);
+    }
   }
   renderAll();
 });

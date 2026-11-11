@@ -196,13 +196,16 @@ body {
   }
 }
 
-/* Utility Animation Classes — instant visibility for fast image rendering */
+/* Utility Animation Classes — smooth hardware-accelerated entrance & mobile order animations */
 .animate-screen-enter {
-  opacity: 1;
+  animation: ssScreenEnter 340ms var(--ease-out-expo) both;
+  will-change: transform, opacity;
 }
 
 .animate-stagger-item {
-  opacity: 1;
+  animation: ssStaggerUp 380ms var(--ease-out-expo) both;
+  animation-delay: calc(min(var(--i, 0), 10) * 45ms);
+  will-change: transform, opacity;
 }
 
 .animate-float-soft {
@@ -226,11 +229,89 @@ body {
   animation-delay: calc(var(--i, 0) * 80ms);
 }
 
-/* Scroll-triggered reveal state — always visible so below-the-fold images load immediately */
-.reveal-on-scroll,
+@keyframes ssOrderPulseGlow {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 8px 22px rgba(222, 27, 97, 0.28);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.012);
+    box-shadow: 0 12px 28px rgba(222, 27, 97, 0.42);
+  }
+}
+
+@keyframes ssOrderCardSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.ss-order-panel-anim {
+  animation: ssOrderCardSlide 420ms var(--ease-out-expo) both;
+}
+
+.ss-btn-order-cta {
+  animation: ssOrderPulseGlow 2.6s ease-in-out infinite;
+}
+
+/* Mobile & Touch interactive animations for order forms, inputs, and cards */
+#shoestyle-checkout-form input,
+#shoestyle-checkout-form select,
+#storefront-lp-order-form input,
+#storefront-lp-order-form select {
+  transition:
+    transform 200ms var(--ease-out-expo),
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
+}
+
+#shoestyle-checkout-form input:focus,
+#shoestyle-checkout-form select:focus,
+#storefront-lp-order-form input:focus,
+#storefront-lp-order-form select:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(222, 27, 97, 0.12);
+}
+
+[data-action="pdp-select-size"],
+[data-action="lp-select-size"],
+[data-action="checkout-select-delivery"],
+[data-action="lp-select-delivery"],
+[data-action="lp-toggle-offer"] {
+  transition:
+    transform 220ms var(--ease-spring),
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+[data-action="pdp-select-size"]:active,
+[data-action="lp-select-size"]:active,
+[data-action="checkout-select-delivery"]:active,
+[data-action="lp-select-delivery"]:active,
+[data-action="lp-toggle-offer"]:active,
+.ss-product-card:active {
+  transform: scale(0.96);
+}
+
+/* Scroll-triggered reveal state — smooth reveal on scroll for mobile & desktop */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 420ms var(--ease-out-expo),
+    transform 420ms var(--ease-out-expo);
+}
+
 .reveal-on-scroll.is-visible {
   opacity: 1;
-  transform: none;
+  transform: translateY(0);
 }
 
 /* ShoeStyle App Container & Responsive Layout */

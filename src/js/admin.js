@@ -45,6 +45,8 @@ const ADMIN_I18N = {
       inventoryShort: 'المنتجات',
       orders: 'الطلبات',
       ordersShort: 'الطلبات',
+      stats: 'الإحصائيات',
+      statsShort: 'الإحصائيات',
       cms: 'الواجهة والبيكسل',
       cmsShort: 'الواجهة',
       landing: 'صفحات الهبوط',
@@ -218,6 +220,8 @@ const ADMIN_I18N = {
       inventoryShort: 'Produits',
       orders: 'Commandes',
       ordersShort: 'Commandes',
+      stats: 'Statistiques',
+      statsShort: 'Stats',
       cms: 'Design & CMS',
       cmsShort: 'Vitrine',
       landing: 'Landing Pages',
@@ -865,8 +869,8 @@ function generateProductFromBrief(rawBrief = '') {
 }
 
 export const adminState = {
-  activeTab: 'inventory', // 'inventory' | 'orders' | 'cms' | 'landing' | 'shipping'
-  isSidebarOpen: true,
+  activeTab: 'inventory', // 'inventory' | 'orders' | 'stats' | 'cms' | 'landing' | 'shipping'
+  isSidebarOpen: typeof window !== 'undefined' ? window.innerWidth >= 1024 : false,
   editingLandingId: null,
   editingProductId: null,
   editingCategoryId: null,
@@ -1199,6 +1203,13 @@ export function renderAdminDashboard() {
       icon: `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`,
     },
     {
+      id: 'stats',
+      label: tr.tabs.stats,
+      shortLabel: tr.tabs.statsShort,
+      badge: adminState.orders.length,
+      icon: `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`,
+    },
+    {
       id: 'cms',
       label: tr.tabs.cms,
       shortLabel: tr.tabs.cmsShort,
@@ -1308,11 +1319,11 @@ export function renderAdminDashboard() {
         <!-- الهيدر العلوي مع زر فتح وإغلاق الشريط الجانبي وأزرار سريعة -->
         <header class="adm-header">
           <div class="adm-header-inner">
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0">
               <button
                 type="button"
                 data-adm-action="toggle-admin-sidebar"
-                class="adm-sidebar-toggle-btn"
+                class="adm-sidebar-toggle-btn shrink-0"
                 title="${lang === 'fr' ? 'Ouvrir / Fermer le menu' : 'فتح / إغلاق القائمة الجانبية'}"
                 aria-label="Toggle Navigation Sidebar"
               >
@@ -1324,9 +1335,9 @@ export function renderAdminDashboard() {
                 <span class="font-bold text-xs">${lang === 'fr' ? 'Menu' : 'النوافذ'}</span>
               </button>
 
-              <div class="adm-brand-lockup">
-                <span class="adm-brand-script">${adminState.cms.storeName}</span>
-                <span class="adm-active-tab-title text-xs font-bold text-[#D81B60] hidden sm:inline-block px-2.5 py-1 rounded-lg bg-[#FDF0F5]">
+              <div class="adm-brand-lockup min-w-0">
+                <span class="adm-brand-script hidden sm:inline">${adminState.cms.storeName}</span>
+                <span class="adm-active-tab-title text-xs font-bold text-[#D81B60] inline-flex items-center px-2.5 py-1 rounded-lg bg-[#FDF0F5] truncate">
                   ${tabs.find((t) => t.id === adminState.activeTab)?.label || ''}
                 </span>
               </div>
@@ -1336,32 +1347,8 @@ export function renderAdminDashboard() {
 
         </header>
 
-        <!-- المحتوى الرئيسي المبسط والمناسب للهاتف -->
+        <!-- المحتوى الرئيسي المبسط والمناسب للهاتف (الإحصائيات تظهر فقط في نافذتها الخاصة) -->
         <main class="adm-container">
-          <!-- ملخص سريع (KPIs) -->
-          <section class="adm-kpi-strip">
-            <div class="adm-kpi-box">
-              <span class="adm-kpi-title">${tr.kpi.totalSales}</span>
-              <span class="adm-kpi-num">${formatDA(totalRevenue, lang)}</span>
-              <span class="adm-kpi-foot">${tr.kpi.totalOrdersFoot(adminState.orders.length)}</span>
-            </div>
-            <div class="adm-kpi-box">
-              <span class="adm-kpi-title">${tr.kpi.newOrders}</span>
-              <span class="adm-kpi-num">${newOrdersCount} ${tr.kpi.orderUnit}</span>
-              <span class="adm-kpi-foot">${tr.kpi.awaitingConfirm}</span>
-            </div>
-            <div class="adm-kpi-box">
-              <span class="adm-kpi-title">${tr.kpi.productsCount}</span>
-              <span class="adm-kpi-num">${adminState.inventory.length} ${tr.kpi.shoeUnit}</span>
-              <span class="adm-kpi-foot">${tr.kpi.lowStockFoot(lowStockItems.length)}</span>
-            </div>
-            <div class="adm-kpi-box">
-              <span class="adm-kpi-title">${lang === 'fr' ? 'Catégories & Wilayas' : 'الفئات والتوصيل'}</span>
-              <span class="adm-kpi-num">${adminState.categories.length} ${lang === 'fr' ? 'catégories' : 'فئات'}</span>
-              <span class="adm-kpi-foot">${tr.kpi.activeWilayas(adminState.shipping.rates.length)}</span>
-            </div>
-          </section>
-
           <!-- تبويب 1: المنتجات والمخزون -->
           <section id="adm-tab-inventory" class="adm-tab-section ${adminState.activeTab === 'inventory' ? 'active' : ''}">
             ${renderInventorySection()}
@@ -1372,17 +1359,22 @@ export function renderAdminDashboard() {
             ${renderOrdersSection()}
           </section>
 
-          <!-- تبويب 3: واجهة ومحتوى الموقع -->
+          <!-- تبويب 3: الإحصائيات الشاملة -->
+          <section id="adm-tab-stats" class="adm-tab-section ${adminState.activeTab === 'stats' ? 'active' : ''}">
+            ${renderStatsSection({ totalRevenue, newOrdersCount, lowStockItems })}
+          </section>
+
+          <!-- تبويب 4: واجهة ومحتوى الموقع -->
           <section id="adm-tab-cms" class="adm-tab-section ${adminState.activeTab === 'cms' ? 'active' : ''}">
             ${renderCMSSection()}
           </section>
 
-          <!-- تبويب 4: صفحات الهبوط والعروض -->
+          <!-- تبويب 5: صفحات الهبوط والعروض -->
           <section id="adm-tab-landing" class="adm-tab-section ${adminState.activeTab === 'landing' ? 'active' : ''}">
             ${renderLandingBuilderSection()}
           </section>
 
-          <!-- تبويب 5: أسعار التوصيل والشحن -->
+          <!-- تبويب 6: أسعار التوصيل والشحن -->
           <section id="adm-tab-shipping" class="adm-tab-section ${adminState.activeTab === 'shipping' ? 'active' : ''}">
             ${renderShippingSection()}
           </section>
@@ -1393,6 +1385,135 @@ export function renderAdminDashboard() {
     <!-- نافذة معاينة صفحة الهبوط -->
     <div id="adm-landing-modal" class="adm-modal-backdrop ${adminState.previewLandingId ? 'open' : ''}">
       ${renderLandingPreviewModal()}
+    </div>
+  `;
+}
+
+/**
+ * نافذة الإحصائيات المستقلة (تظهر فقط عند فتح نافذة الإحصائيات)
+ */
+function renderStatsSection({ totalRevenue, newOrdersCount, lowStockItems }) {
+  const lang = getLang();
+  const isFr = lang === 'fr';
+  const tr = t();
+
+  const orders = Array.isArray(adminState.orders) ? adminState.orders : [];
+  const confirmingCount = orders.filter((o) => normalizeStatusKey(o.status) === 'confirming').length;
+  const shippingCount = orders.filter((o) => normalizeStatusKey(o.status) === 'shipping').length;
+  const deliveredCount = orders.filter((o) => normalizeStatusKey(o.status) === 'delivered').length;
+  const cancelledCount = orders.filter((o) => normalizeStatusKey(o.status) === 'cancelled').length;
+
+  const deliveredRevenue = orders
+    .filter((o) => normalizeStatusKey(o.status) === 'delivered')
+    .reduce((sum, o) => sum + Number(o.total || 0), 0);
+
+  const totalStockUnits = adminState.inventory.reduce(
+    (sum, item) => sum + Math.max(0, Number(item.stock || 0)),
+    0
+  );
+
+  return `
+    <div class="space-y-4">
+      <div class="adm-card">
+        <div class="adm-card-head">
+          <div>
+            <h2 class="adm-card-title">${isFr ? 'Tableau des Statistiques' : 'إحصائيات المتجر الشاملة'}</h2>
+            <p class="adm-card-sub">${
+              isFr
+                ? 'Suivez vos ventes, commandes et état du stock en temps réel'
+                : 'ملخص دقيق للمبيعات، حالات الطلبات، وحركة المخزون في متجرك'
+            }</p>
+          </div>
+          <span class="adm-badge adm-badge-pink">${orders.length} ${tr.kpi.orderUnit}</span>
+        </div>
+
+        <section class="adm-kpi-strip" style="margin-bottom: 0;">
+          <div class="adm-kpi-box">
+            <span class="adm-kpi-title">${tr.kpi.totalSales}</span>
+            <span class="adm-kpi-num">${formatDA(totalRevenue, lang)}</span>
+            <span class="adm-kpi-foot">${tr.kpi.totalOrdersFoot(orders.length)}</span>
+          </div>
+          <div class="adm-kpi-box">
+            <span class="adm-kpi-title">${tr.kpi.newOrders}</span>
+            <span class="adm-kpi-num">${newOrdersCount} ${tr.kpi.orderUnit}</span>
+            <span class="adm-kpi-foot">${tr.kpi.awaitingConfirm}</span>
+          </div>
+          <div class="adm-kpi-box">
+            <span class="adm-kpi-title">${tr.kpi.productsCount}</span>
+            <span class="adm-kpi-num">${adminState.inventory.length} ${tr.kpi.shoeUnit}</span>
+            <span class="adm-kpi-foot">${tr.kpi.lowStockFoot(lowStockItems.length)}</span>
+          </div>
+          <div class="adm-kpi-box">
+            <span class="adm-kpi-title">${isFr ? 'Catégories & Wilayas' : 'الفئات والتوصيل'}</span>
+            <span class="adm-kpi-num">${adminState.categories.length} ${isFr ? 'catégories' : 'فئات'}</span>
+            <span class="adm-kpi-foot">${tr.kpi.activeWilayas(adminState.shipping.rates.length)}</span>
+          </div>
+        </section>
+      </div>
+
+      <div class="adm-grid-2">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div>
+              <h3 class="adm-card-title">${isFr ? 'Répartition des Commandes' : 'توزيع حالات الطلبات'}</h3>
+              <p class="adm-card-sub">${isFr ? 'Détail par statut de traitement' : 'تفصيل الطلبات حسب مرحلة المعالجة والتوصيل'}</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 tabular-nums">
+            <div class="p-3 rounded-xl bg-[#FDF2F6] border border-[#FBCFE8]">
+              <span class="text-xs font-bold text-[#9D174D] block">${tr.orders.statuses.new}</span>
+              <strong class="text-lg font-black text-[#D81B60]">${newOrdersCount}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE]">
+              <span class="text-xs font-bold text-[#1E40AF] block">${tr.orders.statuses.confirming}</span>
+              <strong class="text-lg font-black text-[#2563EB]">${confirmingCount}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#FFFBEB] border border-[#FDE68A]">
+              <span class="text-xs font-bold text-[#92400E] block">${tr.orders.statuses.shipping}</span>
+              <strong class="text-lg font-black text-[#D97706]">${shippingCount}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#ECFDF5] border border-[#A7F3D0]">
+              <span class="text-xs font-bold text-[#065F46] block">${tr.orders.statuses.delivered}</span>
+              <strong class="text-lg font-black text-[#059669]">${deliveredCount}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#FEF2F2] border border-[#FECACA]">
+              <span class="text-xs font-bold text-[#991B1B] block">${tr.orders.statuses.cancelled}</span>
+              <strong class="text-lg font-black text-[#DC2626]">${cancelledCount}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7]">
+              <span class="text-xs font-bold text-[#3F3F46] block">${isFr ? 'Revenu Livré' : 'مبيعات مستلمة'}</span>
+              <strong class="text-sm font-black text-[#18181B]">${formatDA(deliveredRevenue, lang)}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div>
+              <h3 class="adm-card-title">${isFr ? 'Aperçu du Catalogue & Stock' : 'ملخص المخزون والمنتجات'}</h3>
+              <p class="adm-card-sub">${isFr ? 'Indicateurs rapides du catalogue' : 'نظرة سريعة على حالة توفر المنتجات والعروض'}</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5 tabular-nums">
+            <div class="p-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
+              <span class="text-xs font-bold text-[#52525B] block">${isFr ? 'Total pièces en stock' : 'إجمالي القطع المتوفرة'}</span>
+              <strong class="text-lg font-black text-[#18181B]">${totalStockUnits}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
+              <span class="text-xs font-bold text-[#52525B] block">${isFr ? 'Nouveautés (الجديد)' : 'منتجات قسم الجديد'}</span>
+              <strong class="text-lg font-black text-[#D81B60]">${adminState.inventory.filter((p) => p.isNew).length}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
+              <span class="text-xs font-bold text-[#52525B] block">${isFr ? 'Meilleures ventes' : 'أفضل المبيعات'}</span>
+              <strong class="text-lg font-black text-[#18181B]">${adminState.inventory.filter((p) => p.isBestSeller).length}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
+              <span class="text-xs font-bold text-[#52525B] block">${isFr ? 'Offres spéciales' : 'العروض الترويجية'}</span>
+              <strong class="text-lg font-black text-[#059669]">${adminState.inventory.filter((p) => p.isSpecialOffer).length}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }
