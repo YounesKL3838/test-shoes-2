@@ -3,7 +3,7 @@
  * مخصصة بالكامل للعروض التسويقية والإعلانات المباشرة مع استمارة الدفع عند الاستلام (COD)
  * ومزامنة فورية مع لوحة التحكم (admin.html) وقاعدة بيانات Supabase
  */
-import { COLOR_SWATCHES, IMAGES, WILAYAS, formatDA } from './data.js';
+import { COLOR_SWATCHES, IMAGES, WILAYAS, formatDA, getProductColorHex } from './data.js';
 import { fetchAllFromSupabase, syncOrderToSupabase, subscribeRealtimeSync } from './supabase.js';
 
 const CMS_STORAGE_KEY = 'shoestyle_full_cms_v1';
@@ -522,11 +522,7 @@ function renderLandingUI() {
                         </div>
                       </div>
                     `
-                    : `
-                      <div class="p-2.5 bg-[#FAF8F9] border border-[#F1EEF0] rounded-xl text-xs text-[#52525B] font-semibold text-center">
-                        ${isAr ? 'مقاس موحد (حقيبة / إكسسوار)' : 'Taille unique (Sac / Accessoire)'}
-                      </div>
-                    `
+                    : ''
                 }
 
                 <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
@@ -536,8 +532,7 @@ function renderLandingUI() {
                   <div class="flex items-center gap-2">
                     ${availableColors
                       .map((cName) => {
-                        const sw = COLOR_SWATCHES[cName];
-                        const hex = sw ? sw.hex : '#F38BA8';
+                        const hex = getProductColorHex(lp, cName);
                         const active = state.selectedColor === cName;
                         return `
                           <button

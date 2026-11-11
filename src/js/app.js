@@ -11,6 +11,7 @@ import {
   PRODUCTS,
   WILAYAS,
   formatDA,
+  getProductColorHex,
 } from './data.js';
 import { store } from './state.js';
 import {
@@ -1760,32 +1761,38 @@ function renderCleanLandingPageUI() {
               
               <!-- 1. المقاس واللون -->
               <div class="space-y-3">
-                <div>
-                  <label class="block text-xs font-bold text-[#3F3F46] mb-1.5">
-                    ${isAr ? 'المقاس:' : 'Pointure :'} <strong id="lp-selected-size-label" class="text-[#DE1B61] font-extrabold">${store.lpSelectedSize}</strong>
-                  </label>
-                  <div class="grid grid-cols-6 gap-1.5 tabular-nums">
-                    ${availableSizes
-                      .map((sz) => {
-                        const active = Number(store.lpSelectedSize) === Number(sz);
-                        return `
-                          <button
-                            type="button"
-                            data-action="lp-select-size"
-                            data-size="${sz}"
-                            class="py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
-                              active
-                                ? 'border-2 border-[#DE1B61] bg-[#FDF2F6] text-[#DE1B61]'
-                                : 'border-[#E4E4E7] bg-white text-[#27272A] hover:border-[#D4D4D8]'
-                            }"
-                          >
-                            ${sz}
-                          </button>
-                        `;
-                      })
-                      .join('')}
-                  </div>
-                </div>
+                ${
+                  availableSizes.length > 0
+                    ? `
+                      <div>
+                        <label class="block text-xs font-bold text-[#3F3F46] mb-1.5">
+                          ${isAr ? 'المقاس:' : 'Pointure :'} <strong id="lp-selected-size-label" class="text-[#DE1B61] font-extrabold">${store.lpSelectedSize || ''}</strong>
+                        </label>
+                        <div class="grid grid-cols-6 gap-1.5 tabular-nums">
+                          ${availableSizes
+                            .map((sz) => {
+                              const active = String(store.lpSelectedSize) === String(sz);
+                              return `
+                                <button
+                                  type="button"
+                                  data-action="lp-select-size"
+                                  data-size="${sz}"
+                                  class="py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                                    active
+                                      ? 'border-2 border-[#DE1B61] bg-[#FDF2F6] text-[#DE1B61]'
+                                      : 'border-[#E4E4E7] bg-white text-[#27272A] hover:border-[#D4D4D8]'
+                                  }"
+                                >
+                                  ${sz}
+                                </button>
+                              `;
+                            })
+                            .join('')}
+                        </div>
+                      </div>
+                    `
+                    : ''
+                }
 
                 <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
                   <span class="text-xs font-bold text-[#3F3F46]">
@@ -1794,8 +1801,7 @@ function renderCleanLandingPageUI() {
                   <div class="flex items-center gap-2">
                     ${availableColors
                       .map((cName) => {
-                        const sw = COLOR_SWATCHES[cName];
-                        const hex = sw ? sw.hex : '#F38BA8';
+                        const hex = getProductColorHex(matchedProd, cName);
                         const active = store.lpSelectedColor === cName;
                         return `
                           <button
@@ -2337,7 +2343,8 @@ function renderPDPScreen() {
               <div class="flex items-center gap-2.5 flex-wrap">
                 ${availableColors
                   .map((c) => {
-                    const swatch = COLOR_SWATCHES[c] || { hex: '#D2B48C', label_ar: c, label_fr: c };
+                    const hex = getProductColorHex(product, c);
+                    const swatch = COLOR_SWATCHES[c] || { label_ar: c, label_fr: c };
                     const isActive = store.pdpSelectedColor === c;
                     return `
                       <button
@@ -2345,8 +2352,8 @@ function renderPDPScreen() {
                         data-action="pdp-select-color"
                         data-color="${c}"
                         class="ss-color-swatch ${isActive ? 'active' : 'border-black/15'}"
-                        style="--swatch-color: ${swatch.hex}; background-color: ${swatch.hex}; width: 34px; height: 34px;"
-                        title="${isAr ? swatch.label_ar : swatch.label_fr}"
+                        style="--swatch-color: ${hex}; background-color: ${hex}; width: 34px; height: 34px;"
+                        title="${isAr ? (swatch.label_ar || c) : (swatch.label_fr || c)}"
                       ></button>
                     `;
                   })
@@ -2387,11 +2394,7 @@ function renderPDPScreen() {
                     </div>
                   </div>
                 `
-                : `
-                  <div class="p-3 bg-[#F7F5F6] border border-[#EAE6E8] rounded-xl text-xs text-[#52525B] font-semibold text-center">
-                    ${isAr ? 'مقاس موحد (حقيبة / إكسسوار)' : 'Taille unique (Sac / Accessoire)'}
-                  </div>
-                `
+                : ''
             }
 
             <hr class="border-[#F1EEF0]" />

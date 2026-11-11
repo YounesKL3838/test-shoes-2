@@ -2,7 +2,7 @@
  * ShoeStyle — لوحة التحكم الإدارية الشاملة ثنائية اللغة (العربية / Français)
  * Mobile-First Chic Blush Pink & Ivory Identity — Vanilla JS + LocalStorage
  */
-import { CATEGORIES, COLOR_SWATCHES, IMAGES, PRODUCTS, WILAYAS, formatDA } from './data.js';
+import { CATEGORIES, COLOR_SWATCHES, IMAGES, PRODUCTS, WILAYAS, formatDA, getProductColorHex } from './data.js';
 import { store, showToast } from './app_bridge.js';
 import {
   deleteLandingPageFromSupabase,
@@ -4140,7 +4140,7 @@ export function setupAdminEvents() {
                 ? prod.colors
                 : [primaryColor];
             colorsArr.forEach((cName) => {
-              const hex = COLOR_SWATCHES[cName]?.hex || primaryHex;
+              const hex = getProductColorHex(prod, cName) || primaryHex;
               Object.entries(szStockMap).forEach(([sz, qty]) => {
                 variants.push({
                   size: Number(sz),

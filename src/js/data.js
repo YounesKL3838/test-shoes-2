@@ -69,6 +69,44 @@ export const COLOR_SWATCHES = {
   Rouge: { hex: '#B91C2E', label_fr: 'Rouge', label_ar: 'أحمر' },
 };
 
+export function getProductColorHex(product, colorName) {
+  if (!colorName) return '#D2B48C';
+  const cNorm = String(colorName).trim().toLowerCase();
+
+  // 1. If product has variants, check matching variant colorHex
+  if (product && Array.isArray(product.variants)) {
+    const match = product.variants.find(
+      (v) => v && v.colorName && String(v.colorName).trim().toLowerCase() === cNorm && v.colorHex
+    );
+    if (match && match.colorHex) return match.colorHex;
+  }
+
+  // 2. If product has colorHex property
+  if (
+    product &&
+    product.colorHex &&
+    (
+      (product.colorName && String(product.colorName).trim().toLowerCase() === cNorm) ||
+      (product.color && String(product.color).trim().toLowerCase() === cNorm) ||
+      (!product.colors || product.colors.length <= 1)
+    )
+  ) {
+    return product.colorHex;
+  }
+
+  // 3. If colorName itself is a valid hex string
+  if (typeof colorName === 'string' && colorName.startsWith('#')) {
+    return colorName;
+  }
+
+  // 4. Check global COLOR_SWATCHES
+  if (COLOR_SWATCHES[colorName] && COLOR_SWATCHES[colorName].hex) {
+    return COLOR_SWATCHES[colorName].hex;
+  }
+
+  return '#D2B48C';
+}
+
 export const PRODUCTS = [
   {
     id: 'ss-01',
