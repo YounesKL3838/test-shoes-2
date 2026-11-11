@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "node --check src/js/data.js && node --check src/js/state.js && node --check src/js/supabase.js && node --check src/js/app.js && node --check src/js/admin.js && node --check src/js/admin-entry.js",
+    "build": "node --check src/js/data.js && node --check src/js/state.js && node --check src/js/supabase.js && node --check src/js/app.js && node --check src/js/admin.js && node --check src/js/admin-entry.js && node --check src/js/landing-entry.js",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "node --check src/js/data.js && node --check src/js/state.js && node --check src/js/supabase.js && node --check src/js/app.js && node --check src/js/admin.js && node --check src/js/admin-entry.js"
+    "lint": "node --check src/js/data.js && node --check src/js/state.js && node --check src/js/supabase.js && node --check src/js/app.js && node --check src/js/admin.js && node --check src/js/admin-entry.js && node --check src/js/landing-entry.js"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

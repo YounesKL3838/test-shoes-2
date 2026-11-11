@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShoeStyle — عرض خاص وصفحة هبوط حصرية | Offre Spéciale</title>
+    <meta
+      name="description"
+      content="عرض خاص وحصري من متجر ShoeStyle للأحذية النسائية الفاخرة مع خدمة الدفع عند الاستلام وتوصيل سريع لكافة الولايات."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=Cairo:wght@500;600;700;800;900&family=Dancing+Script:wght@600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="./src/index.css" />
+  </head>
+  <body>
+    <!-- صفحة الهبوط المستقلة المخصصة للإعلانات والعروض المباشرة (Standalone Landing Page) -->
+    <div id="landing-app-root"></div>
+
+    <!-- إشعار التنبيه (Toast Notification) -->
+    <div
+      id="toast-notification"
+      class="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-80 px-5 py-2.5 rounded-full bg-[#18181B] text-white text-xs font-semibold shadow-lg transition-all duration-200 opacity-0 translate-y-3 pointer-events-none whitespace-nowrap"
+      role="status"
+      aria-live="polite"
+    >
+      <span id="toast-message">تم الحفظ بنجاح</span>
+    </div>
+
+    <script type="module" src="./src/js/landing-entry.js"></script>
+  </body>
+</html>

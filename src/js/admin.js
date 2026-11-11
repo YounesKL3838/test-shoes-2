@@ -10,7 +10,9 @@ import {
   deleteProductFromSupabase,
   deleteShippingRateFromSupabase,
   fetchAllFromSupabase,
+  isSupabaseConfigured,
   notifyCrossTabSync,
+  syncAllStateToSupabase,
   syncCmsToSupabase,
   syncLandingPageToSupabase,
   syncOrderToSupabase,
@@ -1001,6 +1003,8 @@ export const adminState = {
       });
     }
 
+    // إعادة بناء قائمة منتجات الواجهة (PRODUCTS) بالكامل من المخزون الحالي لضمان انعكاس أي إضافة أو تعديل أو إخفاء أو حذف فوراً
+    PRODUCTS.length = 0;
     this.inventory.forEach((invItem) => {
       if (invItem.colorName && invItem.colorHex) {
         if (!COLOR_SWATCHES[invItem.colorName]) {
@@ -1012,6 +1016,10 @@ export const adminState = {
         } else {
           COLOR_SWATCHES[invItem.colorName].hex = invItem.colorHex;
         }
+      }
+
+      if (invItem.isVisible === false) {
+        return;
       }
 
       const effectivePrice =
@@ -1040,68 +1048,42 @@ export const adminState = {
           ? invItem.colors
           : [invItem.colorName || 'Beige', 'Noir', 'Rose'];
 
-      const existing = PRODUCTS.find((p) => p.id === invItem.id);
-      if (existing) {
-        existing.slug = invItem.slug;
-        existing.name_ar = invItem.name || invItem.name_fr;
-        existing.name_fr = invItem.name_fr || invItem.name;
-        existing.category = invItem.category;
-        existing.description_ar =
-          invItem.description_ar || existing.description_ar || invItem.name;
-        existing.description_fr =
-          invItem.description_fr || existing.description_fr || invItem.name_fr;
-        existing.price = effectivePrice;
-        existing.originalPrice = origPrice > effectivePrice ? origPrice : null;
-        existing.discountPercent = discPercent;
-        existing.isVisible = invItem.isVisible !== false;
-        existing.isNew = Boolean(invItem.isNew);
-        existing.isBestSeller = Boolean(invItem.isBestSeller);
-        existing.isSpecialOffer = Boolean(invItem.isSpecialOffer);
-        existing.offerEnabled = invItem.offerEnabled !== false;
-        existing.offerMinQty = Math.max(2, Number(invItem.offerMinQty || 2));
-        existing.offerFreeShipping = invItem.offerFreeShipping !== false;
-        existing.offerText = invItem.offerText || '';
-        existing.colors = colorsList;
-        existing.sizes = sizesList;
-        if (Array.isArray(invItem.gallery) && invItem.gallery.length > 0) {
-          existing.gallery = [...invItem.gallery];
-        } else {
-          existing.gallery = [invItem.image];
-        }
-      } else if (invItem.isVisible !== false) {
-        PRODUCTS.unshift({
-          id: invItem.id,
-          slug: invItem.slug,
-          name_fr: invItem.name_fr || invItem.name,
-          name_ar: invItem.name || invItem.name_fr,
-          category: invItem.category,
-          price: effectivePrice,
-          originalPrice: origPrice > effectivePrice ? origPrice : null,
-          discountPercent: discPercent,
-          rating: 4.9,
-          reviewsCount: 45,
-          isVisible: true,
-          isNew: Boolean(invItem.isNew ?? true),
-          isBestSeller: Boolean(invItem.isBestSeller ?? false),
-          isSpecialOffer: Boolean(invItem.isSpecialOffer ?? false),
-          offerEnabled: invItem.offerEnabled !== false,
-          offerMinQty: Math.max(2, Number(invItem.offerMinQty || 2)),
-          offerFreeShipping: invItem.offerFreeShipping !== false,
-          offerText: invItem.offerText || '',
-          colors: colorsList,
-          sizes: sizesList,
-          image: invItem.image,
-          gallery:
-            invItem.gallery && invItem.gallery.length > 0
-              ? invItem.gallery
-              : [invItem.image],
-          description_fr:
-            invItem.description_fr || invItem.name_fr || invItem.name,
-          description_ar:
-            invItem.description_ar ||
-            `${invItem.name || invItem.name_fr} بتصميم عصري وخامة مريحة عالية الجودة.`,
-        });
-      }
+      const cleanGallery =
+        Array.isArray(invItem.gallery) && invItem.gallery.filter(Boolean).length > 0
+          ? [...invItem.gallery.filter(Boolean)]
+          : [invItem.image].filter(Boolean);
+
+      PRODUCTS.push({
+        id: invItem.id,
+        slug: invItem.slug,
+        name_fr: invItem.name_fr || invItem.name,
+        name_ar: invItem.name || invItem.name_fr,
+        category: invItem.category,
+        price: effectivePrice,
+        originalPrice: origPrice > effectivePrice ? origPrice : null,
+        discountPercent: discPercent,
+        stock: Number(invItem.stock ?? 10),
+        sizeStock: invItem.sizeStock || {},
+        rating: 4.9,
+        reviewsCount: 45,
+        isVisible: true,
+        isNew: Boolean(invItem.isNew ?? true),
+        isBestSeller: Boolean(invItem.isBestSeller ?? false),
+        isSpecialOffer: Boolean(invItem.isSpecialOffer ?? false),
+        offerEnabled: invItem.offerEnabled !== false,
+        offerMinQty: Math.max(2, Number(invItem.offerMinQty || 2)),
+        offerFreeShipping: invItem.offerFreeShipping !== false,
+        offerText: invItem.offerText || '',
+        colors: colorsList,
+        sizes: sizesList,
+        image: cleanGallery[0] || invItem.image,
+        gallery: cleanGallery,
+        description_fr:
+          invItem.description_fr || invItem.name_fr || invItem.name,
+        description_ar:
+          invItem.description_ar ||
+          `${invItem.name || invItem.name_fr} بتصميم عصري وخامة مريحة عالية الجودة.`,
+      });
     });
   },
 
@@ -1136,6 +1118,17 @@ export async function initAdminFromSupabase() {
   const remoteData = await fetchAllFromSupabase();
   if (!remoteData) return false;
 
+  // إذا كانت قاعدة بيانات Supabase متصلة لكنها فارغة تماماً (عند الربط لأول مرة)، نرفع بيانات المتجر الحالية إليها تلقائياً
+  if (
+    isSupabaseConfigured &&
+    !remoteData.products &&
+    !remoteData.cms &&
+    !remoteData.landingPages
+  ) {
+    await syncAllStateToSupabase(adminState);
+    return false;
+  }
+
   let changed = false;
   if (remoteData.products) {
     adminState.inventory = remoteData.products;
@@ -1148,6 +1141,10 @@ export async function initAdminFromSupabase() {
   if (remoteData.cms) {
     const { freeShippingThreshold, ...cmsFields } = remoteData.cms;
     adminState.cms = { ...adminState.cms, ...cmsFields, announcementEnabled: false };
+    changed = true;
+  }
+  if (Array.isArray(remoteData.categories) && remoteData.categories.length > 0) {
+    adminState.categories = remoteData.categories;
     changed = true;
   }
   if (remoteData.landingPages) {
@@ -3135,7 +3132,7 @@ function renderLandingBuilderSection() {
             const disc = Number(lp.discountPrice || 0);
             const saved = Math.max(0, orig - disc);
             const pct = orig > disc && orig > 0 ? Math.round(((orig - disc) / orig) * 100) : 25;
-            const liveUrl = `./index.html?lp=${encodeURIComponent(lp.id)}`;
+            const liveUrl = `./landing.html?id=${encodeURIComponent(lp.id)}`;
 
             return `
             <article class="adm-order-card" style="justify-content:space-between;">
@@ -3263,7 +3260,7 @@ function renderLandingPreviewModal() {
     (isFr
       ? `Prenez ${offerMinQty} = Livraison Gratuite`
       : `اشترِ ${offerMinQty} واحصل على شحن مجاني`);
-  const liveUrl = `./index.html?lp=${encodeURIComponent(lp.id)}`;
+  const liveUrl = `./landing.html?id=${encodeURIComponent(lp.id)}`;
 
   return `
     <div class="adm-modal-card" dir="${dir}" style="max-width:860px; background:#faf8f9;">
@@ -3834,6 +3831,7 @@ export function setupAdminEvents() {
         }
         adminState.categories = adminState.categories.filter((c) => c.id !== id);
         adminState.saveAll();
+        syncCmsToSupabase(adminState.cms, 0, adminState.categories);
         renderAdminDashboard();
         showToast(getLang() === 'fr' ? 'Catégorie supprimée' : 'تم حذف الفئة بنجاح');
         break;
@@ -3904,14 +3902,14 @@ export function setupAdminEvents() {
 
       case 'copy-landing-link': {
         if (!id) break;
-        const shareUrl = new URL(`./index.html?lp=${encodeURIComponent(id)}`, window.location.href).href;
+        const shareUrl = new URL(`./landing.html?id=${encodeURIComponent(id)}`, window.location.href).href;
         if (navigator.clipboard) {
           navigator.clipboard.writeText(shareUrl).catch(() => {});
         }
         showToast(
           getLang() === 'fr'
-            ? `Lien de l'offre copié : ${shareUrl}`
-            : `تم نسخ رابط صفحة الهبوط للإعلانات بنجاح`
+            ? `Lien de la page d'atterrissage copié : ${shareUrl}`
+            : `تم نسخ رابط صفحة الهبوط المستقلة بنجاح`
         );
         break;
       }
@@ -4684,7 +4682,7 @@ export function setupAdminEvents() {
         })),
       };
       adminState.saveAll();
-      syncCmsToSupabase(adminState.cms, 0);
+      syncCmsToSupabase(adminState.cms, 0, adminState.categories);
       showToast(t().toasts.cmsSaved);
       renderAdminDashboard();
     } else if (form.id === 'adm-category-form') {
@@ -4718,6 +4716,7 @@ export function setupAdminEvents() {
       }
       adminState.isCategoryFormOpen = false;
       adminState.saveAll();
+      syncCmsToSupabase(adminState.cms, 0, adminState.categories);
       renderAdminDashboard();
     } else if (form.id === 'adm-landing-form') {
       const mainImg = adminState.draftLandingMainImage || IMAGES.talons;

@@ -4,20 +4,35 @@
  * تعمل مباشرة عبر المتصفح (Pure Vanilla JS + Supabase CDN v2) بدون أي Bundler
  */
 
-const { createClient } = supabase;
+const { createClient } = typeof supabase !== 'undefined' ? supabase : {};
 
-// ضع رابط المشروع (Project URL) والمفتاح العام (Anon Key) الخاص بك من لوحة Supabase هنا:
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+// 1. يدعم القراءة التلقائية من متغيرات البيئة (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY) على Vercel / Netlify / GitHub
+// أو يمكنك وضع الرابط والمفتاح مباشرة هنا بين علامتي التنصيص بعد النشر على GitHub Pages:
+const ENV_SUPABASE_URL =
+  typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SUPABASE_URL
+    ? String(import.meta.env.VITE_SUPABASE_URL).trim()
+    : '';
+const ENV_SUPABASE_ANON_KEY =
+  typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SUPABASE_ANON_KEY
+    ? String(import.meta.env.VITE_SUPABASE_ANON_KEY).trim()
+    : '';
 
-const isConfigured =
+const FALLBACK_SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+const FALLBACK_SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+const SUPABASE_URL = ENV_SUPABASE_URL || FALLBACK_SUPABASE_URL;
+const SUPABASE_ANON_KEY = ENV_SUPABASE_ANON_KEY || FALLBACK_SUPABASE_ANON_KEY;
+
+export const isSupabaseConfigured =
   Boolean(SUPABASE_URL && SUPABASE_ANON_KEY) &&
   SUPABASE_URL.startsWith('http') &&
   !SUPABASE_URL.includes('YOUR_PROJECT_ID') &&
-  !SUPABASE_URL.includes('your-project-id');
+  !SUPABASE_URL.includes('your-project-id') &&
+  !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY') &&
+  !SUPABASE_ANON_KEY.includes('your-supabase-anon-public-key');
 
 export const supabaseClient =
-  isConfigured && typeof createClient === 'function'
+  isSupabaseConfigured && typeof createClient === 'function'
     ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
@@ -50,6 +65,41 @@ export async function fetchAllFromSupabase() {
       supabaseClient.from('landing_pages').select('*').order('updated_at', { ascending: false }),
       supabaseClient.from('shipping_rates').select('*').order('code', { ascending: true }),
     ]);
+
+    let parsedCms = null;
+    let parsedCategories = null;
+    if (!cmsRes.error && cmsRes.data) {
+      let extraCms = {};
+      const rawAnn = cmsRes.data.announcement_text;
+      if (typeof rawAnn === 'string' && rawAnn.startsWith('{')) {
+        try {
+          const decoded = JSON.parse(rawAnn);
+          if (decoded && decoded.__cms_ext_v2) {
+            extraCms = decoded.extraCms || {};
+            if (Array.isArray(decoded.categories) && decoded.categories.length > 0) {
+              parsedCategories = decoded.categories;
+            }
+          }
+        } catch {
+          // ignore JSON parse error
+        }
+      }
+
+      parsedCms = {
+        storeName: cmsRes.data.store_name || 'ShoeStyle',
+        logoUrl: cmsRes.data.logo_url,
+        announcementText: extraCms.announcementText ?? '',
+        announcementEnabled: false,
+        heroTitle: cmsRes.data.hero_title,
+        heroSubtitle: cmsRes.data.hero_subtitle,
+        heroBgUrl: cmsRes.data.hero_bg_url,
+        heroBtnText: cmsRes.data.hero_btn_text,
+        heroBtnLink: cmsRes.data.hero_btn_link || 'Talons',
+        features: Array.isArray(cmsRes.data.features) ? cmsRes.data.features : [],
+        freeShippingThreshold: Number(cmsRes.data.free_shipping_threshold ?? 0),
+        ...extraCms,
+      };
+    }
 
     return {
       products:
@@ -106,37 +156,41 @@ export async function fetchAllFromSupabase() {
             }))
           : null,
 
-      cms:
-        !cmsRes.error && cmsRes.data
-          ? {
-              storeName: cmsRes.data.store_name || 'ShoeStyle',
-              logoUrl: cmsRes.data.logo_url,
-              announcementText: cmsRes.data.announcement_text,
-              announcementEnabled: Boolean(cmsRes.data.announcement_enabled),
-              heroTitle: cmsRes.data.hero_title,
-              heroSubtitle: cmsRes.data.hero_subtitle,
-              heroBgUrl: cmsRes.data.hero_bg_url,
-              heroBtnText: cmsRes.data.hero_btn_text,
-              heroBtnLink: cmsRes.data.hero_btn_link || 'Talons',
-              features: Array.isArray(cmsRes.data.features) ? cmsRes.data.features : [],
-              freeShippingThreshold: Number(cmsRes.data.free_shipping_threshold ?? 8000),
-            }
-          : null,
+      cms: parsedCms,
+      categories: parsedCategories,
 
       landingPages:
         !lpRes.error && Array.isArray(lpRes.data) && lpRes.data.length > 0
-          ? lpRes.data.map((row) => ({
-              id: row.id,
-              title: row.title,
-              slug: row.slug,
-              originalPrice: Number(row.original_price || 0),
-              discountPrice: Number(row.discount_price || 0),
-              imageUrl: row.image_url,
-              gallery: Array.isArray(row.gallery) ? row.gallery : [row.image_url],
-              description: row.description || '',
-              quickFormEnabled: Boolean(row.quick_form_enabled),
-              createdAt: row.created_at || '',
-            }))
+          ? lpRes.data.map((row) => {
+              let extraLp = {};
+              if (typeof row.created_at === 'string' && row.created_at.startsWith('{')) {
+                try {
+                  const decoded = JSON.parse(row.created_at);
+                  if (decoded && decoded.__lp_ext_v2) {
+                    extraLp = decoded;
+                  }
+                } catch {
+                  // ignore JSON parse error
+                }
+              }
+              return {
+                id: row.id,
+                title: row.title,
+                slug: row.slug,
+                originalPrice: Number(row.original_price || 0),
+                discountPrice: Number(row.discount_price || 0),
+                imageUrl: row.image_url,
+                gallery: Array.isArray(row.gallery) ? row.gallery : [row.image_url],
+                description: row.description || '',
+                quickFormEnabled: Boolean(row.quick_form_enabled),
+                offerEnabled: extraLp.offerEnabled !== undefined ? Boolean(extraLp.offerEnabled) : true,
+                offerMinQty: Number(extraLp.offerMinQty || 2),
+                offerFreeShipping:
+                  extraLp.offerFreeShipping !== undefined ? Boolean(extraLp.offerFreeShipping) : true,
+                offerText: extraLp.offerText || 'اشترِ 2 واحصل على شحن مجاني',
+                createdAt: extraLp.date || row.created_at || '',
+              };
+            })
           : null,
 
       shippingRates:
@@ -250,26 +304,45 @@ export async function deleteOrderFromSupabase(orderId) {
 }
 
 /**
- * مزامنة إعدادات واجهة المتجر (CMS) وسقف الشحن المجاني مع جدول cms_settings في Supabase
+ * مزامنة إعدادات واجهة المتجر (CMS) والفئات مع جدول cms_settings في Supabase
  */
-export async function syncCmsToSupabase(cms, freeShippingThreshold = 8000) {
+export async function syncCmsToSupabase(cms, freeShippingThreshold = 0, categories = null) {
   notifyCrossTabSync('cms_settings', 'upsert');
   if (!supabaseClient || !cms) return;
   try {
+    const extraPayload = JSON.stringify({
+      __cms_ext_v2: true,
+      extraCms: {
+        footerFarewell: cms.footerFarewell || 'À bientôt sur ShoeStyle ♥ ♥',
+        phone: cms.phone || '',
+        location_ar: cms.location_ar || '',
+        location_fr: cms.location_fr || '',
+        instagramUrl: cms.instagramUrl || '',
+        facebookUrl: cms.facebookUrl || '',
+        tiktokUrl: cms.tiktokUrl || '',
+        whatsappNumber: cms.whatsappNumber || '',
+        fbPixelId: cms.fbPixelId || '',
+        tiktokPixelId: cms.tiktokPixelId || '',
+        snapPixelId: cms.snapPixelId || '',
+        googleTagId: cms.googleTagId || '',
+      },
+      categories: Array.isArray(categories) ? categories : undefined,
+    });
+
     await supabaseClient.from('cms_settings').upsert(
       {
         id: 1,
         store_name: cms.storeName || 'ShoeStyle',
         logo_url: cms.logoUrl,
-        announcement_text: cms.announcementText,
-        announcement_enabled: Boolean(cms.announcementEnabled),
+        announcement_text: extraPayload,
+        announcement_enabled: false,
         hero_title: cms.heroTitle,
         hero_subtitle: cms.heroSubtitle,
         hero_bg_url: cms.heroBgUrl,
         hero_btn_text: cms.heroBtnText,
         hero_btn_link: cms.heroBtnLink || 'Talons',
         features: Array.isArray(cms.features) ? cms.features : [],
-        free_shipping_threshold: Number(freeShippingThreshold ?? 8000),
+        free_shipping_threshold: Number(freeShippingThreshold ?? 0),
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'id' }
@@ -284,6 +357,15 @@ export async function syncLandingPageToSupabase(lp) {
   notifyCrossTabSync('landing_pages', 'upsert');
   if (!supabaseClient || !lp) return;
   try {
+    const encodedMeta = JSON.stringify({
+      __lp_ext_v2: true,
+      date: lp.createdAt || new Date().toISOString().slice(0, 10),
+      offerEnabled: lp.offerEnabled !== false,
+      offerMinQty: Number(lp.offerMinQty || 2),
+      offerFreeShipping: lp.offerFreeShipping !== false,
+      offerText: lp.offerText || 'اشترِ 2 واحصل على شحن مجاني',
+    });
+
     await supabaseClient.from('landing_pages').upsert(
       {
         id: lp.id,
@@ -295,7 +377,7 @@ export async function syncLandingPageToSupabase(lp) {
         gallery: Array.isArray(lp.gallery) ? lp.gallery : [lp.imageUrl],
         description: lp.description || '',
         quick_form_enabled: true,
-        created_at: lp.createdAt || new Date().toISOString().slice(0, 10),
+        created_at: encodedMeta,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'id' }
@@ -338,6 +420,28 @@ export async function deleteShippingRateFromSupabase(code) {
   try {
     await supabaseClient.from('shipping_rates').delete().eq('code', code);
   } catch {}
+}
+
+/**
+ * رفع ومزامنة كافة بيانات لوحة التحكم دفعة واحدة إلى Supabase
+ */
+export async function syncAllStateToSupabase(state) {
+  if (!supabaseClient || !state) return false;
+  try {
+    await syncCmsToSupabase(state.cms, 0, state.categories);
+    if (Array.isArray(state.inventory)) {
+      await Promise.all(state.inventory.map((p) => syncProductToSupabase(p)));
+    }
+    if (Array.isArray(state.landingPages)) {
+      await Promise.all(state.landingPages.map((lp) => syncLandingPageToSupabase(lp)));
+    }
+    if (Array.isArray(state.shipping?.rates)) {
+      await Promise.all(state.shipping.rates.map((r) => syncShippingRateToSupabase(r)));
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**

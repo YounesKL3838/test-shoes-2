@@ -283,6 +283,10 @@ function initScrollReveal() {
  * SVG Logo Escarpin Rose ShoeStyle
  */
 function renderHighHeelLogoSVG(sizeClass = 'w-9 h-9') {
+  const customLogo = adminState?.cms?.logoUrl;
+  if (customLogo && customLogo !== IMAGES.talons) {
+    return `<img src="${customLogo}" alt="${adminState?.cms?.storeName || 'ShoeStyle'}" referrerpolicy="no-referrer" class="${sizeClass} rounded-full object-cover shrink-0 border border-[#DE1B61]/20" />`;
+  }
   return `
     <svg class="${sizeClass} shrink-0 transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-105" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -298,6 +302,35 @@ function renderHighHeelLogoSVG(sizeClass = 'w-9 h-9') {
       />
     </svg>
   `;
+}
+
+function getActiveHeroSlide(index = 0) {
+  const baseSlide = HERO_SLIDES[index] || HERO_SLIDES[0];
+  if (index === 0 && adminState?.cms) {
+    const cms = adminState.cms;
+    const rawTitle = String(cms.heroTitle || '').trim();
+    const parts = rawTitle.split('·').map((s) => s.trim()).filter(Boolean);
+    const titleAr = parts[0] || baseSlide.titleHtml_ar;
+    const titleFr = parts[1] || parts[0] || baseSlide.titleHtml_fr;
+
+    const rawBtn = String(cms.heroBtnText || '').trim();
+    const btnParts = rawBtn.split('·').map((s) => s.trim()).filter(Boolean);
+    const ctaAr = btnParts[0] || baseSlide.ctaLabel_ar;
+    const ctaFr = btnParts[1] || btnParts[0] || baseSlide.ctaLabel_fr;
+
+    return {
+      ...baseSlide,
+      titleHtml_ar: titleAr,
+      titleHtml_fr: titleFr,
+      subtitle_ar: cms.heroSubtitle || baseSlide.subtitle_ar,
+      subtitle_fr: cms.heroSubtitle || baseSlide.subtitle_fr,
+      ctaLabel_ar: ctaAr,
+      ctaLabel_fr: ctaFr,
+      targetCategory: cms.heroBtnLink || baseSlide.targetCategory,
+      image: cms.heroBgUrl || baseSlide.image,
+    };
+  }
+  return baseSlide;
 }
 
 /**
@@ -694,7 +727,7 @@ function renderHeader() {
  */
 function renderHomeScreen() {
   const t = getT();
-  const slide = HERO_SLIDES[heroSlideIndex] || HERO_SLIDES[0];
+  const slide = getActiveHeroSlide(heroSlideIndex);
   const newArrivals = PRODUCTS.filter((p) => p.isNew).slice(0, 4);
   const bestSellers = PRODUCTS.filter((p) => p.isBestSeller).slice(0, 4);
   const specialOffers = PRODUCTS.filter((p) => p.isSpecialOffer).slice(0, 4);
@@ -3420,7 +3453,7 @@ function updateHeroSlide(nextIndex) {
     return;
   }
 
-  const slide = HERO_SLIDES[heroSlideIndex] || HERO_SLIDES[0];
+  const slide = getActiveHeroSlide(heroSlideIndex);
   const slideKicker = store.lang === 'ar' ? slide.kicker_ar : slide.kicker_fr;
   const slideTitle = store.lang === 'ar' ? slide.titleHtml_ar : slide.titleHtml_fr;
   const slideSubtitle = store.lang === 'ar' ? slide.subtitle_ar : slide.subtitle_fr;
@@ -4516,22 +4549,8 @@ function checkUrlForLandingPage() {
     }
 
     if (lpParam) {
-      const lpList = adminState?.landingPages || [];
-      const matched = lpList.find(
-        (item) =>
-          item.id === lpParam ||
-          item.slug === lpParam ||
-          item.slug === `/offer/${lpParam}` ||
-          item.slug.replace('/offer/', '') === lpParam
-      );
-      if (matched) {
-        store.activeLandingId = matched.id;
-        store.lpSelectedBundle = 1;
-        store.lpDeliveryType = 'home';
-        store.lpGalleryIndex = 0;
-        store.currentScreen = 'landing';
-        return;
-      }
+      window.location.replace(`./landing.html?id=${encodeURIComponent(lpParam)}`);
+      return;
     }
 
     if (catParam) {
