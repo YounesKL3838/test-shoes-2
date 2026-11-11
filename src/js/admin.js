@@ -4841,28 +4841,28 @@ export function setupAdminEvents() {
         ? df.variants.filter((v) => v && v.active !== false)
         : [];
 
-      // إذا لم يضغط المستخدم على زر "توليد المقاسات لهذا اللون" بعد، نولّدها تلقائياً من المدخلات الحالية
       if (activeVariants.length === 0) {
-        for (let sz = sFrom; sz <= sTo; sz++) {
-          activeVariants.push({
-            size: sz,
-            colorName,
-            colorHex,
-            quantity: defaultSizeStock,
-            active: true,
-          });
-        }
+        activeVariants.push({
+          size: '',
+          colorName,
+          colorHex,
+          quantity: defaultSizeStock,
+          active: true,
+        });
       }
 
       const sizeStock = {};
       const sizesSet = new Set();
       const colorsSet = new Set();
+      const colorHexes = {};
 
       activeVariants.forEach((v) => {
         const rawSz = v.size !== undefined && v.size !== null ? String(v.size).trim() : '';
         const qty = Math.max(0, Number(v.quantity ?? defaultSizeStock));
         const cName = String(v.colorName || colorName).trim() || 'Beige';
         const cHex = String(v.colorHex || colorHex).trim() || '#D2B48C';
+
+        colorHexes[cName] = cHex;
 
         if (rawSz !== '') {
           const numSz = Number(rawSz);
@@ -4875,15 +4875,11 @@ export function setupAdminEvents() {
 
         colorsSet.add(cName);
 
-        if (!COLOR_SWATCHES[cName]) {
-          COLOR_SWATCHES[cName] = {
-            hex: cHex,
-            label_ar: cName,
-            label_fr: cName,
-          };
-        } else {
-          COLOR_SWATCHES[cName].hex = cHex;
-        }
+        COLOR_SWATCHES[cName] = {
+          hex: cHex,
+          label_ar: cName,
+          label_fr: cName,
+        };
       });
 
       const sizes = Array.from(sizesSet);
@@ -4925,12 +4921,13 @@ export function setupAdminEvents() {
         offerFreeShipping,
         offerText,
         colorName: colors[0] || colorName,
-        colorHex,
+        colorHex: colorHexes[colors[0]] || colorHex,
+        colorHexes,
         colors: colors.length > 0 ? colors : [colorName],
-        sizeFrom: sizes[0] || sFrom,
-        sizeTo: sizes[sizes.length - 1] || sTo,
+        sizeFrom: sizes.length > 0 ? sizes[0] : null,
+        sizeTo: sizes.length > 0 ? sizes[sizes.length - 1] : null,
         defaultSizeStock,
-        sizes: sizes.length > 0 ? sizes : [36, 37, 38, 39, 40, 41],
+        sizes: sizes,
         sizeStock,
         variants: Array.isArray(df.variants) && df.variants.length > 0 ? df.variants : activeVariants,
         stock: totalStock,

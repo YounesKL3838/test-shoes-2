@@ -174,7 +174,7 @@ export const store = {
       this.activeProductId = prod ? prod.id : options.productId;
       if (prod) {
         const defaultColor = prod.colors[0] || 'Rose';
-        const defaultSize = prod.sizes.includes(37) ? 37 : prod.sizes[0];
+        const defaultSize = Array.isArray(prod.sizes) && prod.sizes.length > 0 ? (prod.sizes.includes(37) ? 37 : prod.sizes[0]) : '';
         this.pdpSelectedColor = defaultColor;
         this.pdpSelectedSize = defaultSize;
         this.pdpGalleryIndex = 0;
@@ -247,7 +247,7 @@ export const store = {
     const product = PRODUCTS.find((p) => p.id === productId);
     if (!product) return null;
 
-    const chosenSize = Number(size || (product.sizes.includes(37) ? 37 : product.sizes[0]));
+    const chosenSize = size || (Array.isArray(product.sizes) && product.sizes.length > 0 ? (product.sizes.includes(37) ? 37 : product.sizes[0]) : '');
     const chosenColor = color || product.colors[0];
 
     const existing = this.cart.find(

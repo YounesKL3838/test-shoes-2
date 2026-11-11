@@ -129,7 +129,7 @@ export async function fetchAllFromSupabase() {
               sizeFrom: Number(row.size_from || 36),
               sizeTo: Number(row.size_to || 41),
               defaultSizeStock: Number(row.default_size_stock ?? 5),
-              sizes: Array.isArray(row.sizes) ? row.sizes : [36, 37, 38, 39, 40, 41],
+              sizes: Array.isArray(row.sizes) ? row.sizes : [],
               sizeStock:
                 row.size_stock && typeof row.size_stock === 'object'
                   ? row.size_stock
@@ -242,7 +242,7 @@ export async function syncProductToSupabase(prod) {
         size_from: Number(prod.sizeFrom || 36),
         size_to: Number(prod.sizeTo || 41),
         default_size_stock: Number(prod.defaultSizeStock ?? 5),
-        sizes: Array.isArray(prod.sizes) ? prod.sizes : [36, 37, 38, 39, 40, 41],
+        sizes: Array.isArray(prod.sizes) ? prod.sizes : [],
         size_stock: prod.sizeStock || {},
         stock: Number(prod.stock ?? 0),
         image: prod.image,

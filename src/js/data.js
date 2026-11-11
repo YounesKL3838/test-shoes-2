@@ -67,6 +67,16 @@ export const COLOR_SWATCHES = {
   Beige: { hex: '#C8A27E', label_fr: 'Beige', label_ar: 'بيج' },
   Blanc: { hex: '#F8F6F4', label_fr: 'Blanc', label_ar: 'أبيض' },
   Rouge: { hex: '#B91C2E', label_fr: 'Rouge', label_ar: 'أحمر' },
+  'وردي': { hex: '#F38BA8', label_fr: 'Rose', label_ar: 'وردي' },
+  'أسود': { hex: '#1A1A1E', label_fr: 'Noir', label_ar: 'أسود' },
+  'بيج': { hex: '#C8A27E', label_fr: 'Beige', label_ar: 'بيج' },
+  'أبيض': { hex: '#F8F6F4', label_fr: 'Blanc', label_ar: 'أبيض' },
+  'أحمر': { hex: '#B91C2E', label_fr: 'Rouge', label_ar: 'أحمر' },
+  'رمادي': { hex: '#808080', label_fr: 'Gris', label_ar: 'رمادي' },
+  'ذهبي': { hex: '#D4AF37', label_fr: 'Doré', label_ar: 'ذهبي' },
+  'بني': { hex: '#8B4513', label_fr: 'Marron', label_ar: 'بني' },
+  'عنابي': { hex: '#800020', label_fr: 'Bordeaux', label_ar: 'عنابي' },
+  'كحلي': { hex: '#000080', label_fr: 'Bleu Nuit', label_ar: 'كحلي' },
 };
 
 export function getProductColorHex(product, colorName) {
@@ -81,7 +91,12 @@ export function getProductColorHex(product, colorName) {
     if (match && match.colorHex) return match.colorHex;
   }
 
-  // 2. If product has colorHex property
+  // 2. Check if product has colorHexes map
+  if (product && product.colorHexes && product.colorHexes[colorName]) {
+    return product.colorHexes[colorName];
+  }
+
+  // 3. If product has colorHex property
   if (
     product &&
     product.colorHex &&
@@ -94,14 +109,36 @@ export function getProductColorHex(product, colorName) {
     return product.colorHex;
   }
 
-  // 3. If colorName itself is a valid hex string
+  // 4. If colorName itself is a valid hex string
   if (typeof colorName === 'string' && colorName.startsWith('#')) {
     return colorName;
   }
 
-  // 4. Check global COLOR_SWATCHES
+  // 5. Check global COLOR_SWATCHES
   if (COLOR_SWATCHES[colorName] && COLOR_SWATCHES[colorName].hex) {
     return COLOR_SWATCHES[colorName].hex;
+  }
+
+  // 6. Check common Arabic color names
+  const arabicColors = {
+    'وردي': '#F38BA8',
+    'أسود': '#1A1A1E',
+    'بيج': '#C8A27E',
+    'أبيض': '#F8F6F4',
+    'أحمر': '#B91C2E',
+    'رمادي': '#808080',
+    'ذهبي': '#D4AF37',
+    'بني': '#8B4513',
+    'أزرق': '#2563EB',
+    'أخضر': '#16A34A',
+    'عنابي': '#800020',
+    'كحلي': '#000080',
+    'فضائي': '#C0C0C0',
+    'مارون': '#800000',
+    'برتقالي': '#F97316',
+  };
+  if (arabicColors[colorName]) {
+    return arabicColors[colorName];
   }
 
   return '#D2B48C';
