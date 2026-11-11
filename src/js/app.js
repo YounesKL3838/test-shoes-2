@@ -1207,7 +1207,7 @@ function renderStoreFooter() {
 
         <div class="mt-6 pt-4 border-t border-[#DE1B61]/15 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#71717A]">
           <p class="font-script text-2xl text-[#18181B]">
-            ${t.footer.bye} <span class="text-[#DE1B61] inline-block animate-float-soft">♥</span>
+            ${adminState?.cms?.footerFarewell || `${t.footer.bye} <span class="text-[#DE1B61] inline-block animate-float-soft">♥</span>`}
           </p>
           <p>${t.footer.legal}</p>
         </div>
@@ -1531,38 +1531,51 @@ function renderCleanLandingPageUI() {
     : store.lpSelectedColor;
 
   return `
-    <div class="min-h-screen bg-[#FAF8F9] pb-12 animate-screen-enter">
-      <div class="max-w-4xl mx-auto px-3 sm:px-6 pt-3 sm:pt-5">
-        <!-- شريط علوي هادئ وبسيط للعودة للمتجر -->
-        <div class="flex items-center justify-between mb-3 sm:mb-4">
+    <div class="min-h-screen bg-[#FAF8F9] pb-16 animate-screen-enter">
+      <div class="max-w-6xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-6">
+        <!-- الشريط العلوي للتنقل والمشاركة -->
+        <div class="flex items-center justify-between mb-4 sm:mb-6">
           <button
             type="button"
             data-action="go-back"
-            class="px-3.5 py-1.5 rounded-xl bg-white border border-[#E4E4E7] hover:border-[#D4D4D8] text-[#27272A] text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+            class="px-3.5 py-1.5 rounded-xl bg-white border border-[#E4E4E7] hover:border-[#D4D4D8] text-[#27272A] text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
           >
-            <span>${isAr ? '→ العودة للمتجر' : '← Retour à la boutique'}</span>
+            <span>${isAr ? '→ الرجوع للمتجر' : '← Retour à la boutique'}</span>
           </button>
+
+          <div class="flex items-center gap-2">
+            <span class="font-['Dancing_Script',cursive] text-2xl font-bold text-[#DE1B61]">
+              ${adminState?.cms?.storeName || 'ShoeStyle'}
+            </span>
+          </div>
 
           <button
             type="button"
             data-action="share-product"
-            class="px-3 py-1.5 rounded-xl bg-white border border-[#E4E4E7] hover:border-[#D4D4D8] text-[#52525B] text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+            class="px-3 py-1.5 rounded-xl bg-white border border-[#E4E4E7] hover:border-[#D4D4D8] text-[#52525B] text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
           >
-            <span>${isAr ? 'مشاركة الرابط' : 'Partager'}</span>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            <span>${isAr ? 'مشاركة' : 'Partager'}</span>
           </button>
         </div>
 
-        <!-- الشبكة الرئيسية المريحة للعين: (1) المنتج وصوره + (2) الكمية ومعلومات الزبون فقط -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 items-start">
+        <!-- الشبكة الرئيسية: المعرض المتناسق على اليسار + تفاصيل المنتج واستمارة الزبون على اليمين -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
           
-          <!-- القسم الأول: المنتج مع صوره -->
-          <div class="md:col-span-6 bg-white rounded-2xl border border-[#EAE6E8] p-3 sm:p-4 shadow-2xs">
+          <!-- العمود الأيسر: معرض الصور المتجاوب بنفس تصميم صفحة المنتج PDP -->
+          <div class="lg:col-span-7 bg-white rounded-3xl border border-[#EAE6E8] p-3 sm:p-5 shadow-2xs space-y-4">
             <div
               id="lp-gallery-swipe-box"
               data-swipe-gallery="lp"
               data-active-index="${activeIdx}"
               data-total-slides="${gallery.length}"
-              class="ss-insta-gallery-box rounded-xl bg-[#F7F5F6]"
+              class="ss-insta-gallery-box rounded-2xl bg-[#F7F5F6] overflow-hidden"
             >
               <div
                 class="ss-insta-track"
@@ -1595,7 +1608,7 @@ function renderCleanLandingPageUI() {
                   type="button"
                   data-action="gallery-step"
                   data-dir="-1"
-                  class="hidden md:flex absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#18181B] shadow-xs items-center justify-center text-base font-bold cursor-pointer"
+                  class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-[#18181B] shadow-md items-center justify-center text-lg font-bold cursor-pointer transition-transform hover:scale-105"
                   aria-label="Previous photo"
                 >
                   ‹
@@ -1604,7 +1617,7 @@ function renderCleanLandingPageUI() {
                   type="button"
                   data-action="gallery-step"
                   data-dir="1"
-                  class="hidden md:flex absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#18181B] shadow-xs items-center justify-center text-base font-bold cursor-pointer"
+                  class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-[#18181B] shadow-md items-center justify-center text-lg font-bold cursor-pointer transition-transform hover:scale-105"
                   aria-label="Next photo"
                 >
                   ›
@@ -1612,7 +1625,7 @@ function renderCleanLandingPageUI() {
                 <span
                   data-gallery-counter
                   dir="ltr"
-                  class="absolute bottom-2.5 end-2.5 z-10 px-2.5 py-0.5 rounded-full bg-black/45 backdrop-blur-xs text-white text-[11px] font-semibold tabular-nums pointer-events-none"
+                  class="absolute bottom-3 end-3 z-10 px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-xs text-white text-xs font-semibold tabular-nums pointer-events-none"
                 >
                   ${activeIdx + 1}/${gallery.length}
                 </span>
@@ -1621,9 +1634,10 @@ function renderCleanLandingPageUI() {
               }
             </div>
 
+            <!-- الصور المصغرة المجمعة في المنتصف بحجم صغير أنيق -->
             ${
               gallery.length > 1
-                ? `<div class="mt-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                ? `<div class="mt-3 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-1">
                     ${gallery
                       .map(
                         (imgUrl, idx) => `
@@ -1631,9 +1645,9 @@ function renderCleanLandingPageUI() {
                           type="button"
                           data-action="lp-select-thumb"
                           data-index="${idx}"
-                          class="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                          class="relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
                             activeIdx === idx
-                              ? 'border-[#DE1B61] scale-105'
+                              ? 'border-[#DE1B61] scale-105 shadow-xs'
                               : 'border-transparent opacity-70 hover:opacity-100'
                           }"
                         >
@@ -1646,20 +1660,52 @@ function renderCleanLandingPageUI() {
                 : ''
             }
 
-            <!-- اسم المنتج والسعر والوصف المختصر بهدوء ووضوح -->
-            <div class="mt-3.5 pt-3 border-t border-[#F1EEF0]">
-              <h1 class="text-base sm:text-xl font-bold text-[#18181B] leading-snug">
+            <!-- شارات الثقة والضمان تحت المعرض -->
+            <div class="mt-4 pt-4 border-t border-[#F1EEF0] grid grid-cols-3 gap-2 text-center text-[11px] sm:text-xs text-[#52525B]">
+              <div class="p-2.5 rounded-xl bg-[#FAF8F9] border border-[#F1EEF0]">
+                <span class="block font-bold text-[#18181B] mb-0.5">${isAr ? 'توصيل 58 ولاية' : '58 Wilayas'}</span>
+                <span>${isAr ? 'سريع ومضمون' : 'Livraison express'}</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-[#FAF8F9] border border-[#F1EEF0]">
+                <span class="block font-bold text-[#18181B] mb-0.5">${isAr ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}</span>
+                <span>${isAr ? 'بعد معاينة المنتج' : 'Après inspection'}</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-[#FAF8F9] border border-[#F1EEF0]">
+                <span class="block font-bold text-[#18181B] mb-0.5">${isAr ? 'تبديل القياس' : 'Échange garanti'}</span>
+                <span>${isAr ? 'خلال 48 ساعة' : 'Sous 48 heures'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- العمود الأيمن: عنوان المنتج وسعره واستمارة الزبون السريعة -->
+          <div id="lp-order-form-anchor" class="lg:col-span-5 bg-white rounded-3xl border border-[#EAE6E8] p-4 sm:p-6 shadow-2xs space-y-4">
+            
+            <!-- معلومات المنتج والسعر العريض -->
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="text-xs font-bold tracking-wider uppercase text-[#DE1B61]">
+                  ${cfg.category || 'ShoeStyle Exclusive'}
+                </span>
+                <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                  ${isAr ? 'عرض حصري متوفر' : 'Offre exclusive'}
+                </span>
+              </div>
+
+              <h1 class="text-xl sm:text-2xl font-black text-[#18181B] leading-snug">
                 ${cfg.title}
               </h1>
 
-              <div class="mt-2 flex items-baseline gap-2.5 tabular-nums">
-                <span class="text-xl sm:text-2xl font-extrabold text-[#D81B60]">
+              <div class="mt-2.5 flex items-baseline gap-3 tabular-nums">
+                <span class="text-2xl sm:text-3xl font-black text-[#DE1B61]">
                   ${formatDA(pricing.unitPrice, store.lang)}
                 </span>
                 ${
                   pricing.origUnitPrice > pricing.unitPrice
-                    ? `<span class="text-xs sm:text-sm text-[#71717A] line-through">
+                    ? `<span class="text-sm sm:text-base text-[#8E8E93] line-through">
                         ${formatDA(pricing.origUnitPrice, store.lang)}
+                      </span>
+                      <span class="px-2 py-0.5 rounded-full bg-[#DE1B61] text-white text-xs font-bold">
+                        -${Math.round((1 - pricing.unitPrice / pricing.origUnitPrice) * 100)}%
                       </span>`
                     : ''
                 }
@@ -1667,27 +1713,23 @@ function renderCleanLandingPageUI() {
 
               ${
                 cfg.description
-                  ? `<p class="mt-2 text-xs sm:text-sm text-[#52525B] leading-relaxed">
+                  ? `<p class="mt-2.5 text-xs sm:text-sm text-[#52525B] leading-relaxed">
                       ${cfg.description}
                     </p>`
                   : ''
               }
             </div>
-          </div>
 
-          <!-- القسم الثاني: المقاس والكمية والعرض الاختياري ومعلومات الزبون فقط -->
-          <div id="lp-order-form-anchor" class="md:col-span-6 bg-white rounded-2xl border border-[#EAE6E8] p-4 sm:p-5 shadow-2xs">
-            <h2 class="text-base sm:text-lg font-bold text-[#18181B] pb-3 border-b border-[#F1EEF0]">
-              ${isAr ? 'معلومات الطلب والزبون' : 'Détails de la commande'}
-            </h2>
+            <hr class="border-[#F1EEF0]" />
 
-            <form id="storefront-lp-order-form" data-lp-id="${cfg.id}" class="mt-3.5 space-y-4">
+            <!-- استمارة الزبون والطلب المباشر -->
+            <form id="storefront-lp-order-form" data-lp-id="${cfg.id}" class="space-y-4">
               
               <!-- 1. المقاس واللون -->
               <div class="space-y-3">
                 <div>
                   <label class="block text-xs font-bold text-[#3F3F46] mb-1.5">
-                    ${isAr ? 'المقاس:' : 'Pointure :'} <strong id="lp-selected-size-label" class="text-[#D81B60]">${store.lpSelectedSize}</strong>
+                    ${isAr ? 'المقاس:' : 'Pointure :'} <strong id="lp-selected-size-label" class="text-[#DE1B61] font-extrabold">${store.lpSelectedSize}</strong>
                   </label>
                   <div class="grid grid-cols-6 gap-1.5 tabular-nums">
                     ${availableSizes
@@ -1700,7 +1742,7 @@ function renderCleanLandingPageUI() {
                             data-size="${sz}"
                             class="py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                               active
-                                ? 'border-2 border-[#D81B60] bg-[#FDF2F6] text-[#D81B60]'
+                                ? 'border-2 border-[#DE1B61] bg-[#FDF2F6] text-[#DE1B61]'
                                 : 'border-[#E4E4E7] bg-white text-[#27272A] hover:border-[#D4D4D8]'
                             }"
                           >
@@ -1782,7 +1824,7 @@ function renderCleanLandingPageUI() {
                     class="w-full p-3 rounded-xl border text-start flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
                       pricing.isOfferApplied
                         ? 'border-2 border-[#10B981] bg-[#ECFDF5]/60 text-[#065F46]'
-                        : 'border-[#E4E4E7] bg-[#FAF8F9] hover:border-[#D81B60]/40 text-[#27272A]'
+                        : 'border-[#E4E4E7] bg-[#FAF8F9] hover:border-[#DE1B61]/40 text-[#27272A]'
                     }"
                   >
                     <div class="flex items-center gap-2.5 min-w-0">
@@ -1808,7 +1850,7 @@ function renderCleanLandingPageUI() {
                       class="px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 ${
                         pricing.isOfferApplied
                           ? 'bg-[#10B981] text-white'
-                          : 'bg-white border border-[#E4E4E7] text-[#D81B60]'
+                          : 'bg-white border border-[#E4E4E7] text-[#DE1B61]'
                       }"
                     >
                       ${
@@ -1831,7 +1873,7 @@ function renderCleanLandingPageUI() {
               <div class="pt-3 border-t border-[#F1EEF0] space-y-3">
                 <div>
                   <label class="block text-xs font-semibold text-[#3F3F46] mb-1">
-                    ${isAr ? 'الاسم واللقب' : 'Nom et Prénom'} <span class="text-[#D81B60]">*</span>
+                    ${isAr ? 'الاسم واللقب' : 'Nom et Prénom'} <span class="text-[#DE1B61]">*</span>
                   </label>
                   <input
                     name="fullName"
@@ -1839,13 +1881,13 @@ function renderCleanLandingPageUI() {
                     required
                     autocomplete="name"
                     placeholder="${isAr ? 'أدخلي الاسم الكامل' : 'Votre nom complet'}"
-                    class="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-medium text-[#18181B] focus:border-[#D81B60] focus:bg-white focus:outline-none transition-colors"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-medium text-[#18181B] focus:border-[#DE1B61] focus:bg-white focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div>
                   <label class="block text-xs font-semibold text-[#3F3F46] mb-1">
-                    ${isAr ? 'رقم الهاتف' : 'Numéro de téléphone'} <span class="text-[#D81B60]">*</span>
+                    ${isAr ? 'رقم الهاتف' : 'Numéro de téléphone'} <span class="text-[#DE1B61]">*</span>
                   </label>
                   <input
                     name="phone"
@@ -1855,20 +1897,20 @@ function renderCleanLandingPageUI() {
                     autocomplete="tel"
                     dir="ltr"
                     placeholder="0550 00 00 00"
-                    class="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-semibold text-[#18181B] tabular-nums focus:border-[#D81B60] focus:bg-white focus:outline-none transition-colors"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-semibold text-[#18181B] tabular-nums focus:border-[#DE1B61] focus:bg-white focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
                     <label class="block text-xs font-semibold text-[#3F3F46] mb-1">
-                      ${isAr ? 'الولاية' : 'Wilaya'} <span class="text-[#D81B60]">*</span>
+                      ${isAr ? 'الولاية' : 'Wilaya'} <span class="text-[#DE1B61]">*</span>
                     </label>
                     <select
                       id="lp-wilaya-select"
                       name="wilayaCode"
                       required
-                      class="w-full px-3 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-semibold text-[#18181B] focus:border-[#D81B60] focus:bg-white focus:outline-none transition-colors"
+                      class="w-full px-3 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-semibold text-[#18181B] focus:border-[#DE1B61] focus:bg-white focus:outline-none transition-colors"
                     >
                       ${pricing.rates
                         .map((w) => {
@@ -1883,7 +1925,7 @@ function renderCleanLandingPageUI() {
 
                   <div>
                     <label class="block text-xs font-semibold text-[#3F3F46] mb-1">
-                      ${isAr ? 'البلدية / العنوان' : 'Commune / Adresse'} <span class="text-[#D81B60]">*</span>
+                      ${isAr ? 'البلدية / العنوان' : 'Commune / Adresse'} <span class="text-[#DE1B61]">*</span>
                     </label>
                     <input
                       id="lp-address-input"
@@ -1899,7 +1941,7 @@ function renderCleanLandingPageUI() {
                           ? 'اسم البلدية أو الحي'
                           : 'Commune ou quartier'
                       }"
-                      class="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-medium text-[#18181B] focus:border-[#D81B60] focus:bg-white focus:outline-none transition-colors"
+                      class="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F9] border border-[#E4E4E7] text-sm font-medium text-[#18181B] focus:border-[#DE1B61] focus:bg-white focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -1916,12 +1958,12 @@ function renderCleanLandingPageUI() {
                       data-delivery="home"
                       class="p-2.5 rounded-xl border text-xs font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
                         store.lpDeliveryType === 'home'
-                          ? 'border-2 border-[#D81B60] bg-[#FDF2F6]/60 text-[#18181B]'
+                          ? 'border-2 border-[#DE1B61] bg-[#FDF2F6]/60 text-[#18181B]'
                           : 'border-[#E4E4E7] bg-[#FAF8F9] text-[#52525B]'
                       }"
                     >
                       <span>${isAr ? 'التوصيل للمنزل' : 'À Domicile'}</span>
-                      <strong id="lp-home-fee-label" class="text-[#D81B60]">
+                      <strong id="lp-home-fee-label" class="text-[#DE1B61]">
                         ${
                           pricing.isFreeShipping
                             ? isAr
@@ -1938,12 +1980,12 @@ function renderCleanLandingPageUI() {
                       data-delivery="desk"
                       class="p-2.5 rounded-xl border text-xs font-bold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 transition-all cursor-pointer ${
                         store.lpDeliveryType === 'desk'
-                          ? 'border-2 border-[#D81B60] bg-[#FDF2F6]/60 text-[#18181B]'
+                          ? 'border-2 border-[#DE1B61] bg-[#FDF2F6]/60 text-[#18181B]'
                           : 'border-[#E4E4E7] bg-[#FAF8F9] text-[#52525B]'
                       }"
                     >
                       <span>${isAr ? 'مكتب التوصيل' : 'Stop-Desk'}</span>
-                      <strong id="lp-desk-fee-label" class="text-[#D81B60]">
+                      <strong id="lp-desk-fee-label" class="text-[#DE1B61]">
                         ${
                           pricing.isFreeShipping
                             ? isAr
@@ -1987,16 +2029,16 @@ function renderCleanLandingPageUI() {
                   <span class="text-xs sm:text-sm font-bold text-[#18181B]">
                     ${isAr ? 'المبلغ الإجمالي:' : 'Total à payer :'}
                   </span>
-                  <strong id="lp-summary-total" class="text-base sm:text-lg font-extrabold text-[#D81B60]">
+                  <strong id="lp-summary-total" class="text-base sm:text-lg font-extrabold text-[#DE1B61]">
                     ${formatDA(pricing.total, store.lang)}
                   </strong>
                 </div>
               </div>
 
-              <!-- 5. زر تأكيد الطلب -->
+              <!-- 5. زر تأكيد الطلب الفوري -->
               <button
                 type="submit"
-                class="w-full py-3.5 px-5 rounded-xl bg-[#D81B60] hover:bg-[#BE123C] text-white text-sm sm:text-base font-bold flex items-center justify-center shadow-xs active:scale-99 transition-all cursor-pointer"
+                class="w-full py-4 px-6 rounded-2xl bg-[#DE1B61] hover:bg-[#C2185B] text-white text-base font-bold flex items-center justify-center shadow-lg shadow-[#DE1B61]/25 hover:shadow-[#DE1B61]/35 active:scale-99 transition-all cursor-pointer"
               >
                 <span id="lp-submit-btn-label">${
                   isAr
@@ -2004,6 +2046,10 @@ function renderCleanLandingPageUI() {
                     : `Confirmer la commande — ${formatDA(pricing.total, 'fr')}`
                 }</span>
               </button>
+
+              <p class="text-[11px] text-center text-[#71717A] pt-1">
+                ${isAr ? '🔒 الدفع عند الاستلام بعد معاينة طلبيتك' : '🔒 Paiement à la livraison après vérification'}
+              </p>
             </form>
           </div>
         </div>
@@ -2893,10 +2939,9 @@ function renderConfirmationScreen() {
         <span>${t.confirmation.backHomeBtn}</span>
       </button>
 
-      <!-- Signature finale : À bientôt sur ShoeStyle ♥ -->
       <div class="mt-7 pt-4 border-t border-[#DE1B61]/15 animate-stagger-item" style="--i: 6;">
         <p class="font-script text-2xl text-[#18181B]">
-          — ${t.confirmation.byeCatch} <span class="font-bold">ShoeStyle</span> <span class="text-[#DE1B61]">♥</span> —
+          — ${adminState?.cms?.footerFarewell || `${t.confirmation.byeCatch} <span class="font-bold">ShoeStyle</span> <span class="text-[#DE1B61]">♥</span>`} —
         </p>
       </div>
     </div>
@@ -3512,10 +3557,10 @@ function setGallerySlideIndex(galleryBox, targetIndex) {
       const tIdx = Number(thumb.getAttribute('data-index'));
       if (tIdx === normalized) {
         thumb.className =
-          'relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all border-[#DE1B61] scale-105';
+          'relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-[#DE1B61] scale-105 shadow-xs';
       } else {
         thumb.className =
-          'relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all border-transparent opacity-70';
+          'relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-transparent opacity-70 hover:opacity-100';
       }
     });
   }

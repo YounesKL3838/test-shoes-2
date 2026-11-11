@@ -437,13 +437,16 @@ img {
   width: 68px;
   height: 68px;
   border-radius: 9999px;
-  background: radial-gradient(circle at 50% 40%, #FFFFFF 0%, #F5E6EA 100%);
-  border: 2px solid #FFFFFF;
-  box-shadow: 0 4px 14px rgba(222, 27, 97, 0.1);
+  background: #ffffff;
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  isolation: isolate;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
   transition:
     transform 260ms var(--ease-spring),
     border-color 200ms ease,
@@ -466,6 +469,8 @@ img {
 
 .ss-category-btn {
   padding: 4px 2px;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ss-category-btn:hover .ss-category-circle,
@@ -473,7 +478,7 @@ img {
 .ss-category-btn:focus-visible .ss-category-circle {
   transform: translateY(-2px) scale(1.03);
   border-color: var(--pink-primary);
-  box-shadow: 0 8px 18px rgba(222, 27, 97, 0.22);
+  box-shadow: 0 4px 12px rgba(222, 27, 97, 0.2);
 }
 
 .ss-category-circle img {

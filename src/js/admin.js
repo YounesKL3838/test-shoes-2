@@ -502,6 +502,7 @@ const DEFAULT_CMS = {
   logoUrl: IMAGES.talons,
   announcementText: '',
   announcementEnabled: false,
+  footerFarewell: 'À bientôt sur ShoeStyle ♥ ♥',
   heroTitle: 'أناقة في كل خطوة · Élégance à chaque pas',
   heroSubtitle:
     'اكتشفي أحدث تشكيلة من الأحذية النسائية الفاخرة، الكعب الوردي اللامع، والسنيكرز العصرية.',
@@ -845,6 +846,7 @@ function generateProductFromBrief(rawBrief = '') {
 
 export const adminState = {
   activeTab: 'inventory', // 'inventory' | 'orders' | 'cms' | 'landing' | 'shipping'
+  isSidebarOpen: true,
   editingLandingId: null,
   editingProductId: null,
   editingCategoryId: null,
@@ -1208,68 +1210,69 @@ export function renderAdminDashboard() {
       id: 'orders',
       label: tr.tabs.orders,
       shortLabel: tr.tabs.ordersShort,
-      badge: adminState.orders.length,
+      badge: newOrdersCount > 0 ? `${newOrdersCount}` : adminState.orders.length,
+      icon: `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`,
     },
     {
       id: 'cms',
       label: tr.tabs.cms,
       shortLabel: tr.tabs.cmsShort,
       badge: 'CMS',
+      icon: `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>`,
     },
     {
       id: 'landing',
       label: tr.tabs.landing,
       shortLabel: tr.tabs.landingShort,
       badge: adminState.landingPages.length,
+      icon: `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`,
     },
     {
       id: 'shipping',
       label: tr.tabs.shipping,
       shortLabel: tr.tabs.shippingShort,
       badge: adminState.shipping.rates.length,
+      icon: `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>`,
     },
   ];
 
+  // أضف أيقونة المخزون للتبويب الأول
+  tabs[0].icon = `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`;
+
   root.innerHTML = `
     <div class="adm-shell" dir="${dir}" lang="${lang}">
-      <!-- 1. الهيدر العلوي بنفس الهوية البصرية لـ ShoeStyle مع زر تبديل اللغة (العربية / Français) -->
-      <header class="adm-header">
-        <div class="adm-header-inner">
+      <!-- خلفية حجب لإغلاق الشريط الجانبي عند الضغط خارجه -->
+      <div id="adm-sidebar-overlay" class="adm-sidebar-overlay ${adminState.isSidebarOpen ? 'open' : ''}" data-adm-action="close-admin-sidebar"></div>
+
+      <!-- الشريط الجانبي القابل للفتح والإغلاق الذي يضم جميع نوافذ لوحة التحكم -->
+      <aside id="adm-sidebar" class="adm-sidebar ${adminState.isSidebarOpen ? 'open' : 'collapsed'}">
+        <div class="adm-sidebar-header">
           <div class="adm-brand-lockup">
             ${renderShoeStyleHeelSVG()}
-            <div>
+            <div class="min-w-0">
               <span class="adm-brand-script">${adminState.cms.storeName}</span>
-              <span class="adm-brand-tag">${tr.brandSubtitle}</span>
+              <span class="adm-sidebar-subtitle">${lang === 'fr' ? 'Panneau de gestion' : 'لوحة التحكم والإدارة'}</span>
             </div>
           </div>
-
-          <div class="adm-header-actions">
-            <button
-              type="button"
-              data-adm-action="toggle-admin-lang"
-              class="adm-btn adm-btn-soft adm-btn-sm"
-            >
-              <span>${tr.switchLangBtn}</span>
-            </button>
-            <button
-              type="button"
-              data-adm-action="close-admin"
-              class="adm-btn adm-btn-pink adm-btn-sm"
-            >
-              <span>${tr.viewStore}</span>
-            </button>
-            <button
-              type="button"
-              data-adm-action="logout-admin"
-              class="adm-btn adm-btn-outline adm-btn-sm"
-            >
-              <span>${tr.logout}</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            data-adm-action="close-admin-sidebar"
+            class="adm-sidebar-close-btn"
+            title="${lang === 'fr' ? 'Fermer le menu' : 'إغلاق القائمة'}"
+            aria-label="Close sidebar"
+          >
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
 
-        <!-- شريط التبويبات السلس -->
-        <nav class="adm-desktop-tabs">
+        <div class="adm-sidebar-section-title">
+          <span>${lang === 'fr' ? 'Niveaux & Fenêtres' : 'نوافذ الإدارة'}</span>
+        </div>
+
+        <nav class="adm-sidebar-nav">
           ${tabs
             .map(
               (tab) => `
@@ -1277,86 +1280,151 @@ export function renderAdminDashboard() {
                 type="button"
                 data-adm-action="switch-tab"
                 data-tab="${tab.id}"
-                class="adm-tab-pill ${adminState.activeTab === tab.id ? 'active' : ''}"
+                class="adm-sidebar-item ${adminState.activeTab === tab.id ? 'active' : ''}"
               >
-                <span>${tab.label}</span>
-                <span class="adm-tab-pill-badge">${tab.badge}</span>
+                <span class="adm-sidebar-item-icon">${tab.icon}</span>
+                <span class="adm-sidebar-item-label">${tab.label}</span>
+                <span class="adm-sidebar-item-badge">${tab.badge}</span>
               </button>
             `
             )
             .join('')}
         </nav>
-      </header>
 
-      <!-- 2. المحتوى الرئيسي المبسط والمناسب للهاتف -->
-      <main class="adm-container">
-        <!-- ملخص سريع (KPIs) -->
-        <section class="adm-kpi-strip">
-          <div class="adm-kpi-box">
-            <span class="adm-kpi-title">${tr.kpi.totalSales}</span>
-            <span class="adm-kpi-num">${formatDA(totalRevenue, lang)}</span>
-            <span class="adm-kpi-foot">${tr.kpi.totalOrdersFoot(adminState.orders.length)}</span>
-          </div>
-          <div class="adm-kpi-box">
-            <span class="adm-kpi-title">${tr.kpi.newOrders}</span>
-            <span class="adm-kpi-num">${newOrdersCount} ${tr.kpi.orderUnit}</span>
-            <span class="adm-kpi-foot">${tr.kpi.awaitingConfirm}</span>
-          </div>
-          <div class="adm-kpi-box">
-            <span class="adm-kpi-title">${tr.kpi.productsCount}</span>
-            <span class="adm-kpi-num">${adminState.inventory.length} ${tr.kpi.shoeUnit}</span>
-            <span class="adm-kpi-foot">${tr.kpi.lowStockFoot(lowStockItems.length)}</span>
-          </div>
-          <div class="adm-kpi-box">
-            <span class="adm-kpi-title">${lang === 'fr' ? 'Catégories & Wilayas' : 'الفئات والتوصيل'}</span>
-            <span class="adm-kpi-num">${adminState.categories.length} ${lang === 'fr' ? 'catégories' : 'فئات'}</span>
-            <span class="adm-kpi-foot">${tr.kpi.activeWilayas(adminState.shipping.rates.length)}</span>
-          </div>
-        </section>
-
-        <!-- تبويب 1: المنتجات والمخزون -->
-        <section id="adm-tab-inventory" class="adm-tab-section ${adminState.activeTab === 'inventory' ? 'active' : ''}">
-          ${renderInventorySection()}
-        </section>
-
-        <!-- تبويب 2: الطلبات والمبيعات -->
-        <section id="adm-tab-orders" class="adm-tab-section ${adminState.activeTab === 'orders' ? 'active' : ''}">
-          ${renderOrdersSection()}
-        </section>
-
-        <!-- تبويب 3: واجهة ومحتوى الموقع -->
-        <section id="adm-tab-cms" class="adm-tab-section ${adminState.activeTab === 'cms' ? 'active' : ''}">
-          ${renderCMSSection()}
-        </section>
-
-        <!-- تبويب 4: صفحات الهبوط والعروض -->
-        <section id="adm-tab-landing" class="adm-tab-section ${adminState.activeTab === 'landing' ? 'active' : ''}">
-          ${renderLandingBuilderSection()}
-        </section>
-
-        <!-- تبويب 5: أسعار التوصيل والشحن -->
-        <section id="adm-tab-shipping" class="adm-tab-section ${adminState.activeTab === 'shipping' ? 'active' : ''}">
-          ${renderShippingSection()}
-        </section>
-      </main>
-
-      <!-- 3. شريط التنقل السفلي للهاتف (Mobile Bottom Bar) -->
-      <nav class="adm-bottom-nav">
-        ${tabs
-          .map(
-            (tab) => `
+        <div class="adm-sidebar-footer">
+          <div class="adm-sidebar-actions">
             <button
               type="button"
-              data-adm-action="switch-tab"
-              data-tab="${tab.id}"
-              class="adm-bottom-nav-btn ${adminState.activeTab === tab.id ? 'active' : ''}"
+              data-adm-action="toggle-admin-lang"
+              class="adm-btn adm-btn-soft adm-btn-sm w-full justify-center"
             >
-              <span class="adm-bnav-label">${tab.shortLabel}</span>
+              <span>${tr.switchLangBtn}</span>
             </button>
-          `
-          )
-          .join('')}
-      </nav>
+            <button
+              type="button"
+              data-adm-action="close-admin"
+              class="adm-btn adm-btn-pink adm-btn-sm w-full justify-center"
+            >
+              <span>${tr.viewStore}</span>
+            </button>
+            <button
+              type="button"
+              data-adm-action="logout-admin"
+              class="adm-btn adm-btn-outline adm-btn-sm w-full justify-center"
+            >
+              <span>${tr.logout}</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- المنطقة الرئيسية للمحتوى -->
+      <div class="adm-main-wrapper">
+        <!-- الهيدر العلوي مع زر فتح وإغلاق الشريط الجانبي وأزرار سريعة -->
+        <header class="adm-header">
+          <div class="adm-header-inner">
+            <div class="flex items-center gap-2.5">
+              <button
+                type="button"
+                data-adm-action="toggle-admin-sidebar"
+                class="adm-sidebar-toggle-btn"
+                title="${lang === 'fr' ? 'Ouvrir / Fermer le menu' : 'فتح / إغلاق القائمة الجانبية'}"
+                aria-label="Toggle Navigation Sidebar"
+              >
+                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+                <span class="font-bold text-xs">${lang === 'fr' ? 'Menu' : 'النوافذ'}</span>
+              </button>
+
+              <div class="adm-brand-lockup">
+                <span class="adm-brand-script">${adminState.cms.storeName}</span>
+                <span class="adm-active-tab-title text-xs font-bold text-[#D81B60] hidden sm:inline-block px-2.5 py-1 rounded-lg bg-[#FDF0F5]">
+                  ${tabs.find((t) => t.id === adminState.activeTab)?.label || ''}
+                </span>
+              </div>
+            </div>
+
+            <div class="adm-header-actions">
+              <button
+                type="button"
+                data-adm-action="toggle-admin-lang"
+                class="adm-btn adm-btn-soft adm-btn-sm"
+              >
+                <span>${tr.switchLangBtn}</span>
+              </button>
+              <button
+                type="button"
+                data-adm-action="close-admin"
+                class="adm-btn adm-btn-pink adm-btn-sm"
+              >
+                <span>${tr.viewStore}</span>
+              </button>
+              <button
+                type="button"
+                data-adm-action="logout-admin"
+                class="adm-btn adm-btn-outline adm-btn-sm"
+              >
+                <span>${tr.logout}</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- المحتوى الرئيسي المبسط والمناسب للهاتف -->
+        <main class="adm-container">
+          <!-- ملخص سريع (KPIs) -->
+          <section class="adm-kpi-strip">
+            <div class="adm-kpi-box">
+              <span class="adm-kpi-title">${tr.kpi.totalSales}</span>
+              <span class="adm-kpi-num">${formatDA(totalRevenue, lang)}</span>
+              <span class="adm-kpi-foot">${tr.kpi.totalOrdersFoot(adminState.orders.length)}</span>
+            </div>
+            <div class="adm-kpi-box">
+              <span class="adm-kpi-title">${tr.kpi.newOrders}</span>
+              <span class="adm-kpi-num">${newOrdersCount} ${tr.kpi.orderUnit}</span>
+              <span class="adm-kpi-foot">${tr.kpi.awaitingConfirm}</span>
+            </div>
+            <div class="adm-kpi-box">
+              <span class="adm-kpi-title">${tr.kpi.productsCount}</span>
+              <span class="adm-kpi-num">${adminState.inventory.length} ${tr.kpi.shoeUnit}</span>
+              <span class="adm-kpi-foot">${tr.kpi.lowStockFoot(lowStockItems.length)}</span>
+            </div>
+            <div class="adm-kpi-box">
+              <span class="adm-kpi-title">${lang === 'fr' ? 'Catégories & Wilayas' : 'الفئات والتوصيل'}</span>
+              <span class="adm-kpi-num">${adminState.categories.length} ${lang === 'fr' ? 'catégories' : 'فئات'}</span>
+              <span class="adm-kpi-foot">${tr.kpi.activeWilayas(adminState.shipping.rates.length)}</span>
+            </div>
+          </section>
+
+          <!-- تبويب 1: المنتجات والمخزون -->
+          <section id="adm-tab-inventory" class="adm-tab-section ${adminState.activeTab === 'inventory' ? 'active' : ''}">
+            ${renderInventorySection()}
+          </section>
+
+          <!-- تبويب 2: الطلبات والمبيعات -->
+          <section id="adm-tab-orders" class="adm-tab-section ${adminState.activeTab === 'orders' ? 'active' : ''}">
+            ${renderOrdersSection()}
+          </section>
+
+          <!-- تبويب 3: واجهة ومحتوى الموقع -->
+          <section id="adm-tab-cms" class="adm-tab-section ${adminState.activeTab === 'cms' ? 'active' : ''}">
+            ${renderCMSSection()}
+          </section>
+
+          <!-- تبويب 4: صفحات الهبوط والعروض -->
+          <section id="adm-tab-landing" class="adm-tab-section ${adminState.activeTab === 'landing' ? 'active' : ''}">
+            ${renderLandingBuilderSection()}
+          </section>
+
+          <!-- تبويب 5: أسعار التوصيل والشحن -->
+          <section id="adm-tab-shipping" class="adm-tab-section ${adminState.activeTab === 'shipping' ? 'active' : ''}">
+            ${renderShippingSection()}
+          </section>
+        </main>
+      </div>
     </div>
 
     <!-- نافذة معاينة صفحة الهبوط -->
@@ -2728,6 +2796,24 @@ function renderCMSSection() {
               <label class="adm-label">TikTok URL</label>
               <input name="tiktokUrl" type="text" dir="ltr" class="adm-input" value="${c.tiktokUrl || 'https://tiktok.com/@shoestyle.dz'}" />
             </div>
+
+            <!-- عبارة التوقيع في الفوتر أسفل الصفحة -->
+            <div class="adm-field full">
+              <label class="adm-label" for="cms-footer-farewell">
+                ${isFr ? 'Texte de signature en bas de page (Footer)' : 'العبارة الختامية أسفل المتجر (Footer)'}
+              </label>
+              <input
+                id="cms-footer-farewell"
+                name="footerFarewell"
+                type="text"
+                class="adm-input"
+                value="${c.footerFarewell || 'À bientôt sur ShoeStyle ♥ ♥'}"
+                placeholder="À bientôt sur ShoeStyle ♥ ♥"
+              />
+              <span style="font-size:0.73rem; color:var(--adm-text-muted); margin-top:0.25rem; display:block;">
+                ${isFr ? 'Modifiez le texte affiché au bas du site (Ex: À bientôt sur ShoeStyle ♥ ♥)' : 'يمكنك تعديل العبارة التي تظهر أسفل الموقع (مثل: À bientôt sur ShoeStyle ♥ ♥ أو أي عبارة تحبينها)'}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -3569,6 +3655,34 @@ export function setupAdminEvents() {
         break;
       }
 
+      case 'toggle-admin-sidebar': {
+        adminState.isSidebarOpen = !adminState.isSidebarOpen;
+        const sidebar = document.getElementById('adm-sidebar');
+        const overlay = document.getElementById('adm-sidebar-overlay');
+        if (sidebar) {
+          sidebar.classList.toggle('open', adminState.isSidebarOpen);
+          sidebar.classList.toggle('collapsed', !adminState.isSidebarOpen);
+        }
+        if (overlay) {
+          overlay.classList.toggle('open', adminState.isSidebarOpen);
+        }
+        break;
+      }
+
+      case 'close-admin-sidebar': {
+        adminState.isSidebarOpen = false;
+        const sidebar = document.getElementById('adm-sidebar');
+        const overlay = document.getElementById('adm-sidebar-overlay');
+        if (sidebar) {
+          sidebar.classList.remove('open');
+          sidebar.classList.add('collapsed');
+        }
+        if (overlay) {
+          overlay.classList.remove('open');
+        }
+        break;
+      }
+
       case 'switch-tab': {
         const tab = btn.getAttribute('data-tab') || 'inventory';
         adminState.activeTab = tab;
@@ -3578,6 +3692,24 @@ export function setupAdminEvents() {
         root.querySelectorAll('.adm-tab-section').forEach((sec) => {
           sec.classList.toggle('active', sec.id === `adm-tab-${tab}`);
         });
+        const activeTitleEl = root.querySelector('.adm-active-tab-title');
+        if (activeTitleEl) {
+          const tabObj = root.querySelector(`.adm-sidebar-item[data-tab="${tab}"] .adm-sidebar-item-label`);
+          if (tabObj) activeTitleEl.textContent = tabObj.textContent.trim();
+        }
+        // إغلاق الشريط الجانبي تلقائياً على الهواتف والشاشات الصغيرة
+        if (window.innerWidth < 1024) {
+          adminState.isSidebarOpen = false;
+          const sidebar = document.getElementById('adm-sidebar');
+          const overlay = document.getElementById('adm-sidebar-overlay');
+          if (sidebar) {
+            sidebar.classList.remove('open');
+            sidebar.classList.add('collapsed');
+          }
+          if (overlay) {
+            overlay.classList.remove('open');
+          }
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
         break;
       }
@@ -4533,6 +4665,7 @@ export function setupAdminEvents() {
         heroBgUrl: adminState.draftCmsHeroBg || adminState.cms.heroBgUrl || IMAGES.hero,
         heroBtnText: String(fd.get('heroBtnText') || 'Découvrir').trim(),
         heroBtnLink: 'Talons',
+        footerFarewell: String(fd.get('footerFarewell') || 'À bientôt sur ShoeStyle ♥ ♥').trim(),
         phone: String(fd.get('phone') || '0550 12 34 56').trim(),
         whatsappNumber: String(fd.get('whatsappNumber') || '213550123456').trim(),
         location_ar: String(fd.get('location_ar') || 'الجزائر العاصمة — باب الزوار، المركز التجاري').trim(),
