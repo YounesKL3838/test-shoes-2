@@ -1344,30 +1344,8 @@ export function renderAdminDashboard() {
               </div>
             </div>
 
-            <div class="adm-header-actions">
-              <button
-                type="button"
-                data-adm-action="toggle-admin-lang"
-                class="adm-btn adm-btn-soft adm-btn-sm"
-              >
-                <span>${tr.switchLangBtn}</span>
-              </button>
-              <button
-                type="button"
-                data-adm-action="close-admin"
-                class="adm-btn adm-btn-pink adm-btn-sm"
-              >
-                <span>${tr.viewStore}</span>
-              </button>
-              <button
-                type="button"
-                data-adm-action="logout-admin"
-                class="adm-btn adm-btn-outline adm-btn-sm"
-              >
-                <span>${tr.logout}</span>
-              </button>
-            </div>
           </div>
+
         </header>
 
         <!-- المحتوى الرئيسي المبسط والمناسب للهاتف -->
