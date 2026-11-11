@@ -1114,6 +1114,9 @@ export const adminState = {
   },
 };
 
+// تزامن فوري ومباشر مع منتجات المتجر فور تحميل الملف لتفادي وميض المنتجات التجريبية
+adminState.syncWithStorefront();
+
 export async function initAdminFromSupabase() {
   const remoteData = await fetchAllFromSupabase();
   if (!remoteData) return false;

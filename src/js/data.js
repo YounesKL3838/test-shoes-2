@@ -144,7 +144,9 @@ export function getProductColorHex(product, colorName) {
   return '#D2B48C';
 }
 
-export const PRODUCTS = [
+const INVENTORY_STORAGE_KEY = 'shoestyle_inventory_v1';
+
+export const DEFAULT_PRODUCTS = [
   {
     id: 'ss-01',
     slug: 'escarpins-elegants',
@@ -298,6 +300,83 @@ export const PRODUCTS = [
     description_ar: 'باليرين ناعم ومريح مع شريط ماري جين الرقيق لأسلوب أنثوي أنيق طوال اليوم.',
   },
 ];
+
+function getInitialProducts() {
+  try {
+    const raw = localStorage.getItem(INVENTORY_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed
+          .map((invItem) => {
+            const effectivePrice =
+              invItem.discountPrice !== null &&
+              invItem.discountPrice !== undefined &&
+              invItem.discountPrice !== '' &&
+              Number(invItem.discountPrice) > 0
+                ? Number(invItem.discountPrice)
+                : Number(invItem.originalPrice || invItem.price || 0);
+
+            const origPrice = Number(invItem.originalPrice || effectivePrice);
+            const discPercent =
+              origPrice > effectivePrice && origPrice > 0
+                ? Math.round(((origPrice - effectivePrice) / origPrice) * 100)
+                : 0;
+
+            const sizesList = Array.isArray(invItem.sizes) ? invItem.sizes : [];
+            const colorsList =
+              Array.isArray(invItem.colors) && invItem.colors.length > 0
+                ? invItem.colors
+                : [invItem.colorName || 'Beige'];
+
+            const cleanGallery =
+              Array.isArray(invItem.gallery) && invItem.gallery.filter(Boolean).length > 0
+                ? [...invItem.gallery.filter(Boolean)]
+                : [invItem.image].filter(Boolean);
+
+            return {
+              id: invItem.id,
+              slug: invItem.slug,
+              name_fr: invItem.name_fr || invItem.name,
+              name_ar: invItem.name || invItem.name_fr,
+              category: invItem.category,
+              price: effectivePrice,
+              originalPrice: origPrice > effectivePrice ? origPrice : null,
+              discountPercent: discPercent,
+              stock: Number(invItem.stock ?? 10),
+              sizeStock: invItem.sizeStock || {},
+              rating: 4.9,
+              reviewsCount: 45,
+              isVisible: invItem.isVisible !== false,
+              isNew: Boolean(invItem.isNew ?? true),
+              isBestSeller: Boolean(invItem.isBestSeller ?? false),
+              isSpecialOffer: Boolean(invItem.isSpecialOffer ?? false),
+              offerEnabled: invItem.offerEnabled !== false,
+              offerMinQty: Math.max(2, Number(invItem.offerMinQty || 2)),
+              offerFreeShipping: invItem.offerFreeShipping !== false,
+              offerText: invItem.offerText || '',
+              colorName: invItem.colorName || colorsList[0] || 'Beige',
+              colorHex: invItem.colorHex || '#D2B48C',
+              colorHexes: invItem.colorHexes || {},
+              colors: colorsList,
+              sizes: sizesList,
+              variants: Array.isArray(invItem.variants) ? invItem.variants : [],
+              image: cleanGallery[0] || invItem.image,
+              gallery: cleanGallery,
+              description_fr: invItem.description_fr || invItem.name_fr || invItem.name,
+              description_ar: invItem.description_ar || `${invItem.name || invItem.name_fr}`,
+            };
+          })
+          .filter((p) => p.isVisible !== false);
+      }
+    }
+  } catch {
+    // fallback
+  }
+  return DEFAULT_PRODUCTS.map((p) => ({ ...p }));
+}
+
+export const PRODUCTS = getInitialProducts();
 
 export const TESTIMONIALS = [];
 
