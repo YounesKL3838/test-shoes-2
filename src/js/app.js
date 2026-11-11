@@ -253,9 +253,33 @@ function spawnHeartBurst(sourceEl) {
 }
 
 /**
- * IntersectionObserver bidirectionnel pour animer les sections et cartes lors de la descente (الهبوط) et de la montée (الصعود)
+ * IntersectionObserver bidirectionnel + onde de défilement en temps réel
+ * pour animer clairement l'interface lors de la descente (الهبوط) et de la montée (الصعود)
  */
 let scrollListenerAttached = false;
+let lastScrollY = 0;
+let scrollIdleTimer = null;
+let lastTouchY = null;
+
+function triggerScrollDirectionWave(deltaY) {
+  if (Math.abs(deltaY) < 1.5) return;
+  const dir = deltaY > 0 ? 'down' : 'up';
+  const clampedMag = Math.min(22, Math.max(10, Math.abs(deltaY) * 0.55));
+  const wavePx = dir === 'down' ? -clampedMag : clampedMag;
+
+  document.body.setAttribute('data-scroll-dir', dir);
+  document.documentElement.style.setProperty('--ss-scroll-wave', `${wavePx.toFixed(1)}px`);
+  document.documentElement.style.setProperty('--ss-scroll-scale', '1.022');
+
+  if (scrollIdleTimer) {
+    clearTimeout(scrollIdleTimer);
+  }
+  scrollIdleTimer = setTimeout(() => {
+    document.body.removeAttribute('data-scroll-dir');
+    document.documentElement.style.setProperty('--ss-scroll-wave', '0px');
+    document.documentElement.style.setProperty('--ss-scroll-scale', '1');
+  }, 210);
+}
 
 function initScrollReveal() {
   if (scrollObserver) {
@@ -264,13 +288,55 @@ function initScrollReveal() {
 
   if (!scrollListenerAttached && typeof window !== 'undefined') {
     scrollListenerAttached = true;
+    lastScrollY = window.scrollY || 0;
+
     window.addEventListener(
       'scroll',
       () => {
         const currentY = window.scrollY || 0;
+        const deltaY = currentY - lastScrollY;
+        lastScrollY = currentY;
+
         const headerEl = document.getElementById('app-header');
         if (headerEl) {
           headerEl.classList.toggle('is-scrolled', currentY > 12);
+        }
+
+        triggerScrollDirectionWave(deltaY);
+      },
+      { passive: true }
+    );
+
+    window.addEventListener(
+      'wheel',
+      (e) => {
+        if (Math.abs(e.deltaY) > 2) {
+          triggerScrollDirectionWave(e.deltaY);
+        }
+      },
+      { passive: true }
+    );
+
+    window.addEventListener(
+      'touchstart',
+      (e) => {
+        if (e.touches && e.touches.length > 0) {
+          lastTouchY = e.touches[0].clientY;
+        }
+      },
+      { passive: true }
+    );
+
+    window.addEventListener(
+      'touchmove',
+      (e) => {
+        if (e.touches && e.touches.length > 0 && lastTouchY !== null) {
+          const currentTouchY = e.touches[0].clientY;
+          const deltaY = lastTouchY - currentTouchY;
+          lastTouchY = currentTouchY;
+          if (Math.abs(deltaY) > 2) {
+            triggerScrollDirectionWave(deltaY);
+          }
         }
       },
       { passive: true }
@@ -278,7 +344,7 @@ function initScrollReveal() {
   }
 
   const elements = document.querySelectorAll(
-    '.reveal-on-scroll, .ss-product-card, .ss-category-btn'
+    '.reveal-on-scroll, .ss-product-card, .ss-category-btn, .ss-order-panel-anim'
   );
   if (!('IntersectionObserver' in window)) {
     elements.forEach((el) => el.classList.add('is-visible'));
@@ -296,10 +362,17 @@ function initScrollReveal() {
       entries.forEach((entry) => {
         const el = entry.target;
         if (entry.isIntersecting) {
+          const fromTop = el.classList.contains('is-hidden-above');
+          const fromBottom = el.classList.contains('is-hidden-below');
+          el.classList.remove('is-hidden-below', 'is-hidden-above', 'enter-from-bottom', 'enter-from-top');
           el.classList.add('is-visible');
-          el.classList.remove('is-hidden-below', 'is-hidden-above');
+          if (fromTop) {
+            el.classList.add('enter-from-top');
+          } else if (fromBottom) {
+            el.classList.add('enter-from-bottom');
+          }
         } else {
-          el.classList.remove('is-visible');
+          el.classList.remove('is-visible', 'enter-from-bottom', 'enter-from-top');
           if (entry.boundingClientRect.top < 0) {
             el.classList.add('is-hidden-above');
             el.classList.remove('is-hidden-below');
@@ -310,7 +383,7 @@ function initScrollReveal() {
         }
       });
     },
-    { threshold: 0.08, rootMargin: '12px 0px -16px 0px' }
+    { threshold: 0.08, rootMargin: '-6% 0px -6% 0px' }
   );
 
   elements.forEach((el) => scrollObserver.observe(el));
