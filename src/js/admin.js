@@ -2,7 +2,7 @@
  * ShoeStyle — لوحة التحكم الإدارية الشاملة ثنائية اللغة (العربية / Français)
  * Mobile-First Chic Blush Pink & Ivory Identity — Vanilla JS + LocalStorage
  */
-import { CATEGORIES, COLOR_SWATCHES, DEMO_PRODUCT_IDS, IMAGES, PRODUCTS, WILAYAS, formatDA, getProductColorHex } from './data.js';
+import { CATEGORIES, COLOR_SWATCHES, DEMO_CATEGORY_IDS, DEMO_PRODUCT_IDS, IMAGES, PRODUCTS, WILAYAS, formatDA, getProductColorHex } from './data.js';
 import { store, showToast } from './app_bridge.js';
 import {
   deleteLandingPageFromSupabase,
@@ -23,7 +23,8 @@ import {
 const CMS_STORAGE_KEY = 'shoestyle_full_cms_v1';
 const LANDING_STORAGE_KEY = 'shoestyle_landing_pages_v1';
 const INVENTORY_STORAGE_KEY = 'shoestyle_inventory_v1';
-const CATEGORIES_STORAGE_KEY = 'shoestyle_categories_v1';
+const CATEGORIES_STORAGE_KEY = 'shoestyle_categories_v2';
+const LEGACY_CATEGORIES_KEY = 'shoestyle_categories_v1';
 const SHIPPING_STORAGE_KEY = 'shoestyle_shipping_v1';
 const ORDERS_ADMIN_KEY = 'shoestyle_orders_v2';
 
@@ -693,20 +694,62 @@ function loadJSON(key, fallback) {
   }
 }
 
+function loadInitialCategories() {
+  try {
+    const v2Raw = localStorage.getItem(CATEGORIES_STORAGE_KEY);
+    if (v2Raw) {
+      const parsed = JSON.parse(v2Raw);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((c) => c && !DEMO_CATEGORY_IDS.has(c.id));
+      }
+    }
+    const v1Raw = localStorage.getItem(LEGACY_CATEGORIES_KEY);
+    if (v1Raw) {
+      const parsedV1 = JSON.parse(v1Raw);
+      localStorage.removeItem(LEGACY_CATEGORIES_KEY);
+      if (Array.isArray(parsedV1)) {
+        const customCats = parsedV1.filter((c) => c && !DEMO_CATEGORY_IDS.has(c.id));
+        if (customCats.length > 0) {
+          saveJSON(CATEGORIES_STORAGE_KEY, customCats);
+          return customCats;
+        }
+      }
+    }
+  } catch {
+    // ignore storage read error
+  }
+  return [];
+}
+
 function saveJSON(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    if (key === INVENTORY_STORAGE_KEY && Array.isArray(value)) {
-      try {
+    try {
+      localStorage.removeItem(LEGACY_CATEGORIES_KEY);
+      localStorage.removeItem('shoestyle_orders_v1');
+      if (key === INVENTORY_STORAGE_KEY && Array.isArray(value)) {
         const compact = value.map((item) => ({
           ...item,
           gallery: item.image ? [item.image] : [],
         }));
         localStorage.setItem(key, JSON.stringify(compact));
-      } catch {
-        // ignore if still over quota
+      } else {
+        const invRaw = localStorage.getItem(INVENTORY_STORAGE_KEY);
+        if (invRaw) {
+          const invParsed = JSON.parse(invRaw);
+          if (Array.isArray(invParsed)) {
+            const compactInv = invParsed.map((item) => ({
+              ...item,
+              gallery: [],
+            }));
+            localStorage.setItem(INVENTORY_STORAGE_KEY, JSON.stringify(compactInv));
+          }
+        }
+        localStorage.setItem(key, JSON.stringify(value));
       }
+    } catch {
+      // ignore if still over quota
     }
   }
 }
@@ -869,7 +912,7 @@ function generateProductFromBrief(rawBrief = '') {
 }
 
 export const adminState = {
-  activeTab: 'inventory', // 'inventory' | 'orders' | 'stats' | 'cms' | 'landing' | 'shipping'
+  activeTab: 'stats', // 'stats' | 'inventory' | 'orders' | 'cms' | 'landing' | 'shipping'
   isSidebarOpen: typeof window !== 'undefined' ? window.innerWidth >= 1024 : false,
   editingLandingId: null,
   editingProductId: null,
@@ -906,10 +949,10 @@ export const adminState = {
     isNew: false,
     isBestSeller: false,
     isSpecialOffer: false,
-    offerEnabled: true,
+    offerEnabled: false,
     offerMinQty: 2,
-    offerFreeShipping: true,
-    offerText: 'اشترِ 2 واحصل على شحن مجاني',
+    offerFreeShipping: false,
+    offerText: '',
     colorName: 'Beige',
     colorHex: '#D2B48C',
     sizeFrom: 36,
@@ -925,10 +968,7 @@ export const adminState = {
   draftCmsHeroBg: null,
 
   cms: { ...DEFAULT_CMS, ...loadJSON(CMS_STORAGE_KEY, DEFAULT_CMS), announcementEnabled: false },
-  categories: loadJSON(
-    CATEGORIES_STORAGE_KEY,
-    CATEGORIES.map((c) => ({ ...c }))
-  ),
+  categories: loadInitialCategories(),
   landingPages: loadJSON(LANDING_STORAGE_KEY, DEFAULT_LANDING_PAGES),
   inventory: loadJSON(INVENTORY_STORAGE_KEY, []),
   orders: loadJSON(ORDERS_ADMIN_KEY, DEFAULT_ORDERS),
@@ -948,7 +988,7 @@ export const adminState = {
       }));
     }
 
-    if (Array.isArray(this.categories) && this.categories.length > 0) {
+    if (Array.isArray(this.categories)) {
       CATEGORIES.length = 0;
       this.categories.forEach((cat) => {
         if (cat.id === 'Bottes' && (!cat.image || cat.image.includes('shoe_ballerines_boots'))) {
@@ -1092,12 +1132,12 @@ export const adminState = {
 
   saveAll() {
     this.cms.announcementEnabled = false;
-    saveJSON(CMS_STORAGE_KEY, this.cms);
     saveJSON(CATEGORIES_STORAGE_KEY, this.categories);
-    saveJSON(LANDING_STORAGE_KEY, this.landingPages);
-    saveJSON(INVENTORY_STORAGE_KEY, this.inventory);
+    saveJSON(CMS_STORAGE_KEY, this.cms);
     saveJSON(ORDERS_ADMIN_KEY, this.orders);
     saveJSON(SHIPPING_STORAGE_KEY, this.shipping);
+    saveJSON(LANDING_STORAGE_KEY, this.landingPages);
+    saveJSON(INVENTORY_STORAGE_KEY, this.inventory);
     this.syncWithStorefront();
     notifyCrossTabSync('all', 'save');
   },
@@ -1190,10 +1230,18 @@ export function renderAdminDashboard() {
 
   const tabs = [
     {
+      id: 'stats',
+      label: tr.tabs.stats,
+      shortLabel: tr.tabs.statsShort,
+      badge: adminState.orders.length,
+      icon: `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`,
+    },
+    {
       id: 'inventory',
       label: tr.tabs.inventory,
       shortLabel: tr.tabs.inventoryShort,
       badge: adminState.inventory.length,
+      icon: `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`,
     },
     {
       id: 'orders',
@@ -1201,13 +1249,6 @@ export function renderAdminDashboard() {
       shortLabel: tr.tabs.ordersShort,
       badge: newOrdersCount > 0 ? `${newOrdersCount}` : adminState.orders.length,
       icon: `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`,
-    },
-    {
-      id: 'stats',
-      label: tr.tabs.stats,
-      shortLabel: tr.tabs.statsShort,
-      badge: adminState.orders.length,
-      icon: `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`,
     },
     {
       id: 'cms',
@@ -1232,15 +1273,12 @@ export function renderAdminDashboard() {
     },
   ];
 
-  // أضف أيقونة المخزون للتبويب الأول
-  tabs[0].icon = `<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`;
-
   root.innerHTML = `
     <div class="adm-shell" dir="${dir}" lang="${lang}">
       <!-- خلفية حجب لإغلاق الشريط الجانبي عند الضغط خارجه -->
       <div id="adm-sidebar-overlay" class="adm-sidebar-overlay ${adminState.isSidebarOpen ? 'open' : ''}" data-adm-action="close-admin-sidebar"></div>
 
-      <!-- الشريط الجانبي القابل للفتح والإغلاق الذي يضم جميع نوافذ لوحة التحكم -->
+      <!-- الشريط الجانبي القابل للفتح والإغلاق الذي يضم جميع نوافذ لوحة التحكم (على الجهة اليمنى في اللغتين) -->
       <aside id="adm-sidebar" class="adm-sidebar ${adminState.isSidebarOpen ? 'open' : 'collapsed'}">
         <div class="adm-sidebar-header">
           <div class="adm-brand-lockup">
@@ -1316,7 +1354,7 @@ export function renderAdminDashboard() {
 
       <!-- المنطقة الرئيسية للمحتوى -->
       <div class="adm-main-wrapper">
-        <!-- الهيدر العلوي مع زر فتح وإغلاق الشريط الجانبي وأزرار سريعة -->
+        <!-- الهيدر العلوي مع أيقونة فتح وإغلاق الشريط الجانبي فقط بدون نص -->
         <header class="adm-header">
           <div class="adm-header-inner">
             <div class="flex items-center gap-2.5 min-w-0">
@@ -1332,7 +1370,6 @@ export function renderAdminDashboard() {
                   <line x1="3" y1="6" x2="21" y2="6"></line>
                   <line x1="3" y1="18" x2="21" y2="18"></line>
                 </svg>
-                <span class="font-bold text-xs">${lang === 'fr' ? 'Menu' : 'النوافذ'}</span>
               </button>
 
               <div class="adm-brand-lockup min-w-0">
@@ -1347,21 +1384,21 @@ export function renderAdminDashboard() {
 
         </header>
 
-        <!-- المحتوى الرئيسي المبسط والمناسب للهاتف (الإحصائيات تظهر فقط في نافذتها الخاصة) -->
+        <!-- المحتوى الرئيسي المبسط والمناسب للهاتف (صفحة الإحصائيات تظهر هي الأولى) -->
         <main class="adm-container">
-          <!-- تبويب 1: المنتجات والمخزون -->
+          <!-- تبويب 1: الإحصائيات الشاملة (تظهر هي الأولى) -->
+          <section id="adm-tab-stats" class="adm-tab-section ${adminState.activeTab === 'stats' ? 'active' : ''}">
+            ${renderStatsSection({ totalRevenue, newOrdersCount, lowStockItems })}
+          </section>
+
+          <!-- تبويب 2: المنتجات والمخزون -->
           <section id="adm-tab-inventory" class="adm-tab-section ${adminState.activeTab === 'inventory' ? 'active' : ''}">
             ${renderInventorySection()}
           </section>
 
-          <!-- تبويب 2: الطلبات والمبيعات -->
+          <!-- تبويب 3: الطلبات والمبيعات -->
           <section id="adm-tab-orders" class="adm-tab-section ${adminState.activeTab === 'orders' ? 'active' : ''}">
             ${renderOrdersSection()}
-          </section>
-
-          <!-- تبويب 3: الإحصائيات الشاملة -->
-          <section id="adm-tab-stats" class="adm-tab-section ${adminState.activeTab === 'stats' ? 'active' : ''}">
-            ${renderStatsSection({ totalRevenue, newOrdersCount, lowStockItems })}
           </section>
 
           <!-- تبويب 4: واجهة ومحتوى الموقع -->
@@ -1840,64 +1877,6 @@ function renderInventorySection() {
                 />
                 <span>${isFr ? 'En vedette' : 'مميز'}</span>
               </label>
-            </div>
-
-            <!-- عرض اختياري على الكمية (مثال: تاخذ 2 شحن مجاني) -->
-            <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid #ece7ea;">
-              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
-                <label style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.86rem; font-weight:800; color:#18181b; cursor:pointer;">
-                  <input
-                    type="checkbox"
-                    name="offerEnabled"
-                    style="width:17px; height:17px; accent-color:var(--adm-pink); cursor:pointer;"
-                    ${df.offerEnabled !== false ? 'checked' : ''}
-                  />
-                  <span>${isFr ? 'Activer une offre optionnelle sur la quantité (ex: 2 = Livraison Gratuite)' : 'تفعيل عرض اختياري على الكمية (مثال: تاخذ 2 شحن مجاني)'}</span>
-                </label>
-              </div>
-
-              <div class="adm-form-grid" style="background:#faf8f9; border:1px solid #ece7ea; border-radius:10px; padding:0.85rem;">
-                <div class="adm-field">
-                  <label class="adm-label" style="font-weight:600; color:#52525b;">
-                    ${isFr ? 'Quantité pour activer l’offre (ex: 2)' : 'الكمية المطلوبة للعرض (مثلاً: 2)'}
-                  </label>
-                  <input
-                    name="offerMinQty"
-                    type="number"
-                    min="2"
-                    max="20"
-                    class="adm-input"
-                    style="background:#fff;"
-                    value="${df.offerMinQty ?? 2}"
-                  />
-                </div>
-
-                <div class="adm-field">
-                  <label class="adm-label" style="font-weight:600; color:#52525b;">
-                    ${isFr ? 'Texte de l’offre affiché au client' : 'عنوان العرض الاختياري للزبون'}
-                  </label>
-                  <input
-                    name="offerText"
-                    type="text"
-                    class="adm-input"
-                    style="background:#fff;"
-                    placeholder="${isFr ? 'Ex: Prenez 2 = Livraison Gratuite' : 'مثال: اشترِ 2 واحصل على شحن مجاني'}"
-                    value="${df.offerText ?? 'اشترِ 2 واحصل على شحن مجاني'}"
-                  />
-                </div>
-
-                <div class="adm-field full">
-                  <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.82rem; font-weight:700; color:#15803d; cursor:pointer;">
-                    <input
-                      type="checkbox"
-                      name="offerFreeShipping"
-                      style="width:16px; height:16px; accent-color:#15803d; cursor:pointer;"
-                      ${df.offerFreeShipping !== false ? 'checked' : ''}
-                    />
-                    <span>${isFr ? 'Livraison gratuite automatique dès cette quantité' : 'منح شحن مجاني تلقائياً عند اختيار هذا العرض'}</span>
-                  </label>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -4329,10 +4308,10 @@ export function setupAdminEvents() {
             isNew: Boolean(prod.isNew ?? false),
             isBestSeller: Boolean(prod.isBestSeller ?? false),
             isSpecialOffer: Boolean(prod.isSpecialOffer ?? false),
-            offerEnabled: prod.offerEnabled !== false,
-            offerMinQty: Math.max(2, Number(prod.offerMinQty || 2)),
-            offerFreeShipping: prod.offerFreeShipping !== false,
-            offerText: prod.offerText ?? 'اشترِ 2 واحصل على شحن مجاني',
+            offerEnabled: false,
+            offerMinQty: 2,
+            offerFreeShipping: false,
+            offerText: '',
             colorName: primaryColor,
             colorHex: primaryHex,
             sizeFrom: szFrom,
@@ -4370,10 +4349,10 @@ export function setupAdminEvents() {
           isNew: false,
           isBestSeller: false,
           isSpecialOffer: false,
-          offerEnabled: true,
+          offerEnabled: false,
           offerMinQty: 2,
-          offerFreeShipping: true,
-          offerText: 'اشترِ 2 واحصل على شحن مجاني',
+          offerFreeShipping: false,
+          offerText: '',
           colorName: 'Beige',
           colorHex: '#D2B48C',
           sizeFrom: 36,
@@ -4992,12 +4971,10 @@ export function setupAdminEvents() {
       const isNew = fd.has('isNew');
       const isBestSeller = fd.has('isBestSeller');
       const isSpecialOffer = fd.has('isSpecialOffer');
-      const offerEnabled = fd.has('offerEnabled');
-      const offerMinQty = Math.max(2, Number(fd.get('offerMinQty') || df.offerMinQty || 2));
-      const offerFreeShipping = fd.has('offerFreeShipping');
-      const offerText = String(
-        fd.get('offerText') ?? df.offerText ?? 'اشترِ 2 واحصل على شحن مجاني'
-      ).trim();
+      const offerEnabled = false;
+      const offerMinQty = 2;
+      const offerFreeShipping = false;
+      const offerText = '';
 
       const colorName = String(fd.get('colorName') || df.colorName || 'Beige').trim() || 'Beige';
       const colorHex = String(fd.get('colorHex') || df.colorHex || '#D2B48C').trim() || '#D2B48C';

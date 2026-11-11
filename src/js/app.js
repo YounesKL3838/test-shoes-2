@@ -253,28 +253,64 @@ function spawnHeartBurst(sourceEl) {
 }
 
 /**
- * IntersectionObserver pour révéler les sections au défilement
+ * IntersectionObserver bidirectionnel pour animer les sections et cartes lors de la descente (الهبوط) et de la montée (الصعود)
  */
+let scrollListenerAttached = false;
+
 function initScrollReveal() {
   if (scrollObserver) {
     scrollObserver.disconnect();
   }
-  const elements = document.querySelectorAll('.reveal-on-scroll');
+
+  if (!scrollListenerAttached && typeof window !== 'undefined') {
+    scrollListenerAttached = true;
+    window.addEventListener(
+      'scroll',
+      () => {
+        const currentY = window.scrollY || 0;
+        const headerEl = document.getElementById('app-header');
+        if (headerEl) {
+          headerEl.classList.toggle('is-scrolled', currentY > 12);
+        }
+      },
+      { passive: true }
+    );
+  }
+
+  const elements = document.querySelectorAll(
+    '.reveal-on-scroll, .ss-product-card, .ss-category-btn'
+  );
   if (!('IntersectionObserver' in window)) {
     elements.forEach((el) => el.classList.add('is-visible'));
     return;
   }
 
+  elements.forEach((el) => {
+    if (!el.classList.contains('reveal-on-scroll')) {
+      el.classList.add('ss-scroll-anim');
+    }
+  });
+
   scrollObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
+        const el = entry.target;
         if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          scrollObserver.unobserve(entry.target);
+          el.classList.add('is-visible');
+          el.classList.remove('is-hidden-below', 'is-hidden-above');
+        } else {
+          el.classList.remove('is-visible');
+          if (entry.boundingClientRect.top < 0) {
+            el.classList.add('is-hidden-above');
+            el.classList.remove('is-hidden-below');
+          } else {
+            el.classList.add('is-hidden-below');
+            el.classList.remove('is-hidden-above');
+          }
         }
       });
     },
-    { threshold: 0.08, rootMargin: '0px 0px -20px 0px' }
+    { threshold: 0.08, rootMargin: '12px 0px -16px 0px' }
   );
 
   elements.forEach((el) => scrollObserver.observe(el));
@@ -348,7 +384,7 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
 
   return `
     <article
-      class="ss-product-card group animate-stagger-item"
+      class="ss-product-card group animate-stagger-item ss-scroll-anim"
       style="--i: ${staggerIndex};"
     >
       <div
@@ -747,7 +783,7 @@ function renderHomeScreen() {
   return `
     <div class="max-w-6xl mx-auto animate-screen-enter">
       <!-- 1. Hero Banner ShoeStyle avec Carrousel Bilingue -->
-      <section id="hero-banner-section" class="px-2.5 sm:px-6 pt-2 pb-3 sm:pb-4">
+      <section id="hero-banner-section" class="reveal-on-scroll px-2.5 sm:px-6 pt-2 pb-3 sm:pb-4">
         <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#EFE3DC] via-[#F6EAE6] to-[#FCE8EE] border border-[#DE1B61]/10 shadow-sm">
           <div class="grid grid-cols-1 md:grid-cols-12 items-center min-h-[235px] sm:min-h-[340px]">
             <!-- Image Mode avec zoom Ken Burns -->
@@ -831,7 +867,7 @@ function renderHomeScreen() {
       </section>
 
       <!-- 2. Catégories Rondes bilingues -->
-      <section class="px-3 sm:px-6 py-1 sm:py-1.5">
+      <section class="reveal-on-scroll px-3 sm:px-6 py-1 sm:py-1.5">
         <div class="flex items-center justify-between sm:justify-around gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar pt-3.5 pb-3.5 px-1">
           ${CATEGORIES.map(
             (cat, idx) => `
@@ -861,7 +897,7 @@ function renderHomeScreen() {
       </section>
 
       <!-- 3. Section Nouveautés -->
-      <section class="px-3 sm:px-6 py-4 sm:py-5">
+      <section class="reveal-on-scroll px-3 sm:px-6 py-4 sm:py-5">
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-base sm:text-xl font-extrabold text-[#18181B]">${t.sections.newArrivals}</h2>
           <button

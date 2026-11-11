@@ -13,53 +13,15 @@ export const IMAGES = {
   ballerinesBoots: './src/assets/images/shoe_ballerines_boots_1794235635360.jpg',
 };
 
-export const CATEGORIES = [
-  {
-    id: 'Sneakers',
-    name_fr: 'Sneakers',
-    name_ar: 'سنيكرز',
-    subtitle_fr: 'Confort & Allure Urbaine',
-    subtitle_ar: 'راحة وأناقة عصرية',
-    count: 14,
-    image: IMAGES.sneakers,
-  },
-  {
-    id: 'Talons',
-    name_fr: 'Talons',
-    name_ar: 'كعب عالي',
-    subtitle_fr: 'Féminité & Élégance',
-    subtitle_ar: 'أنوثة وأناقة راقية',
-    count: 18,
-    image: IMAGES.talons,
-  },
-  {
-    id: 'Sandales',
-    name_fr: 'Sandales',
-    name_ar: 'صنادل',
-    subtitle_fr: 'Finesse & Légèreté',
-    subtitle_ar: 'خفة ورقة الصيف',
-    count: 16,
-    image: IMAGES.sandales,
-  },
-  {
-    id: 'Bottes',
-    name_fr: 'Bottes',
-    name_ar: 'بوتين',
-    subtitle_fr: 'Silhouette Automne–Hiver',
-    subtitle_ar: 'إطلالة دافئة للموسم',
-    count: 11,
-    image: IMAGES.boots,
-  },
-  {
-    id: 'Ballerines',
-    name_fr: 'Ballerines',
-    name_ar: 'باليرين',
-    subtitle_fr: 'Douceur au Quotidien',
-    subtitle_ar: 'نعومة وراحة يومية',
-    count: 12,
-    image: IMAGES.ballerines,
-  },
-];
+export const DEMO_CATEGORY_IDS = new Set([
+  'Sneakers',
+  'Talons',
+  'Sandales',
+  'Bottes',
+  'Ballerines',
+]);
+
+export const CATEGORIES = [];
 
 export const COLOR_SWATCHES = {
   Rose: { hex: '#F38BA8', label_fr: 'Rose', label_ar: 'وردي' },
