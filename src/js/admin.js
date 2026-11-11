@@ -2,7 +2,7 @@
  * ShoeStyle — لوحة التحكم الإدارية الشاملة ثنائية اللغة (العربية / Français)
  * Mobile-First Chic Blush Pink & Ivory Identity — Vanilla JS + LocalStorage
  */
-import { CATEGORIES, COLOR_SWATCHES, IMAGES, PRODUCTS, WILAYAS, formatDA, getProductColorHex } from './data.js';
+import { CATEGORIES, COLOR_SWATCHES, DEMO_PRODUCT_IDS, IMAGES, PRODUCTS, WILAYAS, formatDA, getProductColorHex } from './data.js';
 import { store, showToast } from './app_bridge.js';
 import {
   deleteLandingPageFromSupabase,
@@ -678,7 +678,12 @@ const DEFAULT_ORDERS = [
 function loadJSON(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    if (key === INVENTORY_STORAGE_KEY && Array.isArray(parsed)) {
+      return parsed.filter((item) => item && !DEMO_PRODUCT_IDS.has(item.id));
+    }
+    return parsed;
   } catch {
     return fallback;
   }
@@ -688,7 +693,17 @@ function saveJSON(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    // ignore storage quota errors
+    if (key === INVENTORY_STORAGE_KEY && Array.isArray(value)) {
+      try {
+        const compact = value.map((item) => ({
+          ...item,
+          gallery: item.image ? [item.image] : [],
+        }));
+        localStorage.setItem(key, JSON.stringify(compact));
+      } catch {
+        // ignore if still over quota
+      }
+    }
   }
 }
 
@@ -707,7 +722,10 @@ function buildSizeStockRange(fromSize = 36, toSize = 41, defaultQty = 5, existin
 
 function sumSizeStock(sizeStockMap) {
   if (!sizeStockMap || typeof sizeStockMap !== 'object') return 0;
-  return Object.values(sizeStockMap).reduce((sum, v) => sum + Math.max(0, Number(v || 0)), 0);
+  return Object.entries(sizeStockMap).reduce((sum, [k, v]) => {
+    if (k.startsWith('__')) return sum;
+    return sum + Math.max(0, Number(v || 0));
+  }, 0);
 }
 
 /**
@@ -908,53 +926,7 @@ export const adminState = {
     CATEGORIES.map((c) => ({ ...c }))
   ),
   landingPages: loadJSON(LANDING_STORAGE_KEY, DEFAULT_LANDING_PAGES),
-  inventory: loadJSON(
-    INVENTORY_STORAGE_KEY,
-    PRODUCTS.map((p, idx) => {
-      const szList = Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes : [36, 37, 38, 39, 40];
-      const szFrom = Math.min(...szList);
-      const szTo = Math.max(...szList);
-      const defQty = idx === 1 ? 1 : idx === 4 ? 1 : 3;
-      const szMap = buildSizeStockRange(szFrom, szTo, defQty);
-      const primaryColor = (Array.isArray(p.colors) && p.colors[0]) || 'Beige';
-      const swatchHex = COLOR_SWATCHES[primaryColor]?.hex || '#D2B48C';
-      return {
-        id: p.id,
-        slug:
-          p.slug ||
-          (p.name_fr || p.id)
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-|-$/g, ''),
-        name: p.name_ar || p.name_fr,
-        name_fr: p.name_fr || p.name_ar,
-        category: p.category,
-        description_ar: p.description_ar || '',
-        description_fr: p.description_fr || '',
-        price: p.price,
-        originalPrice: p.originalPrice || Math.round(p.price * 1.25),
-        discountPrice: p.price,
-        discountPercent: p.discountPercent || 20,
-        isVisible: p.isVisible !== false,
-        isNew: Boolean(p.isNew ?? true),
-        isBestSeller: Boolean(p.isBestSeller ?? false),
-        isSpecialOffer: Boolean(p.isSpecialOffer ?? false),
-        colorName: primaryColor,
-        colorHex: swatchHex,
-        colors: Array.isArray(p.colors) ? p.colors : [primaryColor],
-        sizeFrom: szFrom,
-        sizeTo: szTo,
-        defaultSizeStock: defQty,
-        sizes: szList,
-        sizeStock: szMap,
-        image: p.image,
-        gallery: p.gallery || [p.image],
-        stock: idx === 1 ? 3 : idx === 4 ? 2 : idx === 7 ? 4 : sumSizeStock(szMap),
-      };
-    })
-  ),
+  inventory: loadJSON(INVENTORY_STORAGE_KEY, []),
   orders: loadJSON(ORDERS_ADMIN_KEY, DEFAULT_ORDERS),
   shipping: (() => {
     const loaded = loadJSON(SHIPPING_STORAGE_KEY, null);
@@ -1013,9 +985,18 @@ export const adminState = {
             label_fr: invItem.colorName,
             label_ar: invItem.colorName,
           };
-        } else {
-          COLOR_SWATCHES[invItem.colorName].hex = invItem.colorHex;
         }
+      }
+      if (invItem.colorHexes && typeof invItem.colorHexes === 'object') {
+        Object.entries(invItem.colorHexes).forEach(([cName, cHex]) => {
+          if (cName && cHex && !COLOR_SWATCHES[cName]) {
+            COLOR_SWATCHES[cName] = {
+              hex: cHex,
+              label_fr: cName,
+              label_ar: cName,
+            };
+          }
+        });
       }
 
       if (invItem.isVisible === false) {
@@ -1036,17 +1017,17 @@ export const adminState = {
           ? Math.round(((origPrice - effectivePrice) / origPrice) * 100)
           : 0;
 
-      const sizesList =
-        invItem.sizeStock && Object.keys(invItem.sizeStock).length > 0
-          ? Object.keys(invItem.sizeStock).map((s) => Number(s))
-          : Array.isArray(invItem.sizes) && invItem.sizes.length > 0
-          ? invItem.sizes
-          : [36, 37, 38, 39, 40, 41];
+      // الحفاظ على المقاسات الفعلية فقط؛ إذا لم يتم إدخال أي مقاس تظل المصفوفة فارغة []
+      const sizesList = Array.isArray(invItem.sizes)
+        ? invItem.sizes.filter(
+            (s) => s !== null && s !== undefined && String(s).trim() !== '' && String(s) !== 'default' && String(s) !== 'NaN'
+          )
+        : [];
 
       const colorsList =
         Array.isArray(invItem.colors) && invItem.colors.length > 0
           ? invItem.colors
-          : [invItem.colorName || 'Beige', 'Noir', 'Rose'];
+          : [invItem.colorName || 'Beige'];
 
       const cleanGallery =
         Array.isArray(invItem.gallery) && invItem.gallery.filter(Boolean).length > 0
@@ -1074,6 +1055,10 @@ export const adminState = {
         offerMinQty: Math.max(2, Number(invItem.offerMinQty || 2)),
         offerFreeShipping: invItem.offerFreeShipping !== false,
         offerText: invItem.offerText || '',
+        colorName: invItem.colorName || colorsList[0] || 'Beige',
+        colorHex: invItem.colorHex || '#D2B48C',
+        colorHexes: invItem.colorHexes ? { ...invItem.colorHexes } : {},
+        variants: Array.isArray(invItem.variants) ? invItem.variants.map((v) => ({ ...v })) : [],
         colors: colorsList,
         sizes: sizesList,
         image: cleanGallery[0] || invItem.image,
@@ -2360,12 +2345,23 @@ function renderInventoryCards(productsList) {
       const isOut = Number(p.stock) === 0;
       const displayName = getProdDisplayName(p);
       const hasDiscount = p.originalPrice && p.originalPrice > p.price;
+      const cleanSizes = Array.isArray(p.sizes)
+        ? p.sizes.filter(
+            (s) =>
+              s !== null &&
+              s !== undefined &&
+              String(s).trim() !== '' &&
+              String(s) !== 'default' &&
+              String(s) !== 'NaN' &&
+              !Number.isNaN(s)
+          )
+        : [];
       const sizesRangeText =
-        p.sizeFrom && p.sizeTo
-          ? `${p.sizeFrom}–${p.sizeTo}`
-          : Array.isArray(p.sizes) && p.sizes.length
-          ? `${Math.min(...p.sizes)}–${Math.max(...p.sizes)}`
-          : '36–41';
+        cleanSizes.length > 0
+          ? cleanSizes.length === 1
+            ? `${cleanSizes[0]}`
+            : `${cleanSizes[0]}–${cleanSizes[cleanSizes.length - 1]}`
+          : '';
 
       return `
         <article id="adm-prod-card-${p.id}" class="adm-prod-card ${isLow ? 'low-stock' : ''}">
@@ -2416,15 +2412,16 @@ function renderInventoryCards(productsList) {
                 }
               </div>
               <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; margin-top:0.25rem; font-size:0.7rem; color:var(--adm-text-muted);">
-                ${
-                  p.colorHex
-                    ? `<span style="display:inline-flex; align-items:center; gap:0.25rem;">
-                        <span style="width:10px; height:10px; border-radius:50%; background:${p.colorHex}; border:1px solid #d4d4d8; display:inline-block;"></span>
-                        <span>${p.colorName || 'Beige'}</span>
-                      </span>`
-                    : ''
-                }
-                <span>· ${isFr ? 'Pointures' : 'المقاسات'} ${sizesRangeText}</span>
+                ${(Array.isArray(p.colors) && p.colors.length > 0 ? p.colors : [p.colorName || 'Beige'])
+                  .map((cName) => {
+                    const hex = getProductColorHex(p, cName);
+                    return `<span style="display:inline-flex; align-items:center; gap:0.25rem;">
+                      <span style="width:10px; height:10px; border-radius:50%; background:${hex}; border:1px solid #d4d4d8; display:inline-block;"></span>
+                      <span>${cName}</span>
+                    </span>`;
+                  })
+                  .join('')}
+                ${sizesRangeText ? `<span>· ${isFr ? 'Pointures' : 'المقاسات'} ${sizesRangeText}</span>` : ''}
                 ${
                   p.gallery && p.gallery.length > 1
                     ? `<span style="background:#fce8ee; color:#de1b61; font-weight:700; font-size:0.68rem; padding:0.1rem 0.35rem; border-radius:4px;">
@@ -4132,28 +4129,62 @@ export function setupAdminEvents() {
 
           let variants = [];
           if (Array.isArray(prod.variants) && prod.variants.length > 0) {
-            variants = prod.variants.map((v) => ({ ...v }));
+            variants = prod.variants.map((v) => ({
+              ...v,
+              size:
+                v.size === null ||
+                v.size === undefined ||
+                String(v.size) === 'default' ||
+                String(v.size) === 'NaN'
+                  ? ''
+                  : v.size,
+            }));
           } else {
-            const szStockMap =
-              prod.sizeStock && Object.keys(prod.sizeStock).length > 0
-                ? prod.sizeStock
-                : buildSizeStockRange(szFrom, szTo, defQty);
+            const cleanSizes = Array.isArray(prod.sizes)
+              ? prod.sizes.filter(
+                  (s) =>
+                    s !== null &&
+                    s !== undefined &&
+                    String(s).trim() !== '' &&
+                    String(s) !== 'default' &&
+                    String(s) !== 'NaN' &&
+                    !Number.isNaN(s)
+                )
+              : [];
             const colorsArr =
               Array.isArray(prod.colors) && prod.colors.length > 0
                 ? prod.colors
                 : [primaryColor];
-            colorsArr.forEach((cName) => {
-              const hex = getProductColorHex(prod, cName) || primaryHex;
-              Object.entries(szStockMap).forEach(([sz, qty]) => {
+
+            if (cleanSizes.length === 0) {
+              colorsArr.forEach((cName) => {
+                const hex = getProductColorHex(prod, cName) || primaryHex;
                 variants.push({
-                  size: Number(sz),
+                  size: '',
                   colorName: cName,
                   colorHex: hex,
-                  quantity: Number(qty),
+                  quantity: Number(prod.stock || defQty),
                   active: true,
                 });
               });
-            });
+            } else {
+              colorsArr.forEach((cName) => {
+                const hex = getProductColorHex(prod, cName) || primaryHex;
+                cleanSizes.forEach((sz) => {
+                  const qty =
+                    prod.sizeStock && prod.sizeStock[sz] !== undefined
+                      ? Number(prod.sizeStock[sz])
+                      : defQty;
+                  variants.push({
+                    size: sz,
+                    colorName: cName,
+                    colorHex: hex,
+                    quantity: qty,
+                    active: true,
+                  });
+                });
+              });
+            }
           }
 
           const origVal = prod.originalPrice || prod.price || '';
@@ -4346,6 +4377,15 @@ export function setupAdminEvents() {
 
       if (target instanceof HTMLInputElement && target.id === 'adm-color-picker') {
         df.colorHex = target.value;
+        if (Array.isArray(df.variants) && df.variants.length === 1) {
+          df.variants[0].colorHex = target.value;
+          const rowColorInp = document.querySelector(
+            '#adm-product-form input[type="color"][data-variant-idx="0"]'
+          );
+          if (rowColorInp instanceof HTMLInputElement) {
+            rowColorInp.value = target.value;
+          }
+        }
       } else if (
         target instanceof HTMLInputElement ||
         target instanceof HTMLTextAreaElement ||
@@ -4470,21 +4510,46 @@ export function setupAdminEvents() {
   root.addEventListener('change', async (e) => {
     const target = e.target;
 
-    // تزامن الـ checkboxes في نموذج المنتج وجدول المقاسات
-    if (target instanceof HTMLInputElement && target.type === 'checkbox' && target.closest('#adm-product-form')) {
+    // تزامن الـ checkboxes و color pickers في نموذج المنتج وجدول المقاسات عند حدث change
+    if (target instanceof HTMLInputElement && target.closest('#adm-product-form')) {
       const df = adminState.draftProductForm;
+      if (target.id === 'adm-color-picker') {
+        df.colorHex = target.value;
+        if (Array.isArray(df.variants) && df.variants.length === 1) {
+          df.variants[0].colorHex = target.value;
+          const rowColorInp = document.querySelector(
+            '#adm-product-form input[type="color"][data-variant-idx="0"]'
+          );
+          if (rowColorInp instanceof HTMLInputElement) {
+            rowColorInp.value = target.value;
+          }
+        }
+        return;
+      }
       if (target.hasAttribute('data-variant-idx')) {
         const vIdx = Number(target.getAttribute('data-variant-idx'));
-        if (Array.isArray(df.variants) && df.variants[vIdx]) {
-          df.variants[vIdx].active = target.checked;
+        const vField = target.getAttribute('data-variant-field');
+        if (Array.isArray(df.variants) && df.variants[vIdx] && vField) {
+          if (vField === 'active' && target.type === 'checkbox') {
+            df.variants[vIdx].active = target.checked;
+          } else if (vField === 'colorHex' && target.type === 'color') {
+            df.variants[vIdx].colorHex = target.value;
+            if (vIdx === 0) df.colorHex = target.value;
+          } else if (vField === 'size') {
+            df.variants[vIdx].size = target.value.trim();
+          } else if (vField === 'colorName') {
+            df.variants[vIdx].colorName = target.value.trim();
+          }
         }
-      } else {
+        return;
+      }
+      if (target.type === 'checkbox') {
         const fieldName = target.getAttribute('name');
         if (fieldName && fieldName in df) {
           df[fieldName] = target.checked;
         }
+        return;
       }
-      return;
     }
 
     if (target instanceof HTMLInputElement && target.type === 'file') {
@@ -4766,6 +4831,7 @@ export function setupAdminEvents() {
       syncLandingPageToSupabase(payload);
       renderAdminDashboard();
     } else if (form.id === 'adm-product-form') {
+      syncCurrentProductFormToDraft();
       const df = adminState.draftProductForm;
 
       const nameAr = String(fd.get('name') || df.name || '').trim();
@@ -4815,26 +4881,6 @@ export function setupAdminEvents() {
       const colorName = String(fd.get('colorName') || df.colorName || 'Beige').trim() || 'Beige';
       const colorHex = String(fd.get('colorHex') || df.colorHex || '#D2B48C').trim() || '#D2B48C';
 
-      const sFrom = Math.max(
-        30,
-        Math.min(
-          48,
-          Math.min(
-            Number(fd.get('sizeFrom') || df.sizeFrom || 36),
-            Number(fd.get('sizeTo') || df.sizeTo || 41)
-          )
-        )
-      );
-      const sTo = Math.max(
-        30,
-        Math.min(
-          48,
-          Math.max(
-            Number(fd.get('sizeFrom') || df.sizeFrom || 36),
-            Number(fd.get('sizeTo') || df.sizeTo || 41)
-          )
-        )
-      );
       const defaultSizeStock = Math.max(
         0,
         Number(fd.get('defaultSizeStock') ?? df.defaultSizeStock ?? 5)
@@ -4860,10 +4906,33 @@ export function setupAdminEvents() {
       const colorHexes = {};
 
       activeVariants.forEach((v) => {
-        const rawSz = v.size !== undefined && v.size !== null ? String(v.size).trim() : '';
+        const rawSz =
+          v.size !== undefined &&
+          v.size !== null &&
+          String(v.size).trim() !== 'default' &&
+          String(v.size).trim() !== 'NaN'
+            ? String(v.size).trim()
+            : '';
         const qty = Math.max(0, Number(v.quantity ?? defaultSizeStock));
-        const cName = String(v.colorName || colorName).trim() || 'Beige';
+        let cName = String(v.colorName || colorName).trim() || 'Beige';
         const cHex = String(v.colorHex || colorHex).trim() || '#D2B48C';
+
+        // إذا أضاف التاجر عدة أسطر بألوان مختلفة في الـ Color Picker دون تغيير اسم اللون النصي، نميز كل لون لكي تظهر جميع الدوائر بألوانها الصحيحة
+        if (colorHexes[cName] && colorHexes[cName].toLowerCase() !== cHex.toLowerCase()) {
+          const existingSameHexName = Object.keys(colorHexes).find(
+            (k) => colorHexes[k].toLowerCase() === cHex.toLowerCase()
+          );
+          if (existingSameHexName) {
+            cName = existingSameHexName;
+          } else {
+            let suffix = 2;
+            while (colorHexes[`${cName} ${suffix}`] && colorHexes[`${cName} ${suffix}`].toLowerCase() !== cHex.toLowerCase()) {
+              suffix++;
+            }
+            cName = `${cName} ${suffix}`;
+          }
+          v.colorName = cName;
+        }
 
         colorHexes[cName] = cHex;
 
@@ -4877,12 +4946,6 @@ export function setupAdminEvents() {
         }
 
         colorsSet.add(cName);
-
-        COLOR_SWATCHES[cName] = {
-          hex: cHex,
-          label_ar: cName,
-          label_fr: cName,
-        };
       });
 
       const sizes = Array.from(sizesSet);

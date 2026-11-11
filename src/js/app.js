@@ -434,11 +434,10 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
         <!-- الألوان المتوفرة + زر الإضافة السريعة للسلة -->
         <div class="mt-2 flex items-center justify-between gap-1">
           <div class="flex items-center gap-1">
-            ${(Array.isArray(product.colors) ? product.colors : ['Rose'])
+            ${(Array.isArray(product.colors) && product.colors.length > 0 ? product.colors : [product.colorName || 'Rose'])
               .slice(0, 4)
               .map((cName) => {
-                const sw = COLOR_SWATCHES[cName];
-                const hex = sw ? sw.hex : product.colorHex || '#F38BA8';
+                const hex = getProductColorHex(product, cName);
                 return `<span class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-black/15 inline-block" style="background-color:${hex};" title="${cName}"></span>`;
               })
               .join('')}
@@ -1466,10 +1465,14 @@ function getActiveLandingItemConfig() {
       Array.isArray(lp.colors) && lp.colors.length > 0
         ? lp.colors
         : ['Rose', 'Beige', 'Noir', 'Blanc'],
-    sizes:
-      Array.isArray(lp.sizes) && lp.sizes.length > 0
-        ? lp.sizes
-        : [36, 37, 38, 39, 40, 41],
+    colorHex: lp.colorHex || '',
+    colorHexes: lp.colorHexes || {},
+    variants: Array.isArray(lp.variants) ? lp.variants : [],
+    sizes: Array.isArray(lp.sizes)
+      ? lp.sizes.filter(
+          (s) => s !== null && s !== undefined && String(s).trim() !== '' && String(s) !== 'default' && String(s) !== 'NaN'
+        )
+      : [36, 37, 38, 39, 40, 41],
     offerEnabled: lp.offerEnabled !== false,
     offerMinQty: Math.max(2, Number(lp.offerMinQty || 2)),
     offerFreeShipping: lp.offerFreeShipping !== false,
@@ -1801,7 +1804,7 @@ function renderCleanLandingPageUI() {
                   <div class="flex items-center gap-2">
                     ${availableColors
                       .map((cName) => {
-                        const hex = getProductColorHex(matchedProd, cName);
+                        const hex = getProductColorHex(cfg, cName);
                         const active = store.lpSelectedColor === cName;
                         return `
                           <button
@@ -2118,16 +2121,20 @@ function renderPDPScreen() {
   const availableColors =
     Array.isArray(product.colors) && product.colors.length > 0
       ? product.colors
-      : ['Rose', 'Beige', 'Noir'];
+      : [product.colorName || 'Beige'];
 
-  const availableSizes = Array.isArray(product.sizes) ? product.sizes : [36, 37, 38, 39, 40, 41];
+  const availableSizes = Array.isArray(product.sizes)
+    ? product.sizes.filter(
+        (s) => s !== null && s !== undefined && String(s).trim() !== '' && String(s) !== 'default' && String(s) !== 'NaN'
+      )
+    : [];
 
   if (!availableColors.includes(store.pdpSelectedColor)) {
-    store.pdpSelectedColor = availableColors[0] || 'Rose';
+    store.pdpSelectedColor = availableColors[0] || product.colorName || 'Beige';
   }
   if (availableSizes.length > 0) {
-    if (!availableSizes.includes(store.pdpSelectedSize)) {
-      store.pdpSelectedSize = availableSizes.includes(37) ? 37 : availableSizes[0] || 37;
+    if (!availableSizes.some((s) => String(s) === String(store.pdpSelectedSize))) {
+      store.pdpSelectedSize = availableSizes.includes(37) ? 37 : availableSizes[0];
     }
   } else {
     store.pdpSelectedSize = '';
@@ -2352,9 +2359,11 @@ function renderPDPScreen() {
                         data-action="pdp-select-color"
                         data-color="${c}"
                         class="ss-color-swatch ${isActive ? 'active' : 'border-black/15'}"
-                        style="--swatch-color: ${hex}; background-color: ${hex}; width: 34px; height: 34px;"
+                        style="--swatch-color: ${hex}; width: 34px; height: 34px;"
                         title="${isAr ? (swatch.label_ar || c) : (swatch.label_fr || c)}"
-                      ></button>
+                      >
+                        <span class="block w-full h-full rounded-full border border-black/15" style="background-color: ${hex};"></span>
+                      </button>
                     `;
                   })
                   .join('')}
@@ -2574,7 +2583,7 @@ function renderCartScreen() {
                         ${prodName}
                       </h3>
                       <p class="text-xs text-[#71717A] mt-0.5">
-                        ${colorLabel} · ${t.cart.sizePrefix} ${item.size}
+                        ${colorLabel}${item.size ? ` · ${t.cart.sizePrefix} ${item.size}` : ''}
                       </p>
                     </div>
 
@@ -4075,7 +4084,8 @@ function setupEvents() {
               ? swatch.label_ar
               : swatch.label_fr
             : res.color;
-          showToast(`${pName} (${colorName}, ${t.cart.sizePrefix} ${res.size}) ${t.cart.addedToast}!`);
+          const sizePart = res.size ? `, ${t.cart.sizePrefix} ${res.size}` : '';
+          showToast(`${pName} (${colorName}${sizePart}) ${t.cart.addedToast}!`);
           setTimeout(() => {
             store.navigate('cart');
           }, 380);

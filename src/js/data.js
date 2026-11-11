@@ -80,20 +80,37 @@ export const COLOR_SWATCHES = {
 };
 
 export function getProductColorHex(product, colorName) {
+  if (!colorName && product && product.colorHex) return product.colorHex;
   if (!colorName) return '#D2B48C';
   const cNorm = String(colorName).trim().toLowerCase();
 
-  // 1. If product has variants, check matching variant colorHex
-  if (product && Array.isArray(product.variants)) {
+  // 1. Check if product has colorHexes map (exact or case-insensitive)
+  if (product && product.colorHexes && typeof product.colorHexes === 'object') {
+    if (product.colorHexes[colorName]) {
+      return product.colorHexes[colorName];
+    }
+    const foundKey = Object.keys(product.colorHexes).find(
+      (k) => String(k).trim().toLowerCase() === cNorm
+    );
+    if (foundKey && product.colorHexes[foundKey]) {
+      return product.colorHexes[foundKey];
+    }
+  }
+
+  // 2. If product has variants, check matching variant colorHex
+  if (product && Array.isArray(product.variants) && product.variants.length > 0) {
     const match = product.variants.find(
       (v) => v && v.colorName && String(v.colorName).trim().toLowerCase() === cNorm && v.colorHex
     );
     if (match && match.colorHex) return match.colorHex;
-  }
 
-  // 2. Check if product has colorHexes map
-  if (product && product.colorHexes && product.colorHexes[colorName]) {
-    return product.colorHexes[colorName];
+    // Also check positional match if colors array aligns with unique variant hexes
+    if (Array.isArray(product.colors)) {
+      const cIdx = product.colors.findIndex((c) => String(c).trim().toLowerCase() === cNorm);
+      if (cIdx !== -1 && product.variants[cIdx] && product.variants[cIdx].colorHex) {
+        return product.variants[cIdx].colorHex;
+      }
+    }
   }
 
   // 3. If product has colorHex property
@@ -103,15 +120,16 @@ export function getProductColorHex(product, colorName) {
     (
       (product.colorName && String(product.colorName).trim().toLowerCase() === cNorm) ||
       (product.color && String(product.color).trim().toLowerCase() === cNorm) ||
-      (!product.colors || product.colors.length <= 1)
+      (!product.colors || product.colors.length <= 1) ||
+      (Array.isArray(product.colors) && product.colors[0] && String(product.colors[0]).trim().toLowerCase() === cNorm)
     )
   ) {
     return product.colorHex;
   }
 
   // 4. If colorName itself is a valid hex string
-  if (typeof colorName === 'string' && colorName.startsWith('#')) {
-    return colorName;
+  if (typeof colorName === 'string' && colorName.trim().startsWith('#')) {
+    return colorName.trim();
   }
 
   // 5. Check global COLOR_SWATCHES
@@ -141,165 +159,22 @@ export function getProductColorHex(product, colorName) {
     return arabicColors[colorName];
   }
 
-  return '#D2B48C';
+  return (product && product.colorHex) || '#D2B48C';
 }
 
 const INVENTORY_STORAGE_KEY = 'shoestyle_inventory_v1';
+export const DEMO_PRODUCT_IDS = new Set([
+  'ss-01',
+  'ss-02',
+  'ss-03',
+  'ss-04',
+  'ss-05',
+  'ss-06',
+  'ss-07',
+  'ss-08',
+]);
 
-export const DEFAULT_PRODUCTS = [
-  {
-    id: 'ss-01',
-    slug: 'escarpins-elegants',
-    name_fr: 'Escarpins Élégants',
-    name_ar: 'حذاء كعب أنيق',
-    category: 'Talons',
-    price: 4990,
-    originalPrice: 6690,
-    discountPercent: 25,
-    isNew: true,
-    isBestSeller: true,
-    isSpecialOffer: true,
-    image: IMAGES.talons,
-    gallery: [IMAGES.talons, IMAGES.hero, IMAGES.sandales],
-    colors: ['Rose', 'Noir', 'Beige'],
-    sizes: [36, 37, 38, 39, 40],
-    description_fr: 'Un style raffiné pour toutes vos occasions. Finition vernie rose poudré et semelle intérieure coussinée ultra-confortable.',
-    description_ar: 'تصميم راقٍ ومثالي لجميع مناسباتك. لمسة نهائية باللون الوردي اللامع مع نعل داخلي مبطن فائق الراحة.',
-  },
-  {
-    id: 'ss-02',
-    slug: 'baskets-mode',
-    name_fr: 'Baskets Mode',
-    name_ar: 'سنيكرز عصري',
-    category: 'Sneakers',
-    price: 3990,
-    originalPrice: 4990,
-    discountPercent: 20,
-    isNew: true,
-    isBestSeller: true,
-    isSpecialOffer: false,
-    image: IMAGES.sneakers,
-    gallery: [IMAGES.sneakers, IMAGES.ballerines, IMAGES.hero],
-    colors: ['Blanc', 'Rose', 'Beige'],
-    sizes: [36, 37, 38, 39, 40, 41],
-    description_fr: 'Baskets basses au design chic avec détails rose poudré et semelle souple idéale pour vos journées actives.',
-    description_ar: 'حذاء رياضي أنيق بتفاصيل بلون وردي ناعم ونعل مرن مريح جداً لنشاطك اليومي.',
-  },
-  {
-    id: 'ss-03',
-    slug: 'escarpins-chic',
-    name_fr: 'Escarpins Chic',
-    name_ar: 'إسكربين شيك',
-    category: 'Talons',
-    price: 4990,
-    originalPrice: 6690,
-    discountPercent: 25,
-    isNew: false,
-    isBestSeller: true,
-    isSpecialOffer: true,
-    image: IMAGES.hero,
-    gallery: [IMAGES.hero, IMAGES.talons, IMAGES.sandales],
-    colors: ['Noir', 'Rose', 'Beige'],
-    sizes: [36, 37, 38, 39, 40],
-    description_fr: 'L’escarpin intemporel à bout pointu qui élance la silhouette avec grâce et stabilité.',
-    description_ar: 'حذاء كلاسيكي بمقدمة مدببة يمنح قوامك رشاقة وأناقة مع ثبات ممتاز في المشي.',
-  },
-  {
-    id: 'ss-04',
-    slug: 'talons-classiques',
-    name_fr: 'Talons Classiques',
-    name_ar: 'كعب كلاسيكي نود',
-    category: 'Talons',
-    price: 4790,
-    originalPrice: 5990,
-    discountPercent: 20,
-    isNew: true,
-    isBestSeller: true,
-    isSpecialOffer: true,
-    image: IMAGES.talons,
-    gallery: [IMAGES.talons, IMAGES.hero],
-    colors: ['Beige', 'Rose', 'Noir'],
-    sizes: [36, 37, 38, 39, 40],
-    description_fr: 'Teinte nude beige lumineuse et cambrure équilibrée pour accompagner aussi bien un tailleur qu’une tenue de soirée.',
-    description_ar: 'لون بيج نود مضيء وتصميم متوازن يتناسق بشكل رائع مع الإطلالات الرسمية والفساتين.',
-  },
-  {
-    id: 'ss-05',
-    slug: 'sandales-fines-dorees',
-    name_fr: 'Sandales Fines Dorées',
-    name_ar: 'صندل ناعم بشرائط',
-    category: 'Sandales',
-    price: 4290,
-    originalPrice: 5490,
-    discountPercent: 22,
-    isNew: true,
-    isBestSeller: false,
-    isSpecialOffer: true,
-    image: IMAGES.sandales,
-    gallery: [IMAGES.sandales, IMAGES.hero, IMAGES.talons],
-    colors: ['Beige', 'Rose'],
-    sizes: [36, 37, 38, 39, 40],
-    description_fr: 'Brides délicates entrelacées et talon bloc stable pour une démarche tout en légèreté.',
-    description_ar: 'شرائط ناعمة متداخلة مع كعب عريض ومستقر لمشية خفيفة وجذابة.',
-  },
-  {
-    id: 'ss-06',
-    slug: 'escarpins-passion',
-    name_fr: 'Escarpins Passion',
-    name_ar: 'إسكربين أحمر براق',
-    category: 'Talons',
-    price: 4590,
-    originalPrice: 6550,
-    discountPercent: 30,
-    isNew: false,
-    isBestSeller: false,
-    isSpecialOffer: true,
-    image: IMAGES.talons,
-    gallery: [IMAGES.talons, IMAGES.hero],
-    colors: ['Rouge', 'Noir', 'Rose'],
-    sizes: [36, 37, 38, 39, 40],
-    description_fr: 'Une ligne glamour à finition brillante, pensée pour sublimer vos grandes occasions.',
-    description_ar: 'تصميم ساحر بلمعان فخم يبرز جاذبيتك في الحفلات وأرقى المناسبات.',
-  },
-  {
-    id: 'ss-07',
-    slug: 'bottines-elegance',
-    name_fr: 'Bottines Élégance',
-    name_ar: 'بوتين جلد أنيق',
-    category: 'Bottes',
-    price: 5890,
-    originalPrice: 7390,
-    discountPercent: 20,
-    isNew: true,
-    isBestSeller: true,
-    isSpecialOffer: false,
-    image: IMAGES.boots,
-    gallery: [IMAGES.boots, IMAGES.ballerinesBoots],
-    colors: ['Beige', 'Noir'],
-    sizes: [36, 37, 38, 39, 40, 41],
-    description_fr: 'Bottines cheville en cuir souple à fermeture zippée et talon confortable pour la mi-saison et l’hiver.',
-    description_ar: 'بوتين يصل للكاحل من جلد مرن مع سحاب وكعب مريح جداً للإطلالات الشتوية.',
-  },
-  {
-    id: 'ss-08',
-    slug: 'ballerines-douceur-rose',
-    name_fr: 'Ballerines Douceur Rose',
-    name_ar: 'باليرين ماري جين وردي',
-    category: 'Ballerines',
-    price: 3690,
-    originalPrice: 4590,
-    discountPercent: 20,
-    isNew: true,
-    isBestSeller: false,
-    isSpecialOffer: true,
-    image: IMAGES.ballerines,
-    gallery: [IMAGES.ballerines, IMAGES.sandales],
-    colors: ['Rose', 'Beige', 'Noir'],
-    sizes: [35, 36, 37, 38, 39, 40],
-    description_fr: 'Ballerines souples avec fine bride Mary Jane pour un style féminin et sans effort.',
-    description_ar: 'باليرين ناعم ومريح مع شريط ماري جين الرقيق لأسلوب أنثوي أنيق طوال اليوم.',
-  },
-];
+export const DEFAULT_PRODUCTS = [];
 
 function getInitialProducts() {
   try {
@@ -307,7 +182,8 @@ function getInitialProducts() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed
+        const nonDemo = parsed.filter((item) => item && !DEMO_PRODUCT_IDS.has(item.id));
+        return nonDemo
           .map((invItem) => {
             const effectivePrice =
               invItem.discountPrice !== null &&
@@ -323,7 +199,17 @@ function getInitialProducts() {
                 ? Math.round(((origPrice - effectivePrice) / origPrice) * 100)
                 : 0;
 
-            const sizesList = Array.isArray(invItem.sizes) ? invItem.sizes : [];
+            const sizesList = Array.isArray(invItem.sizes)
+              ? invItem.sizes.filter(
+                  (s) =>
+                    s !== null &&
+                    s !== undefined &&
+                    String(s).trim() !== '' &&
+                    String(s) !== 'default' &&
+                    String(s) !== 'NaN' &&
+                    !Number.isNaN(s)
+                )
+              : [];
             const colorsList =
               Array.isArray(invItem.colors) && invItem.colors.length > 0
                 ? invItem.colors
@@ -373,7 +259,7 @@ function getInitialProducts() {
   } catch {
     // fallback
   }
-  return DEFAULT_PRODUCTS.map((p) => ({ ...p }));
+  return [];
 }
 
 export const PRODUCTS = getInitialProducts();

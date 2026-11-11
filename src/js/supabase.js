@@ -104,40 +104,83 @@ export async function fetchAllFromSupabase() {
     return {
       products:
         !prodsRes.error && Array.isArray(prodsRes.data) && prodsRes.data.length > 0
-          ? prodsRes.data.map((row) => ({
-              id: row.id,
-              slug: row.slug || `shoe-${row.id}`,
-              name: row.name_ar || row.name_fr,
-              name_fr: row.name_fr || row.name_ar,
-              category: row.category || 'Talons',
-              description_ar: row.description_ar || '',
-              description_fr: row.description_fr || '',
-              price: Number(row.price || 0),
-              originalPrice: Number(row.original_price || row.price || 0),
-              discountPrice:
-                row.discount_price !== null && row.discount_price !== undefined
-                  ? Number(row.discount_price)
-                  : null,
-              discountPercent: Number(row.discount_percent ?? 0),
-              isVisible: row.is_visible !== false,
-              isNew: Boolean(row.is_new ?? true),
-              isBestSeller: Boolean(row.is_best_seller ?? false),
-              isSpecialOffer: Boolean(row.is_special_offer ?? false),
-              colorName: row.color_name || 'Beige',
-              colorHex: row.color_hex || '#D2B48C',
-              colors: Array.isArray(row.colors) ? row.colors : [row.color_name || 'Beige'],
-              sizeFrom: Number(row.size_from || 36),
-              sizeTo: Number(row.size_to || 41),
-              defaultSizeStock: Number(row.default_size_stock ?? 5),
-              sizes: Array.isArray(row.sizes) ? row.sizes : [],
-              sizeStock:
+          ? prodsRes.data.map((row) => {
+              const rawSizeStock =
                 row.size_stock && typeof row.size_stock === 'object'
-                  ? row.size_stock
-                  : { 36: 5, 37: 5, 38: 5, 39: 5, 40: 5, 41: 5 },
-              stock: Number(row.stock ?? 10),
-              image: row.image,
-              gallery: Array.isArray(row.gallery) ? row.gallery : [row.image],
-            }))
+                  ? { ...row.size_stock }
+                  : {};
+              const savedVariants = Array.isArray(rawSizeStock.__variants)
+                ? rawSizeStock.__variants
+                : [];
+              const savedColorHexes =
+                rawSizeStock.__colorHexes && typeof rawSizeStock.__colorHexes === 'object'
+                  ? { ...rawSizeStock.__colorHexes }
+                  : {};
+              const hasNoSize = Boolean(rawSizeStock.__hasNoSize);
+
+              delete rawSizeStock.__variants;
+              delete rawSizeStock.__colorHexes;
+              delete rawSizeStock.__hasNoSize;
+
+              const primaryColor = row.color_name || 'Beige';
+              const primaryHex = row.color_hex || '#D2B48C';
+              if (!savedColorHexes[primaryColor]) {
+                savedColorHexes[primaryColor] = primaryHex;
+              }
+              savedVariants.forEach((v) => {
+                if (v && v.colorName && v.colorHex) {
+                  savedColorHexes[v.colorName] = v.colorHex;
+                }
+              });
+
+              const cleanSizes = hasNoSize
+                ? []
+                : Array.isArray(row.sizes)
+                ? row.sizes.filter(
+                    (s) =>
+                      s !== null &&
+                      s !== undefined &&
+                      String(s).trim() !== '' &&
+                      String(s) !== 'default' &&
+                      String(s) !== 'NaN' &&
+                      !Number.isNaN(s)
+                  )
+                : [];
+
+              return {
+                id: row.id,
+                slug: row.slug || `shoe-${row.id}`,
+                name: row.name_ar || row.name_fr,
+                name_fr: row.name_fr || row.name_ar,
+                category: row.category || 'Talons',
+                description_ar: row.description_ar || '',
+                description_fr: row.description_fr || '',
+                price: Number(row.price || 0),
+                originalPrice: Number(row.original_price || row.price || 0),
+                discountPrice:
+                  row.discount_price !== null && row.discount_price !== undefined
+                    ? Number(row.discount_price)
+                    : null,
+                discountPercent: Number(row.discount_percent ?? 0),
+                isVisible: row.is_visible !== false,
+                isNew: Boolean(row.is_new ?? true),
+                isBestSeller: Boolean(row.is_best_seller ?? false),
+                isSpecialOffer: Boolean(row.is_special_offer ?? false),
+                colorName: primaryColor,
+                colorHex: primaryHex,
+                colorHexes: savedColorHexes,
+                colors: Array.isArray(row.colors) ? row.colors : [primaryColor],
+                sizeFrom: cleanSizes.length > 0 ? Number(row.size_from || cleanSizes[0] || 36) : null,
+                sizeTo: cleanSizes.length > 0 ? Number(row.size_to || cleanSizes[cleanSizes.length - 1] || 41) : null,
+                defaultSizeStock: Number(row.default_size_stock ?? 5),
+                sizes: cleanSizes,
+                sizeStock: rawSizeStock,
+                variants: savedVariants,
+                stock: Number(row.stock ?? 10),
+                image: row.image,
+                gallery: Array.isArray(row.gallery) ? row.gallery : [row.image],
+              };
+            })
           : null,
 
       orders:
@@ -216,6 +259,23 @@ export async function syncProductToSupabase(prod) {
   notifyCrossTabSync('products', 'upsert');
   if (!supabaseClient || !prod) return;
   try {
+    const cleanSizeStock = { ...(prod.sizeStock || {}) };
+    delete cleanSizeStock.__variants;
+    delete cleanSizeStock.__colorHexes;
+    delete cleanSizeStock.__hasNoSize;
+
+    const cleanSizes = Array.isArray(prod.sizes)
+      ? prod.sizes.filter(
+          (s) =>
+            s !== null &&
+            s !== undefined &&
+            String(s).trim() !== '' &&
+            String(s) !== 'default' &&
+            String(s) !== 'NaN' &&
+            !Number.isNaN(s)
+        )
+      : [];
+
     await supabaseClient.from('products').upsert(
       {
         id: prod.id,
@@ -239,11 +299,16 @@ export async function syncProductToSupabase(prod) {
         color_name: prod.colorName || 'Beige',
         color_hex: prod.colorHex || '#D2B48C',
         colors: Array.isArray(prod.colors) ? prod.colors : [prod.colorName || 'Beige'],
-        size_from: Number(prod.sizeFrom || 36),
-        size_to: Number(prod.sizeTo || 41),
+        size_from: cleanSizes.length > 0 ? Number(prod.sizeFrom || cleanSizes[0] || 36) : null,
+        size_to: cleanSizes.length > 0 ? Number(prod.sizeTo || cleanSizes[cleanSizes.length - 1] || 41) : null,
         default_size_stock: Number(prod.defaultSizeStock ?? 5),
-        sizes: Array.isArray(prod.sizes) ? prod.sizes : [],
-        size_stock: prod.sizeStock || {},
+        sizes: cleanSizes,
+        size_stock: {
+          ...cleanSizeStock,
+          __variants: Array.isArray(prod.variants) ? prod.variants : [],
+          __colorHexes: prod.colorHexes && typeof prod.colorHexes === 'object' ? prod.colorHexes : {},
+          __hasNoSize: cleanSizes.length === 0,
+        },
         stock: Number(prod.stock ?? 0),
         image: prod.image,
         gallery: Array.isArray(prod.gallery) ? prod.gallery : [prod.image],

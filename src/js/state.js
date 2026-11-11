@@ -52,22 +52,9 @@ export const store = {
   filterSize: 'all', // 'all' | 36 | 37 | 38 | 39 | 40
   filterColor: 'all', // 'all' | 'Rose' | 'Noir' | 'Beige' | 'Blanc' | 'Rouge'
 
-  // Articles initiaux dans le panier (comme sur l'écran 4)
-  cart: loadFromStorage(STORAGE_KEYS.CART, [
-    {
-      productId: 'ss-01',
-      size: 37,
-      color: 'Rose',
-      quantity: 1,
-    },
-    {
-      productId: 'ss-02',
-      size: 38,
-      color: 'Blanc',
-      quantity: 1,
-    },
-  ]),
-  wishlist: loadFromStorage(STORAGE_KEYS.WISHLIST, ['ss-01']),
+  // Articles initiaux dans le panier
+  cart: loadFromStorage(STORAGE_KEYS.CART, []),
+  wishlist: loadFromStorage(STORAGE_KEYS.WISHLIST, []),
   orders: loadFromStorage(STORAGE_KEYS.ORDERS, []),
   reviews: loadFromStorage(STORAGE_KEYS.REVIEWS, []),
   reviewFormRating: 5,
@@ -359,7 +346,9 @@ export const store = {
     const itemsSummary = details.items
       .map(
         (item) =>
-          `${this.lang === 'ar' ? item.product.name_ar : item.product.name_fr} (${this.lang === 'ar' ? 'مقاس' : 'Pointure'} ${item.size} × ${item.quantity})`
+          `${this.lang === 'ar' ? item.product.name_ar : item.product.name_fr} (${
+            item.size ? `${this.lang === 'ar' ? 'مقاس' : 'Pointure'} ${item.size} × ` : '× '
+          }${item.quantity})`
       )
       .join(' + ');
 
