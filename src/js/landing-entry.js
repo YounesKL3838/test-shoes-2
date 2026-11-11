@@ -278,9 +278,8 @@ function renderLandingUI() {
       ? lp.gallery.filter(Boolean)
       : [lp.imageUrl].filter(Boolean);
 
-  const activeIdx = (state.galleryIndex || 0) % gallery.length;
-  const availableColors = ['Rose', 'Beige', 'Noir'];
-  const availableSizes = [36, 37, 38, 39, 40, 41];
+  const availableColors = Array.isArray(lp.colors) && lp.colors.length > 0 ? lp.colors : ['Rose', 'Beige', 'Noir'];
+  const availableSizes = Array.isArray(lp.sizes) ? lp.sizes : [36, 37, 38, 39, 40, 41];
   const selectedColorSwatch = COLOR_SWATCHES[state.selectedColor];
   const selectedColorLabel = selectedColorSwatch
     ? isAr
@@ -493,32 +492,42 @@ function renderLandingUI() {
               
               <!-- 1. المقاس واللون -->
               <div class="space-y-3">
-                <div>
-                  <label class="block text-xs font-bold text-[#3F3F46] mb-1.5">
-                    ${isAr ? 'المقاس:' : 'Pointure :'} <strong class="text-[#DE1B61] font-extrabold">${state.selectedSize}</strong>
-                  </label>
-                  <div class="grid grid-cols-6 gap-1.5 tabular-nums">
-                    ${availableSizes
-                      .map((sz) => {
-                        const active = Number(state.selectedSize) === Number(sz);
-                        return `
-                          <button
-                            type="button"
-                            data-lp-action="select-size"
-                            data-size="${sz}"
-                            class="py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
-                              active
-                                ? 'border-2 border-[#DE1B61] bg-[#FDF2F6] text-[#DE1B61]'
-                                : 'border-[#E4E4E7] bg-white text-[#27272A] hover:border-[#D4D4D8]'
-                            }"
-                          >
-                            ${sz}
-                          </button>
-                        `;
-                      })
-                      .join('')}
-                  </div>
-                </div>
+                ${
+                  availableSizes.length > 0
+                    ? `
+                      <div>
+                        <label class="block text-xs font-bold text-[#3F3F46] mb-1.5">
+                          ${isAr ? 'المقاس:' : 'Pointure :'} <strong class="text-[#DE1B61] font-extrabold">${state.selectedSize || ''}</strong>
+                        </label>
+                        <div class="grid grid-cols-6 gap-1.5 tabular-nums">
+                          ${availableSizes
+                            .map((sz) => {
+                              const active = String(state.selectedSize) === String(sz);
+                              return `
+                                <button
+                                  type="button"
+                                  data-lp-action="select-size"
+                                  data-size="${sz}"
+                                  class="py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                                    active
+                                      ? 'border-2 border-[#DE1B61] bg-[#FDF2F6] text-[#DE1B61]'
+                                      : 'border-[#E4E4E7] bg-white text-[#27272A] hover:border-[#D4D4D8]'
+                                  }"
+                                >
+                                  ${sz}
+                                </button>
+                              `;
+                            })
+                            .join('')}
+                        </div>
+                      </div>
+                    `
+                    : `
+                      <div class="p-2.5 bg-[#FAF8F9] border border-[#F1EEF0] rounded-xl text-xs text-[#52525B] font-semibold text-center">
+                        ${isAr ? 'مقاس موحد (حقيبة / إكسسوار)' : 'Taille unique (Sac / Accessoire)'}
+                      </div>
+                    `
+                }
 
                 <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
                   <span class="text-xs font-bold text-[#3F3F46]">

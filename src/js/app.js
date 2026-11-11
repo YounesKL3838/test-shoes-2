@@ -2114,17 +2114,17 @@ function renderPDPScreen() {
       ? product.colors
       : ['Rose', 'Beige', 'Noir'];
 
-  const availableSizes =
-    Array.isArray(product.sizes) && product.sizes.length > 0
-      ? product.sizes
-      : [36, 37, 38, 39, 40, 41];
+  const availableSizes = Array.isArray(product.sizes) ? product.sizes : [36, 37, 38, 39, 40, 41];
 
   if (!availableColors.includes(store.pdpSelectedColor)) {
     store.pdpSelectedColor = availableColors[0] || 'Rose';
   }
-  if (!availableSizes.includes(store.pdpSelectedSize)) {
-    store.pdpSelectedSize =
-      availableSizes.includes(37) ? 37 : availableSizes[0] || 37;
+  if (availableSizes.length > 0) {
+    if (!availableSizes.includes(store.pdpSelectedSize)) {
+      store.pdpSelectedSize = availableSizes.includes(37) ? 37 : availableSizes[0] || 37;
+    }
+  } else {
+    store.pdpSelectedSize = '';
   }
 
   const selectedColorSwatch = COLOR_SWATCHES[store.pdpSelectedColor];
@@ -2355,34 +2355,44 @@ function renderPDPScreen() {
             </div>
 
             <!-- اختيار المقاس -->
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-xs font-bold text-[#3F3F46]">
-                  ${t.pdp.sizeLabel} <span id="pdp-selected-size-label" class="text-[#DE1B61] font-extrabold">${store.pdpSelectedSize}</span>
-                </label>
-              </div>
-              <div class="grid grid-cols-6 gap-2 tabular-nums">
-                ${availableSizes
-                  .map((sz) => {
-                    const isActive = Number(store.pdpSelectedSize) === Number(sz);
-                    return `
-                      <button
-                        type="button"
-                        data-action="pdp-select-size"
-                        data-size="${sz}"
-                        class="py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
-                          isActive
-                            ? 'border-2 border-[#DE1B61] text-[#DE1B61] bg-[#FCE8EE]/40 animate-pop-spring'
-                            : 'border-[#E4E4E7] text-[#18181B] bg-white hover:border-[#D4D4D8]'
-                        }"
-                      >
-                        ${sz}
-                      </button>
-                    `;
-                  })
-                  .join('')}
-              </div>
-            </div>
+            ${
+              availableSizes.length > 0
+                ? `
+                  <div>
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="text-xs font-bold text-[#3F3F46]">
+                        ${t.pdp.sizeLabel} <span id="pdp-selected-size-label" class="text-[#DE1B61] font-extrabold">${store.pdpSelectedSize || ''}</span>
+                      </label>
+                    </div>
+                    <div class="grid grid-cols-6 gap-2 tabular-nums">
+                      ${availableSizes
+                        .map((sz) => {
+                          const isActive = String(store.pdpSelectedSize) === String(sz);
+                          return `
+                            <button
+                              type="button"
+                              data-action="pdp-select-size"
+                              data-size="${sz}"
+                              class="py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                                isActive
+                                  ? 'border-2 border-[#DE1B61] text-[#DE1B61] bg-[#FCE8EE]/40 animate-pop-spring'
+                                  : 'border-[#E4E4E7] text-[#18181B] bg-white hover:border-[#D4D4D8]'
+                              }"
+                            >
+                              ${sz}
+                            </button>
+                          `;
+                        })
+                        .join('')}
+                    </div>
+                  </div>
+                `
+                : `
+                  <div class="p-3 bg-[#F7F5F6] border border-[#EAE6E8] rounded-xl text-xs text-[#52525B] font-semibold text-center">
+                    ${isAr ? 'مقاس موحد (حقيبة / إكسسوار)' : 'Taille unique (Sac / Accessoire)'}
+                  </div>
+                `
+            }
 
             <hr class="border-[#F1EEF0]" />
 

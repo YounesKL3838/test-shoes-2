@@ -1483,6 +1483,25 @@ function syncCurrentProductFormToDraft() {
   if (fd.has('colorName')) df.colorName = String(fd.get('colorName') || df.colorName || 'Beige').trim();
   const hexInp = document.getElementById('adm-color-picker');
   if (hexInp instanceof HTMLInputElement) df.colorHex = hexInp.value;
+
+  const rows = form.querySelectorAll('.adm-variant-table tbody tr');
+  rows.forEach((row) => {
+    const sizeInp = row.querySelector('.adm-var-input-size');
+    const colorInp = row.querySelector('.adm-var-input-color');
+    const hexColorInp = row.querySelector('input[type="color"]');
+    const qtyInp = row.querySelector('.adm-var-input-qty');
+    const activeInp = row.querySelector('input[type="checkbox"]');
+    if (sizeInp instanceof HTMLInputElement) {
+      const vIdx = Number(sizeInp.getAttribute('data-variant-idx'));
+      if (Array.isArray(df.variants) && df.variants[vIdx]) {
+        df.variants[vIdx].size = sizeInp.value.trim();
+        if (colorInp instanceof HTMLInputElement) df.variants[vIdx].colorName = colorInp.value.trim();
+        if (hexColorInp instanceof HTMLInputElement) df.variants[vIdx].colorHex = hexColorInp.value;
+        if (qtyInp instanceof HTMLInputElement) df.variants[vIdx].quantity = Math.max(0, Number(qtyInp.value || 0));
+        if (activeInp instanceof HTMLInputElement) df.variants[vIdx].active = activeInp.checked;
+      }
+    }
+  });
 }
 
 /**
@@ -2055,12 +2074,11 @@ function renderInventorySection() {
                             <tr style="border-bottom:1px solid #f0ece3; background:#fff;">
                               <td style="text-align:right;">
                                 <input
-                                  type="number"
-                                  min="30"
-                                  max="48"
+                                  type="text"
                                   data-variant-idx="${vIdx}"
                                   data-variant-field="size"
-                                  value="${v.size}"
+                                  value="${v.size !== undefined && v.size !== null ? v.size : ''}"
+                                  placeholder="${isFr ? 'Pointure (ou vide)' : 'المقاس (أو فارغ)'}"
                                   class="adm-input adm-var-input-size"
                                   style="border-radius:4px; border-color:#d6d1c7;"
                                 />
@@ -3967,10 +3985,19 @@ export function setupAdminEvents() {
       }
 
       case 'add-manual-variant-row': {
+        syncCurrentProductFormToDraft();
         const df = adminState.draftProductForm;
         if (!Array.isArray(df.variants)) df.variants = [];
         const lastRow = df.variants[df.variants.length - 1];
-        const nextSize = lastRow ? Math.min(48, Number(lastRow.size || 36) + 1) : Number(df.sizeFrom || 36);
+        let nextSize = '';
+        if (lastRow && lastRow.size !== '' && lastRow.size !== null && lastRow.size !== undefined) {
+          const num = Number(lastRow.size);
+          if (!isNaN(num) && num > 0) {
+            nextSize = Math.min(48, num + 1);
+          } else {
+            nextSize = lastRow.size;
+          }
+        }
         df.variants.push({
           size: nextSize,
           colorName: df.colorName || 'Beige',
@@ -4303,8 +4330,10 @@ export function setupAdminEvents() {
         if (Array.isArray(df.variants) && df.variants[vIdx] && vField) {
           if (vField === 'active' && target instanceof HTMLInputElement) {
             df.variants[vIdx].active = target.checked;
-          } else if ((vField === 'size' || vField === 'quantity') && target instanceof HTMLInputElement) {
+          } else if (vField === 'quantity' && target instanceof HTMLInputElement) {
             df.variants[vIdx][vField] = Math.max(0, Number(target.value || 0));
+          } else if (vField === 'size' && target instanceof HTMLInputElement) {
+            df.variants[vIdx][vField] = target.value.trim();
           } else if (target instanceof HTMLInputElement) {
             df.variants[vIdx][vField] = target.value;
           }
@@ -4830,14 +4859,21 @@ export function setupAdminEvents() {
       const colorsSet = new Set();
 
       activeVariants.forEach((v) => {
-        const sz = Number(v.size || 36);
+        const rawSz = v.size !== undefined && v.size !== null ? String(v.size).trim() : '';
         const qty = Math.max(0, Number(v.quantity ?? defaultSizeStock));
         const cName = String(v.colorName || colorName).trim() || 'Beige';
         const cHex = String(v.colorHex || colorHex).trim() || '#D2B48C';
 
-        sizesSet.add(sz);
+        if (rawSz !== '') {
+          const numSz = Number(rawSz);
+          const szKey = !isNaN(numSz) ? numSz : rawSz;
+          sizesSet.add(szKey);
+          sizeStock[szKey] = (sizeStock[szKey] || 0) + qty;
+        } else {
+          sizeStock['default'] = (sizeStock['default'] || 0) + qty;
+        }
+
         colorsSet.add(cName);
-        sizeStock[sz] = (sizeStock[sz] || 0) + qty;
 
         if (!COLOR_SWATCHES[cName]) {
           COLOR_SWATCHES[cName] = {
@@ -4850,7 +4886,10 @@ export function setupAdminEvents() {
         }
       });
 
-      const sizes = Array.from(sizesSet).sort((a, b) => a - b);
+      const sizes = Array.from(sizesSet);
+      if (sizes.every((s) => typeof s === 'number')) {
+        sizes.sort((a, b) => a - b);
+      }
       const colors = Array.from(colorsSet);
       const totalStock = sumSizeStock(sizeStock);
 
