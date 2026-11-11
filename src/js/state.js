@@ -9,14 +9,21 @@ const STORAGE_KEYS = {
   CART: 'shoestyle_cart_v2',
   WISHLIST: 'shoestyle_wishlist_v2',
   ORDERS: 'shoestyle_orders_v2',
+  MY_ORDERS: 'shoestyle_my_orders_v1',
   REVIEWS: 'shoestyle_reviews_v1',
   LANG: 'shoestyle_lang_v1',
 };
 
+const DEMO_ORDER_IDS = new Set(['SS-8491', 'SS-8488', 'SS-8475', 'SS-8460']);
+
 function loadFromStorage(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
+    const parsed = raw ? JSON.parse(raw) : fallback;
+    if ((key === STORAGE_KEYS.ORDERS || key === STORAGE_KEYS.MY_ORDERS) && Array.isArray(parsed)) {
+      return parsed.filter((o) => o && !DEMO_ORDER_IDS.has(o.id));
+    }
+    return parsed;
   } catch {
     return fallback;
   }
@@ -51,9 +58,10 @@ export const store = {
     wishlist: 0,
   },
   pendingScrollRestore: null,
-  activeCategory: 'Talons',
+  activeCategory: 'Tout',
   searchQuery: '',
   searchOpen: false,
+  orderTrackQuery: '',
   filterPrice: 'all', // 'all' | 'under-4500' | '4500-plus'
   filterSize: 'all', // 'all' | 36 | 37 | 38 | 39 | 40
   filterColor: 'all', // 'all' | 'Rose' | 'Noir' | 'Beige' | 'Blanc' | 'Rouge'
@@ -61,7 +69,7 @@ export const store = {
   // Articles initiaux dans le panier
   cart: loadFromStorage(STORAGE_KEYS.CART, []),
   wishlist: loadFromStorage(STORAGE_KEYS.WISHLIST, []),
-  orders: loadFromStorage(STORAGE_KEYS.ORDERS, []),
+  orders: loadFromStorage(STORAGE_KEYS.MY_ORDERS, loadFromStorage(STORAGE_KEYS.ORDERS, [])),
   reviews: loadFromStorage(STORAGE_KEYS.REVIEWS, []),
   reviewFormRating: 5,
 
@@ -92,7 +100,7 @@ export const store = {
   save() {
     saveToStorage(STORAGE_KEYS.CART, this.cart);
     saveToStorage(STORAGE_KEYS.WISHLIST, this.wishlist);
-    saveToStorage(STORAGE_KEYS.ORDERS, this.orders);
+    saveToStorage(STORAGE_KEYS.MY_ORDERS, this.orders);
     saveToStorage(STORAGE_KEYS.REVIEWS, this.reviews);
     try {
       localStorage.setItem(STORAGE_KEYS.LANG, this.lang);

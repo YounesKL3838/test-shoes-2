@@ -253,137 +253,28 @@ function spawnHeartBurst(sourceEl) {
 }
 
 /**
- * IntersectionObserver bidirectionnel + onde de défilement en temps réel
- * pour animer clairement l'interface lors de la descente (الهبوط) et de la montée (الصعود)
+ * IntersectionObserver pour révéler les sections au défilement
  */
-let scrollListenerAttached = false;
-let lastScrollY = 0;
-let scrollIdleTimer = null;
-let lastTouchY = null;
-
-function triggerScrollDirectionWave(deltaY) {
-  if (Math.abs(deltaY) < 1.5) return;
-  const dir = deltaY > 0 ? 'down' : 'up';
-  const clampedMag = Math.min(22, Math.max(10, Math.abs(deltaY) * 0.55));
-  const wavePx = dir === 'down' ? -clampedMag : clampedMag;
-
-  document.body.setAttribute('data-scroll-dir', dir);
-  document.documentElement.style.setProperty('--ss-scroll-wave', `${wavePx.toFixed(1)}px`);
-  document.documentElement.style.setProperty('--ss-scroll-scale', '1.022');
-
-  if (scrollIdleTimer) {
-    clearTimeout(scrollIdleTimer);
-  }
-  scrollIdleTimer = setTimeout(() => {
-    document.body.removeAttribute('data-scroll-dir');
-    document.documentElement.style.setProperty('--ss-scroll-wave', '0px');
-    document.documentElement.style.setProperty('--ss-scroll-scale', '1');
-  }, 210);
-}
-
 function initScrollReveal() {
   if (scrollObserver) {
     scrollObserver.disconnect();
   }
-
-  if (!scrollListenerAttached && typeof window !== 'undefined') {
-    scrollListenerAttached = true;
-    lastScrollY = window.scrollY || 0;
-
-    window.addEventListener(
-      'scroll',
-      () => {
-        const currentY = window.scrollY || 0;
-        const deltaY = currentY - lastScrollY;
-        lastScrollY = currentY;
-
-        const headerEl = document.getElementById('app-header');
-        if (headerEl) {
-          headerEl.classList.toggle('is-scrolled', currentY > 12);
-        }
-
-        triggerScrollDirectionWave(deltaY);
-      },
-      { passive: true }
-    );
-
-    window.addEventListener(
-      'wheel',
-      (e) => {
-        if (Math.abs(e.deltaY) > 2) {
-          triggerScrollDirectionWave(e.deltaY);
-        }
-      },
-      { passive: true }
-    );
-
-    window.addEventListener(
-      'touchstart',
-      (e) => {
-        if (e.touches && e.touches.length > 0) {
-          lastTouchY = e.touches[0].clientY;
-        }
-      },
-      { passive: true }
-    );
-
-    window.addEventListener(
-      'touchmove',
-      (e) => {
-        if (e.touches && e.touches.length > 0 && lastTouchY !== null) {
-          const currentTouchY = e.touches[0].clientY;
-          const deltaY = lastTouchY - currentTouchY;
-          lastTouchY = currentTouchY;
-          if (Math.abs(deltaY) > 2) {
-            triggerScrollDirectionWave(deltaY);
-          }
-        }
-      },
-      { passive: true }
-    );
-  }
-
-  const elements = document.querySelectorAll(
-    '.reveal-on-scroll, .ss-product-card, .ss-category-btn, .ss-order-panel-anim'
-  );
+  const elements = document.querySelectorAll('.reveal-on-scroll');
   if (!('IntersectionObserver' in window)) {
     elements.forEach((el) => el.classList.add('is-visible'));
     return;
   }
 
-  elements.forEach((el) => {
-    if (!el.classList.contains('reveal-on-scroll')) {
-      el.classList.add('ss-scroll-anim');
-    }
-  });
-
   scrollObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        const el = entry.target;
         if (entry.isIntersecting) {
-          const fromTop = el.classList.contains('is-hidden-above');
-          const fromBottom = el.classList.contains('is-hidden-below');
-          el.classList.remove('is-hidden-below', 'is-hidden-above', 'enter-from-bottom', 'enter-from-top');
-          el.classList.add('is-visible');
-          if (fromTop) {
-            el.classList.add('enter-from-top');
-          } else if (fromBottom) {
-            el.classList.add('enter-from-bottom');
-          }
-        } else {
-          el.classList.remove('is-visible', 'enter-from-bottom', 'enter-from-top');
-          if (entry.boundingClientRect.top < 0) {
-            el.classList.add('is-hidden-above');
-            el.classList.remove('is-hidden-below');
-          } else {
-            el.classList.add('is-hidden-below');
-            el.classList.remove('is-hidden-above');
-          }
+          entry.target.classList.add('is-visible');
+          scrollObserver.unobserve(entry.target);
         }
       });
     },
-    { threshold: 0.08, rootMargin: '-6% 0px -6% 0px' }
+    { threshold: 0.08, rootMargin: '0px 0px -20px 0px' }
   );
 
   elements.forEach((el) => scrollObserver.observe(el));
@@ -1471,7 +1362,7 @@ function renderCategoryScreen() {
   return `
     <div class="max-w-5xl mx-auto pb-8 animate-screen-enter">
       <!-- Bannière Catégorie -->
-      <div class="relative h-36 sm:h-56 overflow-hidden bg-gradient-to-r from-[#F5E1E6] via-[#F9EBEF] to-[#F3E5E0]">
+      <div class="relative h-36 sm:h-52 overflow-hidden bg-gradient-to-r from-[#F5E1E6] via-[#F9EBEF] to-[#F3E5E0]">
         <img
           id="cat-banner-img"
           src="${meta.image}"
@@ -1487,7 +1378,6 @@ function renderCategoryScreen() {
             <p id="cat-banner-sub" class="text-[11px] sm:text-sm font-medium text-[#3F3F46] mt-0.5">
               ${meta.sub || ''}
             </p>
-            <!-- Ligne courbe rose avec petit cœur -->
             <svg class="w-24 sm:w-28 h-4 mx-auto mt-1 text-[#DE1B61]" viewBox="0 0 120 18" fill="none">
               <path d="M4 12C35 4 75 18 108 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               <circle cx="112" cy="6" r="2.5" fill="currentColor" />
@@ -1495,6 +1385,63 @@ function renderCategoryScreen() {
           </div>
         </div>
       </div>
+
+      <!-- عرض الفئات بالصور (تظهر عند الدخول إلى فئة الأقسام من الشريط السفلي) -->
+      ${
+        CATEGORIES.length > 0
+          ? `<div class="px-3 sm:px-6 pt-4 pb-2">
+              <div class="flex items-center justify-between mb-2.5">
+                <h3 class="text-xs sm:text-sm font-extrabold text-[#18181B]">
+                  ${isAr ? 'الفئات والأقسام' : 'Nos Catégories'}
+                </h3>
+                <span class="text-[11px] font-semibold text-[#71717A]">
+                  ${CATEGORIES.length} ${isAr ? 'فئات' : 'catégories'}
+                </span>
+              </div>
+              <div class="grid grid-cols-3 sm:grid-cols-5 gap-2.5 sm:gap-3.5">
+                ${CATEGORIES.map((cat, idx) => {
+                  const isActiveCat = store.activeCategory === cat.id;
+                  const catTitle = isAr ? cat.name_ar : cat.name_fr || cat.name_ar;
+                  const catCount = PRODUCTS.filter((p) => p.category === cat.id).length;
+                  return `
+                    <button
+                      type="button"
+                      data-action="select-category-pill"
+                      data-category="${cat.id}"
+                      style="--i: ${idx};"
+                      class="ss-cat-grid-card animate-stagger-item p-2 sm:p-2.5 rounded-2xl border transition-all flex flex-col items-center text-center gap-1.5 cursor-pointer group ${
+                        isActiveCat
+                          ? 'bg-[#FDF2F6] border-2 border-[#DE1B61] shadow-xs scale-[1.02]'
+                          : 'bg-white border-black/8 hover:border-[#DE1B61]/40 shadow-2xs'
+                      }"
+                    >
+                      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 ${
+                        isActiveCat ? 'border-[#DE1B61]' : 'border-[#FCE8EE] group-hover:border-[#DE1B61]/50'
+                      } bg-[#FDF5F7] shrink-0">
+                        <img
+                          src="${cat.image || IMAGES.talons}"
+                          alt="${catTitle}"
+                          referrerpolicy="no-referrer"
+                          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        />
+                      </div>
+                      <div class="min-w-0 w-full">
+                        <span class="block text-xs font-extrabold ${
+                          isActiveCat ? 'text-[#DE1B61]' : 'text-[#18181B] group-hover:text-[#DE1B61]'
+                        } truncate">
+                          ${catTitle}
+                        </span>
+                        <span class="block text-[10px] text-[#71717A] font-medium">
+                          ${catCount} ${isAr ? 'منتج' : 'articles'}
+                        </span>
+                      </div>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+            </div>`
+          : ''
+      }
 
       <!-- Sélecteur rapide de catégories -->
       <div class="px-3 sm:px-6 pt-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
@@ -3200,43 +3147,313 @@ function renderWishlistScreen() {
   `;
 }
 
+function normalizeOrderStatusForTracking(rawStatus) {
+  const s = String(rawStatus || 'new').toLowerCase().trim();
+  if (s === 'delivered' || s.includes('livr') || s.includes('تم التوصيل') || s.includes('مسلم')) {
+    return 'delivered';
+  }
+  if (s === 'shipping' || s === 'shipped' || s.includes('route') || s.includes('شحن') || s.includes('طريق')) {
+    return 'shipping';
+  }
+  if (s === 'confirming' || s === 'confirmed' || s.includes('confirm') || s.includes('تأكيد')) {
+    return 'confirming';
+  }
+  if (s === 'cancelled' || s === 'canceled' || s.includes('annul') || s.includes('ملغ')) {
+    return 'cancelled';
+  }
+  return 'new';
+}
+
+function getCustomerOrdersWithLiveStatus() {
+  const demoIds = new Set(['SS-8491', 'SS-8488', 'SS-8475', 'SS-8460']);
+  const adminOrders = Array.isArray(adminState?.orders) ? adminState.orders : [];
+  const adminMap = new Map();
+  adminOrders.forEach((ao) => {
+    if (ao && ao.id && !demoIds.has(ao.id)) {
+      adminMap.set(String(ao.id).toUpperCase(), ao);
+    }
+  });
+
+  const baseOrders = Array.isArray(store.orders)
+    ? store.orders.filter((o) => o && o.id && !demoIds.has(o.id))
+    : [];
+
+  // دمج حالة الطلب المحدثة من لوحة التحكم / Supabase مع طلبات الزبون
+  const merged = baseOrders.map((o) => {
+    const live = adminMap.get(String(o.id).toUpperCase());
+    if (live) {
+      return {
+        ...o,
+        status: live.status || o.status || 'new',
+        total: live.total ?? o.total,
+        wilaya: live.wilaya || o.wilaya || o.customer?.wilaya || '',
+        address: live.address || o.address || o.customer?.address || '',
+        itemsSummary: live.itemsSummary || o.itemsSummary || '',
+      };
+    }
+    return o;
+  });
+
+  const q = String(store.orderTrackQuery || '').trim().toLowerCase();
+  if (!q) return merged;
+
+  // عند البحث برقم الطلب أو رقم الهاتف، نبحث أيضاً في جميع الطلبات المسجلة في المتجر
+  const seenIds = new Set(merged.map((m) => String(m.id).toUpperCase()));
+  adminOrders.forEach((ao) => {
+    if (!ao || !ao.id || demoIds.has(ao.id)) return;
+    const key = String(ao.id).toUpperCase();
+    if (!seenIds.has(key)) {
+      const matchId = String(ao.id || '').toLowerCase().includes(q);
+      const matchPhone = String(ao.phone || '').replace(/\s+/g, '').includes(q.replace(/\s+/g, ''));
+      if (matchId || (q.length >= 4 && matchPhone)) {
+        merged.push(ao);
+        seenIds.add(key);
+      }
+    }
+  });
+
+  return merged.filter((o) => {
+    const idStr = String(o.id || '').toLowerCase();
+    const phoneStr = String(o.phone || o.customer?.phone || '').replace(/\s+/g, '');
+    const cleanQ = q.replace(/\s+/g, '').replace(/^#/, '');
+    return idStr.includes(cleanQ) || (cleanQ.length >= 3 && phoneStr.includes(cleanQ));
+  });
+}
+
 function renderAccountScreen() {
   const t = getT();
+  const isAr = store.lang === 'ar';
+  const trackedOrders = getCustomerOrdersWithLiveStatus();
+
+  const stepsMeta = [
+    {
+      key: 'new',
+      label: isAr ? 'تم الاستلام' : 'Reçue',
+      desc: isAr ? 'تم تسجيل طلبك بنجاح' : 'Commande enregistrée',
+    },
+    {
+      key: 'confirming',
+      label: isAr ? 'قيد التأكيد' : 'Confirmation',
+      desc: isAr ? 'جاري تجهيز وتأكيد الطلبية' : 'En cours de préparation',
+    },
+    {
+      key: 'shipping',
+      label: isAr ? 'في الطريق' : 'En route',
+      desc: isAr ? 'خرجت الطلبية للتوصيل' : 'Expédiée vers votre wilaya',
+    },
+    {
+      key: 'delivered',
+      label: isAr ? 'تم التسليم' : 'Livrée',
+      desc: isAr ? 'تم توصيل الطلبية بنجاح' : 'Commande livrée avec succès',
+    },
+  ];
+
+  const statusRank = {
+    new: 0,
+    confirming: 1,
+    shipping: 2,
+    delivered: 3,
+  };
 
   return `
     <div class="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-5 animate-screen-enter">
-      <div class="p-5 rounded-2xl bg-gradient-to-r from-[#FCE8EE] to-[#FDF5F7] border border-[#DE1B61]/15 flex items-center gap-4">
-        ${renderHighHeelLogoSVG('w-12 h-12')}
-        <div>
-          <h2 class="text-base font-bold text-[#18181B]">${t.account.headerTitle}</h2>
-          <p class="text-xs text-[#52525B]">${t.account.headerSub}</p>
+      <!-- بطاقة الترحيب -->
+      <div class="p-5 rounded-2xl bg-gradient-to-r from-[#FCE8EE] to-[#FDF5F7] border border-[#DE1B61]/15 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          ${renderHighHeelLogoSVG('w-11 h-11')}
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold text-[#18181B]">${t.account.headerTitle}</h2>
+            <p class="text-xs text-[#52525B]">${
+              isAr
+                ? 'تابعي حالة طلبياتكِ ومراحل توصيلها مباشرة'
+                : 'Suivez l’état et la livraison de vos commandes en direct'
+            }</p>
+          </div>
+        </div>
+        <span class="px-3 py-1 rounded-full bg-white text-[#DE1B61] text-xs font-extrabold border border-[#DE1B61]/20 tabular-nums shrink-0">
+          ${trackedOrders.length} ${isAr ? 'طلب' : 'cmd'}
+        </span>
+      </div>
+
+      <!-- شريط البحث وتتبع الطلب برقم الطلبية أو رقم الهاتف -->
+      <div class="bg-white p-3.5 rounded-2xl border border-black/8 shadow-2xs">
+        <label for="account-order-track-input" class="block text-xs font-extrabold text-[#18181B] mb-2">
+          🔍 ${isAr ? 'تتبع طلبية برقم الطلب أو رقم الهاتف:' : 'Suivre une commande par N° ou téléphone :'}
+        </label>
+        <div class="relative flex items-center">
+          <input
+            id="account-order-track-input"
+            type="search"
+            value="${store.orderTrackQuery || ''}"
+            placeholder="${
+              isAr
+                ? 'مثال: SS-1234 أو رقم هاتفكِ 0550...'
+                : 'Ex: SS-1234 ou votre numéro 0550...'
+            }"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F9] border border-black/10 text-xs sm:text-sm text-[#18181B] focus:outline-none focus:border-[#DE1B61] focus:bg-white transition-colors"
+          />
         </div>
       </div>
 
+      <!-- قائمة الطلبات مع شريط التتبع التفاعلي -->
       <div>
-        <h3 class="text-sm font-bold text-[#18181B] mb-3">${t.account.ordersTitle}</h3>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm sm:text-base font-extrabold text-[#18181B]">
+            ${isAr ? 'طلباتي وتتبع الشحن' : 'Mes commandes & suivi'}
+          </h3>
+        </div>
+
         ${
-          store.orders.length === 0
-            ? `<div class="p-6 rounded-2xl bg-[#FAFAFA] border border-black/8 text-center text-xs text-[#71717A]">
-                ${t.account.noOrders}
+          trackedOrders.length === 0
+            ? `<div class="p-8 rounded-2xl bg-[#FAFAFA] border border-black/8 text-center space-y-3">
+                <div class="w-12 h-12 rounded-full bg-[#FCE8EE] text-[#DE1B61] flex items-center justify-center mx-auto text-lg">
+                  📦
+                </div>
+                <p class="text-xs sm:text-sm font-bold text-[#18181B]">
+                  ${
+                    store.orderTrackQuery
+                      ? isAr
+                        ? 'لم يتم العثور على طلب مطابق لبحثك'
+                        : 'Aucune commande trouvée pour cette recherche'
+                      : t.account.noOrders
+                  }
+                </p>
+                <button
+                  type="button"
+                  data-action="nav-screen"
+                  data-screen="home"
+                  class="ss-btn-pink px-5 py-2.5 text-xs inline-flex items-center gap-1.5"
+                >
+                  <span>${isAr ? 'تصفح المنتجات الآن' : 'Découvrir la collection'}</span>
+                </button>
               </div>`
-            : `<div class="space-y-3">
-                ${store.orders
-                  .map(
-                    (o, idx) => `
-                    <div
-                      style="--i: ${idx};"
-                      class="animate-stagger-item p-4 rounded-2xl bg-white border border-black/8 shadow-2xs text-xs space-y-1.5"
-                    >
-                      <div class="flex justify-between font-bold text-[#18181B]">
-                        <span>${t.account.orderPrefix} #${o.id}</span>
-                        <span class="text-[#DE1B61] tabular-nums">${formatDA(o.total, store.lang)}</span>
+            : `<div id="account-orders-list" class="space-y-4">
+                ${trackedOrders
+                  .map((o, idx) => {
+                    const normStatus = normalizeOrderStatusForTracking(o.status);
+                    const currentStepIdx = statusRank[normStatus] ?? 0;
+                    const isCancelled = normStatus === 'cancelled';
+                    const customerName = o.fullName || o.customer?.fullName || '';
+                    const customerPhone = o.phone || o.customer?.phone || '';
+                    const customerWilaya = o.wilaya || o.customer?.wilaya || '';
+                    const customerAddress = o.address || o.customer?.address || '';
+                    const itemsText =
+                      o.itemsSummary ||
+                      (Array.isArray(o.items)
+                        ? o.items
+                            .map(
+                              (it) =>
+                                `${it.name} (${it.size ? `${isAr ? 'مقاس' : 'P.'} ${it.size} × ` : '× '}${it.quantity})`
+                            )
+                            .join(' + ')
+                        : '');
+
+                    const statusBadge = isCancelled
+                      ? `<span class="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-[11px] font-extrabold">${
+                          isAr ? 'طلبية ملغاة' : 'Annulée'
+                        }</span>`
+                      : normStatus === 'delivered'
+                      ? `<span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-extrabold">✓ ${
+                          isAr ? 'تم التوصيل' : 'Livrée'
+                        }</span>`
+                      : normStatus === 'shipping'
+                      ? `<span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[11px] font-extrabold">🚚 ${
+                          isAr ? 'في الطريق للتوصيل' : 'En cours de livraison'
+                        }</span>`
+                      : normStatus === 'confirming'
+                      ? `<span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-extrabold">⏳ ${
+                          isAr ? 'قيد التأكيد والتجهيز' : 'En confirmation'
+                        }</span>`
+                      : `<span class="px-2.5 py-1 rounded-full bg-[#FCE8EE] text-[#DE1B61] text-[11px] font-extrabold">✨ ${
+                          isAr ? 'تم استلام الطلب' : 'Commande reçue'
+                        }</span>`;
+
+                    return `
+                      <div
+                        style="--i: ${idx};"
+                        class="animate-stagger-item p-4 sm:p-5 rounded-2xl bg-white border border-[#DE1B61]/15 shadow-xs space-y-3.5"
+                      >
+                        <!-- رأس البطاقة: رقم الطلب والتاريخ والحالة والسعر -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-black/6">
+                          <div>
+                            <div class="flex items-center gap-2">
+                              <span class="text-sm sm:text-base font-extrabold text-[#18181B] tabular-nums">
+                                ${t.account.orderPrefix} #${o.id}
+                              </span>
+                              ${statusBadge}
+                            </div>
+                            <span class="block text-[11px] text-[#71717A] mt-0.5 tabular-nums">
+                              📅 ${o.date || new Date().toISOString().slice(0, 10)}
+                            </span>
+                          </div>
+                          <div class="text-end">
+                            <span class="block text-[10px] text-[#71717A] font-semibold">
+                              ${isAr ? 'المبلغ الإجمالي' : 'Montant total'}
+                            </span>
+                            <span class="text-base sm:text-lg font-extrabold text-[#DE1B61] tabular-nums">
+                              ${formatDA(o.total, store.lang)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <!-- تفاصيل المنتجات والعنوان -->
+                        <div class="space-y-1.5 text-xs">
+                          ${
+                            itemsText
+                              ? `<div class="p-2.5 rounded-xl bg-[#FDF5F7]/80 border border-[#DE1B61]/10 text-[#18181B] font-bold leading-relaxed">
+                                  🛍️ ${itemsText}
+                                </div>`
+                              : ''
+                          }
+                          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[#52525B] pt-1">
+                            ${customerName ? `<span>👤 <strong>${customerName}</strong></span>` : ''}
+                            ${customerPhone ? `<span dir="ltr" class="tabular-nums">📞 ${customerPhone}</span>` : ''}
+                            ${customerWilaya ? `<span>📍 ${customerWilaya}</span>` : ''}
+                          </div>
+                          ${
+                            customerAddress
+                              ? `<p class="text-[11px] text-[#71717A]">🏠 ${customerAddress}</p>`
+                              : ''
+                          }
+                        </div>
+
+                        <!-- شريط مراحل تتبع الطلبية (4 مراحل) -->
+                        ${
+                          !isCancelled
+                            ? `<div class="pt-2">
+                                <div class="grid grid-cols-4 gap-1.5 text-center">
+                                  ${stepsMeta
+                                    .map((step, sIdx) => {
+                                      const isDone = sIdx <= currentStepIdx;
+                                      const isCurrent = sIdx === currentStepIdx;
+                                      return `
+                                        <div class="flex flex-col items-center gap-1">
+                                          <div class="w-full h-1.5 rounded-full transition-colors ${
+                                            isDone ? 'bg-[#DE1B61]' : 'bg-[#E4E4E7]'
+                                          }"></div>
+                                          <span class="text-[10px] sm:text-[11px] font-bold ${
+                                            isCurrent
+                                              ? 'text-[#DE1B61]'
+                                              : isDone
+                                              ? 'text-[#18181B]'
+                                              : 'text-[#A1A1AA]'
+                                          }">
+                                            ${isDone ? '✓ ' : ''}${step.label}
+                                          </span>
+                                        </div>
+                                      `;
+                                    })
+                                    .join('')}
+                                </div>
+                                <p class="mt-2 text-[11px] font-semibold text-[#15803D] bg-emerald-50/80 border border-emerald-200/70 rounded-xl px-3 py-1.5 text-center">
+                                  ${stepsMeta[currentStepIdx]?.desc || ''}
+                                </p>
+                              </div>`
+                            : ''
+                        }
                       </div>
-                      <p class="text-[#52525B]">${o.customer.fullName} · ${o.customer.wilaya}</p>
-                      <p class="text-[#43A047] font-semibold">✓ ${o.status}</p>
-                    </div>
-                  `
-                  )
+                    `;
+                  })
                   .join('')}
               </div>`
         }
@@ -3276,7 +3493,7 @@ function renderNavigationBars() {
         type="button"
         data-action="nav-screen"
         data-screen="category"
-        data-category="Talons"
+        data-category="Tout"
         class="flex flex-col items-center justify-center py-1 transition-transform active:scale-90 ${
           screen === 'category' ? 'text-[#DE1B61] font-bold' : 'text-[#52525B]'
         }"
@@ -3883,11 +4100,19 @@ function updateCategoryInPlace(updateBanner = false) {
           </div>`;
   }
 
-  // Update category pills active state
+  // Update category cards & pills active state
   const pills = document.querySelectorAll('[data-action="select-category-pill"]');
   pills.forEach((pill) => {
     const catId = pill.getAttribute('data-category');
-    if (catId === store.activeCategory) {
+    const isCard = pill.classList.contains('ss-cat-grid-card');
+    if (isCard) {
+      const isActive = catId === store.activeCategory;
+      pill.className = `ss-cat-grid-card p-2 sm:p-2.5 rounded-2xl border transition-all flex flex-col items-center text-center gap-1.5 cursor-pointer group ${
+        isActive
+          ? 'bg-[#FDF2F6] border-2 border-[#DE1B61] shadow-xs scale-[1.02]'
+          : 'bg-white border-black/8 hover:border-[#DE1B61]/40 shadow-2xs'
+      }`;
+    } else if (catId === store.activeCategory) {
       pill.className =
         'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all bg-[#18181B] text-white scale-105 shadow-xs';
     } else {
@@ -4338,6 +4563,25 @@ function setupEvents() {
         renderNavigationBars();
       } else {
         updateCategoryInPlace(false);
+      }
+    } else if (
+      target instanceof HTMLInputElement &&
+      target.id === 'account-order-track-input'
+    ) {
+      const cursorPos = target.selectionStart;
+      store.orderTrackQuery = target.value;
+      const mainEl = document.getElementById('app-main');
+      if (mainEl && store.currentScreen === 'account') {
+        mainEl.innerHTML = renderAccountScreen();
+        const newInp = document.getElementById('account-order-track-input');
+        if (newInp instanceof HTMLInputElement) {
+          newInp.focus({ preventScroll: true });
+          if (cursorPos !== null) {
+            try {
+              newInp.setSelectionRange(cursorPos, cursorPos);
+            } catch {}
+          }
+        }
       }
     }
   });

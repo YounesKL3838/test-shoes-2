@@ -203,7 +203,7 @@ body {
 }
 
 .animate-stagger-item {
-  animation: ssStaggerUp 420ms var(--ease-out-expo);
+  animation: ssStaggerUp 380ms var(--ease-out-expo) both;
   animation-delay: calc(min(var(--i, 0), 10) * 45ms);
   will-change: transform, opacity;
 }
@@ -300,106 +300,18 @@ body {
   transform: scale(0.96);
 }
 
-/* ==========================================================================
-   Bidirectional Scroll Animations (Scroll Down الهبوط & Scroll Up الصعود)
-   ========================================================================== */
-
-@keyframes ssScrollEnterFromBottom {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 56px, 0) scale(0.9);
-  }
-  65% {
-    opacity: 1;
-    transform: translate3d(0, -6px, 0) scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes ssScrollEnterFromTop {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, -56px, 0) scale(0.9);
-  }
-  65% {
-    opacity: 1;
-    transform: translate3d(0, 6px, 0) scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-.reveal-on-scroll,
-.ss-scroll-anim {
-  opacity: 1;
-  transform: translate3d(0, var(--ss-scroll-wave, 0px), 0) scale(var(--ss-scroll-scale, 1));
+/* Scroll Reveal Utility */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(18px);
   transition:
-    opacity 540ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 480ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 360ms ease !important;
-  will-change: transform, opacity;
+    opacity 500ms var(--ease-out-expo),
+    transform 500ms var(--ease-out-expo);
 }
 
-.reveal-on-scroll.is-hidden-below,
-.ss-scroll-anim.is-hidden-below {
-  animation: none !important;
-  opacity: 0 !important;
-  transform: translate3d(0, 56px, 0) scale(0.9) !important;
-  pointer-events: none;
-}
-
-.reveal-on-scroll.is-hidden-above,
-.ss-scroll-anim.is-hidden-above {
-  animation: none !important;
-  opacity: 0 !important;
-  transform: translate3d(0, -56px, 0) scale(0.9) !important;
-  pointer-events: none;
-}
-
-.reveal-on-scroll.is-visible.enter-from-bottom,
-.ss-scroll-anim.is-visible.enter-from-bottom {
-  animation: ssScrollEnterFromBottom 640ms cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
-}
-
-.reveal-on-scroll.is-visible.enter-from-top,
-.ss-scroll-anim.is-visible.enter-from-top {
-  animation: ssScrollEnterFromTop 640ms cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
-}
-
-/* Active scroll wave when scrolling down (الهبوط) or scrolling up (الصعود) */
-body[data-scroll-dir="down"] .ss-product-card.is-visible,
-body[data-scroll-dir="down"] .ss-category-btn.is-visible {
-  transform: translate3d(0, var(--ss-scroll-wave, -16px), 0) scale(1.028) !important;
-  box-shadow: 0 14px 30px -6px rgba(222, 27, 97, 0.18) !important;
-}
-
-body[data-scroll-dir="down"] .ss-product-card.is-visible:nth-child(even),
-body[data-scroll-dir="down"] .ss-category-btn.is-visible:nth-child(even) {
-  transform: translate3d(0, calc(var(--ss-scroll-wave, -16px) * 1.35), 0) scale(1.034) !important;
-}
-
-body[data-scroll-dir="up"] .ss-product-card.is-visible,
-body[data-scroll-dir="up"] .ss-category-btn.is-visible {
-  transform: translate3d(0, var(--ss-scroll-wave, 16px), 0) scale(1.028) !important;
-  box-shadow: 0 14px 30px -6px rgba(222, 27, 97, 0.18) !important;
-}
-
-body[data-scroll-dir="up"] .ss-product-card.is-visible:nth-child(even),
-body[data-scroll-dir="up"] .ss-category-btn.is-visible:nth-child(even) {
-  transform: translate3d(0, calc(var(--ss-scroll-wave, 16px) * 1.35), 0) scale(1.034) !important;
-}
-
-body[data-scroll-dir="down"] .reveal-on-scroll.is-visible {
-  transform: translate3d(0, -10px, 0) scale(1.008);
-}
-
-body[data-scroll-dir="up"] .reveal-on-scroll.is-visible {
-  transform: translate3d(0, 10px, 0) scale(1.008);
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ShoeStyle App Container & Responsive Layout */
