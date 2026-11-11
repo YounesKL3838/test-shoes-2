@@ -465,37 +465,21 @@ function renderHeader() {
 
   if (screen === 'home' || screen === 'pdp' || screen === 'landing') {
     headerEl.innerHTML = `
-      <div class="max-w-6xl mx-auto px-2.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
-        <!-- Menu Hamburger / Catégories -->
-        <button
-          type="button"
-          data-action="nav-screen"
-          data-screen="category"
-          data-category="${CATEGORIES[0]?.id || 'Talons'}"
-          class="w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:bg-[#FCE8EE]/60 flex items-center justify-center text-[#18181B] transition-transform active:scale-90 shrink-0"
-          aria-label="${t.nav.categories}"
-        >
-          <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="4" y1="7" x2="20" y2="7" stroke-linecap="round" />
-            <line x1="4" y1="12" x2="20" y2="12" stroke-linecap="round" />
-            <line x1="4" y1="17" x2="15" y2="17" stroke-linecap="round" />
-          </svg>
-        </button>
-
-        <!-- Logo central ShoeStyle — Step in Style -->
+      <div class="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
+        <!-- اسم المتجر واللوغو في الشريط العلوي مكان الشرطات الثلاث -->
         <button
           type="button"
           data-action="nav-screen"
           data-screen="home"
-          class="flex items-center gap-1.5 sm:gap-2 text-start group min-w-0"
+          class="flex items-center gap-1.5 sm:gap-2.5 text-start group min-w-0 cursor-pointer"
         >
-          ${renderHighHeelLogoSVG('w-7 h-7 sm:w-9 sm:h-9')}
+          ${renderHighHeelLogoSVG('w-7 h-7 sm:w-8 sm:h-8')}
           <div class="leading-none min-w-0">
-            <span class="font-script text-2xl sm:text-[34px] font-bold text-[#18181B] tracking-tight block truncate">
+            <span class="font-script text-2xl sm:text-3xl font-bold text-[#18181B] tracking-tight block truncate">
               ${adminState?.cms?.storeName || 'ShoeStyle'}
             </span>
-            <span class="hidden sm:block text-[10px] italic text-[#71717A] tracking-wider -mt-1 text-center">
-              — Step in Style —
+            <span class="hidden sm:block text-[10px] italic text-[#71717A] tracking-wider -mt-0.5">
+              Step in Style
             </span>
           </div>
         </button>
@@ -504,7 +488,7 @@ function renderHeader() {
         <nav class="hidden md:flex items-center gap-5 text-xs font-semibold text-[#52525B]">
           <button type="button" data-action="nav-screen" data-screen="home" class="${
             screen === 'home' ? 'text-[#DE1B61]' : 'hover:text-[#18181B]'
-          } transition-colors">${t.nav.home}</button>
+          } transition-colors cursor-pointer">${t.nav.home}</button>
           ${CATEGORIES.map(
             (cat) => `
               <button
@@ -512,7 +496,7 @@ function renderHeader() {
                 data-action="nav-screen"
                 data-screen="category"
                 data-category="${cat.id}"
-                class="hover:text-[#DE1B61] transition-colors"
+                class="hover:text-[#DE1B61] transition-colors cursor-pointer"
               >
                 ${store.lang === 'ar' ? cat.name_ar : cat.name_fr}
               </button>
@@ -904,101 +888,6 @@ function renderHomeScreen() {
           ${specialOffers.map((p, idx) => renderShoeStyleCard(p, idx)).join('')}
         </div>
       </section>
-
-      ${
-        Array.isArray(adminState?.landingPages) && adminState.landingPages.length > 0
-          ? `
-      <!-- 5.B العروض الترويجية الحصرية (صفحات الهبوط السريعة) -->
-      <section class="px-4 sm:px-6 py-5 reveal-on-scroll">
-        <div class="flex items-center justify-between mb-3.5">
-          <div>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FCE8EE] text-[#DE1B61] text-[11px] font-extrabold mb-1">
-              🔥 ${store.lang === 'ar' ? 'عروض فلاش محدودة · طلب مباشر بدون سلة' : 'Offres Flash Exclusives · Commande Directe'}
-            </span>
-            <h2 class="text-lg sm:text-xl font-extrabold text-[#18181B]">
-              ${store.lang === 'ar' ? 'صفحات العروض الترويجية الخاصة' : 'Pages d’Offres Promotionnelles VIP'}
-            </h2>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          ${adminState.landingPages
-            .map((lp, idx) => {
-              const orig = Number(lp.originalPrice || 0);
-              const disc = Number(lp.discountPrice || 0);
-              const saveAmt = Math.max(0, orig - disc);
-              const pct = orig > disc && orig > 0 ? Math.round(((orig - disc) / orig) * 100) : 25;
-              return `
-                <article
-                  style="--i: ${idx};"
-                  class="animate-stagger-item group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#FFF9FB] via-white to-[#FCE8EE]/50 border border-[#DE1B61]/20 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row items-stretch"
-                >
-                  <div class="relative sm:w-44 h-48 sm:h-auto shrink-0 overflow-hidden bg-[#F5E8EC] cursor-pointer" data-action="open-landing" data-id="${lp.id}">
-                    <img
-                      src="${lp.imageUrl}"
-                      alt="${lp.title}"
-                      referrerpolicy="no-referrer"
-                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <span class="absolute top-2.5 start-2.5 px-2.5 py-1 rounded-full bg-[#DE1B61] text-white text-xs font-extrabold shadow-xs">
-                      -${pct}%
-                    </span>
-                  </div>
-
-                  <div class="p-4 flex-1 flex flex-col justify-between">
-                    <div>
-                      <div class="flex items-center gap-1.5 text-[11px] font-bold text-[#15803D] mb-1">
-                        <span>✓ ${store.lang === 'ar' ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}</span>
-                        <span>•</span>
-                        <span>🚚 69 ${store.lang === 'ar' ? 'ولاية' : 'Wilayas'}</span>
-                      </div>
-                      <h3 class="text-sm sm:text-base font-extrabold text-[#18181B] leading-snug line-clamp-2">
-                        ${lp.title}
-                      </h3>
-                      <p class="mt-1 text-xs text-[#52525B] line-clamp-2">
-                        ${lp.description || ''}
-                      </p>
-                    </div>
-
-                    <div class="mt-3 pt-2.5 border-t border-black/8 flex items-center justify-between gap-2 flex-wrap">
-                      <div>
-                        <div class="flex items-baseline gap-2 tabular-nums">
-                          <span class="text-base sm:text-lg font-extrabold text-[#DE1B61]">${formatDA(disc, store.lang)}</span>
-                          ${
-                            orig > disc
-                              ? `<span class="text-xs text-[#8E8E93] line-through">${formatDA(orig, store.lang)}</span>`
-                              : ''
-                          }
-                        </div>
-                        ${
-                          saveAmt > 0
-                            ? `<span class="text-[11px] font-bold text-[#15803D]">
-                                ${store.lang === 'ar' ? `توفرين ${formatDA(saveAmt, 'ar')}` : `Économisez ${formatDA(saveAmt, 'fr')}`}
-                              </span>`
-                            : ''
-                        }
-                      </div>
-
-                      <button
-                        type="button"
-                        data-action="open-landing"
-                        data-id="${lp.id}"
-                        class="ss-btn-pink px-4 py-2 text-xs font-bold inline-flex items-center gap-1.5"
-                      >
-                        <span>${store.lang === 'ar' ? 'اطلبي الآن' : 'Commander'}</span>
-                        <span>${getArrowNext()}</span>
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              `;
-            })
-            .join('')}
-        </div>
-      </section>
-      `
-          : ''
-      }
 
       <!-- 6. إضافة وعرض الآراء الحقيقية للزبونات -->
       ${renderRealReviewsSection()}
@@ -2293,7 +2182,7 @@ function renderPDPScreen() {
             <!-- شريط الصور المصغرة إذا توفرت عدة صور -->
             ${
               gallery.length > 1
-                ? `<div class="mt-3 flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
+                ? `<div class="mt-3 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-1">
                     ${gallery
                       .map(
                         (imgUrl, idx) => `
@@ -2301,7 +2190,7 @@ function renderPDPScreen() {
                           type="button"
                           data-action="pdp-gallery-dot"
                           data-index="${idx}"
-                          class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                          class="relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
                             activeIdx === idx
                               ? 'border-[#DE1B61] scale-105 shadow-xs'
                               : 'border-transparent opacity-70 hover:opacity-100'
@@ -3188,11 +3077,19 @@ function renderAll() {
   document.documentElement.lang = store.lang;
   document.documentElement.dir = store.lang === 'ar' ? 'rtl' : 'ltr';
 
+  // دائماً عند تغيير الصفحة أو الدخول لمنتج جديد، تبدأ الصفحة من أعلى نقطة
+  if (typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+  }
+
   renderHeader();
   renderNavigationBars();
 
   const mainEl = document.getElementById('app-main');
   if (!mainEl) return;
+  mainEl.scrollTop = 0;
 
   switch (store.currentScreen) {
     case 'home':
@@ -3224,6 +3121,12 @@ function renderAll() {
       break;
     default:
       mainEl.innerHTML = renderHomeScreen();
+  }
+
+  if (typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
   }
 
   requestAnimationFrame(() => initScrollReveal());
@@ -3597,10 +3500,10 @@ function setGallerySlideIndex(galleryBox, targetIndex) {
       const tIdx = Number(thumb.getAttribute('data-index'));
       if (tIdx === normalized) {
         thumb.className =
-          'relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-[#DE1B61] scale-105 shadow-xs';
+          'relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-[#DE1B61] scale-105 shadow-xs';
       } else {
         thumb.className =
-          'relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-transparent opacity-70 hover:opacity-100';
+          'relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-transparent opacity-70 hover:opacity-100';
       }
     });
   } else if (galleryType === 'lp') {
@@ -3885,7 +3788,11 @@ function setupEvents() {
         }
         e.preventDefault();
         if (!id) break;
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        if (document.documentElement) document.documentElement.scrollTop = 0;
+        if (document.body) document.body.scrollTop = 0;
         store.navigate('pdp', { productId: id });
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         break;
       }
 

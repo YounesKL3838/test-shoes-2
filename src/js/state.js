@@ -196,7 +196,11 @@ export const store = {
     if (!options.skipUrlUpdate) {
       this.syncUrlWithState(Boolean(options.replaceUrl));
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+      if (document.body) document.body.scrollTop = 0;
+    }
     this.notify();
   },
 
@@ -393,7 +397,11 @@ export const store = {
     this.cart = [];
     this.lastConfirmedOrder = newOrder;
     this.currentScreen = 'confirmation';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+      if (document.body) document.body.scrollTop = 0;
+    }
     this.notify();
     syncOrderToSupabase(newOrder);
     return newOrder;
