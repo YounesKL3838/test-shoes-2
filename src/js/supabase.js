@@ -17,8 +17,8 @@ const ENV_SUPABASE_ANON_KEY =
     ? String(import.meta.env.VITE_SUPABASE_ANON_KEY).trim()
     : '';
 
-const FALLBACK_SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const FALLBACK_SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const FALLBACK_SUPABASE_URL = 'https://mxviqqtewnvwjvoruegs.supabase.co';
+const FALLBACK_SUPABASE_ANON_KEY = 'sb_publishable_fEOufDoqK-4PRwp1a7_41Q_ZZMDQlsO';
 
 const SUPABASE_URL = ENV_SUPABASE_URL || FALLBACK_SUPABASE_URL;
 const SUPABASE_ANON_KEY = ENV_SUPABASE_ANON_KEY || FALLBACK_SUPABASE_ANON_KEY;
