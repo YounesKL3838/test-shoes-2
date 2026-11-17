@@ -934,6 +934,14 @@ export const adminState = {
 
   draftCategoryImage: IMAGES.talons,
   draftCollectionProductIds: [],
+  draftCollectionGallery: [],
+  draftCollectionForm: {
+    title_ar: '',
+    title_fr: '',
+    subtitle_ar: '',
+    price: '',
+    originalPrice: '',
+  },
 
   // حالة مسودة إضافة/تعديل المنتج التفصيلية
   draftProductBrief: '',
@@ -2498,6 +2506,37 @@ function renderCategoryManagerCard() {
   `;
 }
 
+function getInvEffectivePrice(p) {
+  if (!p) return 0;
+  const dp = Number(p.discountPrice);
+  if (
+    p.discountPrice !== null &&
+    p.discountPrice !== undefined &&
+    p.discountPrice !== '' &&
+    !Number.isNaN(dp) &&
+    dp > 0
+  ) {
+    return dp;
+  }
+  return Math.max(0, Number(p.originalPrice || p.price || 0));
+}
+
+function syncCurrentCollectionFormToDraft() {
+  const form = document.getElementById('adm-collection-form');
+  if (!(form instanceof HTMLFormElement)) return;
+  const getVal = (name) => {
+    const el = form.elements.namedItem(name);
+    return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.value : '';
+  };
+  adminState.draftCollectionForm = {
+    title_ar: getVal('title_ar'),
+    title_fr: getVal('title_fr'),
+    subtitle_ar: getVal('subtitle_ar'),
+    price: getVal('price'),
+    originalPrice: getVal('originalPrice'),
+  };
+}
+
 function renderCollectionsManagerCard() {
   const lang = getLang();
   const isFr = lang === 'fr';
@@ -2509,20 +2548,45 @@ function renderCollectionsManagerCard() {
   const selectedIds = new Set(
     Array.isArray(adminState.draftCollectionProductIds) ? adminState.draftCollectionProductIds : []
   );
+  const colGallery = Array.isArray(adminState.draftCollectionGallery)
+    ? adminState.draftCollectionGallery
+    : [];
+  const dcf = adminState.draftCollectionForm || {};
+  const autoSum = Array.from(selectedIds).reduce((sum, pid) => {
+    const prod = adminState.inventory.find((p) => p.id === pid);
+    return sum + getInvEffectivePrice(prod);
+  }, 0);
 
-  const renderCollageThumb = (prodIds) => {
-    const imgs = (Array.isArray(prodIds) ? prodIds : [])
+  const renderCollageThumb = (col) => {
+    const customImgs = Array.isArray(col.gallery) && col.gallery.length > 0
+      ? col.gallery.filter(Boolean)
+      : col.image
+      ? [col.image]
+      : [];
+    if (customImgs.length > 0) {
+      return `
+        <div style="position:relative; width:54px; height:54px; border-radius:10px; overflow:hidden; border:1.5px solid rgba(216,27,96,0.3); flex-shrink:0;">
+          <img src="${customImgs[0]}" alt="" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover; display:block;" />
+          ${
+            customImgs.length > 1
+              ? `<span style="position:absolute; bottom:2px; right:2px; background:rgba(0,0,0,0.65); color:#fff; font-size:9px; font-weight:800; padding:1px 4px; border-radius:999px;">+${customImgs.length - 1}</span>`
+              : ''
+          }
+        </div>
+      `;
+    }
+    const imgs = (Array.isArray(col.productIds) ? col.productIds : [])
       .map((pid) => adminState.inventory.find((p) => p.id === pid)?.image)
       .filter(Boolean)
       .slice(0, 4);
     if (imgs.length === 0) {
-      return `<div style="width:52px; height:52px; border-radius:10px; background:#fce8ee; color:#de1b61; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">✨</div>`;
+      return `<div style="width:54px; height:54px; border-radius:10px; background:#fce8ee; color:#de1b61; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">✨</div>`;
     }
     if (imgs.length === 1) {
-      return `<img src="${imgs[0]}" alt="" referrerpolicy="no-referrer" style="width:52px; height:52px; border-radius:10px; object-fit:cover; border:1px solid rgba(216,27,96,0.25); flex-shrink:0;" />`;
+      return `<img src="${imgs[0]}" alt="" referrerpolicy="no-referrer" style="width:54px; height:54px; border-radius:10px; object-fit:cover; border:1px solid rgba(216,27,96,0.25); flex-shrink:0;" />`;
     }
     return `
-      <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; display:grid; grid-template-columns:repeat(2,1fr); gap:1.5px; background:#fff; border:1.5px solid rgba(216,27,96,0.28); flex-shrink:0;">
+      <div style="width:54px; height:54px; border-radius:10px; overflow:hidden; display:grid; grid-template-columns:repeat(2,1fr); gap:1.5px; background:#fff; border:1.5px solid rgba(216,27,96,0.28); flex-shrink:0;">
         ${imgs
           .map(
             (src) =>
@@ -2541,14 +2605,14 @@ function renderCollectionsManagerCard() {
             ${
               isFr
                 ? `Collections & Looks (${collections.length})`
-                : `التشكيلات المجمعة — صور منتجات مع بعضها (${collections.length})`
+                : `التشكيلات المجمعة — صور وسعر إجمالي (${collections.length})`
             }
           </h2>
           <p class="adm-card-sub">
             ${
               isFr
-                ? 'Regroupez plusieurs produits dans une même collection visuelle cliquable'
-                : 'اجمع عدة منتجات في تشكيلة واحدة تظهر صورها مع بعضها، وعند الدخول إليها تظهر جميع منتجاتها'
+                ? 'Ajoutez des photos à votre collection, choisissez ses produits et définissez son prix total'
+                : 'أضف صوراً خاصة بالتشكيلة، اختر منتجاتها، وحدد السعر الإجمالي (أو اتركه يُحسب تلقائياً)'
             }
           </p>
         </div>
@@ -2574,7 +2638,7 @@ function renderCollectionsManagerCard() {
                 type="text"
                 class="adm-input"
                 placeholder="${isFr ? 'Ex: Collection Soirée' : 'مثال: تشكيلة السهرات الراقية'}"
-                value="${editingCol ? editingCol.title_ar || '' : ''}"
+                value="${dcf.title_ar ?? (editingCol ? editingCol.title_ar || '' : '')}"
                 required
               />
             </div>
@@ -2586,7 +2650,7 @@ function renderCollectionsManagerCard() {
                 type="text"
                 class="adm-input"
                 placeholder="Ex: Look Soirée Chic"
-                value="${editingCol ? editingCol.title_fr || '' : ''}"
+                value="${dcf.title_fr ?? (editingCol ? editingCol.title_fr || '' : '')}"
               />
             </div>
 
@@ -2597,7 +2661,105 @@ function renderCollectionsManagerCard() {
                 type="text"
                 class="adm-input"
                 placeholder="${isFr ? 'Ex: Sélection assortie pour vos sorties' : 'مثال: تنسيق أنيق يجمع أجمل موديلات الموسم'}"
-                value="${editingCol ? editingCol.subtitle_ar || '' : ''}"
+                value="${dcf.subtitle_ar ?? (editingCol ? editingCol.subtitle_ar || '' : '')}"
+              />
+            </div>
+
+            <!-- صور التشكيلة الخاصة -->
+            <div class="adm-field full">
+              <label class="adm-label">
+                ${
+                  isFr
+                    ? `Photos de la collection (${colGallery.length} ajoutées — sinon photos des produits)`
+                    : `صور التشكيلة الخاصة (${colGallery.length} صور مرفوعة — وفي حال عدم الرفع تُعرض صور المنتجات)`
+                }
+              </label>
+              <label
+                for="adm-collection-files-input"
+                class="adm-upload-box"
+                style="padding:0.65rem 0.9rem; cursor:pointer; border-style:dashed;"
+              >
+                <div class="adm-upload-left">
+                  <span style="width:38px; height:38px; border-radius:10px; background:#fce8ee; color:#de1b61; display:inline-flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">🖼️</span>
+                  <div>
+                    <span class="adm-upload-title" style="display:block; font-size:0.82rem;">
+                      ${isFr ? 'Ajouter une ou plusieurs photos de couverture' : 'اضغط لرفع صورة أو عدة صور للتشكيلة'}
+                    </span>
+                    <span style="display:block; font-size:0.71rem; color:#71717a;">
+                      ${isFr ? 'Apparaîtront dans la carte et dans le diaporama de la collection' : 'تظهر كغلاف رئيسي ومعرض صور داخل صفحة التشكيلة'}
+                    </span>
+                  </div>
+                </div>
+                <span class="adm-btn adm-btn-soft adm-btn-sm">${isFr ? '+ Photos' : '+ اختيار صور'}</span>
+                <input id="adm-collection-files-input" type="file" accept="image/*" multiple class="adm-file-hidden" />
+              </label>
+
+              ${
+                colGallery.length > 0
+                  ? `<div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.6rem;">
+                      ${colGallery
+                        .map(
+                          (imgUrl, idx) => `
+                        <div style="position:relative; width:68px; height:68px; border-radius:10px; overflow:hidden; border:${idx === 0 ? '2px solid #DE1B61' : '1px solid #e4e4e7'}; background:#fff;">
+                          <img src="${imgUrl}" alt="" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover; display:block;" />
+                          <button
+                            type="button"
+                            data-adm-action="set-col-cover"
+                            data-index="${idx}"
+                            title="${isFr ? 'Photo principale' : 'تعيين كغلاف أول'}"
+                            style="position:absolute; bottom:2px; left:2px; background:${idx === 0 ? '#DE1B61' : 'rgba(24,24,27,0.72)'}; color:#fff; border:none; border-radius:6px; font-size:9px; font-weight:800; padding:1px 5px; cursor:pointer;"
+                          >${idx === 0 ? (isFr ? 'Une' : 'رئيسية') : '★'}</button>
+                          <button
+                            type="button"
+                            data-adm-action="remove-col-img"
+                            data-index="${idx}"
+                            title="${isFr ? 'Retirer' : 'حذف الصورة'}"
+                            style="position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; background:rgba(220,38,38,0.9); color:#fff; border:none; font-size:11px; line-height:1; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                          >×</button>
+                        </div>
+                      `
+                        )
+                        .join('')}
+                    </div>`
+                  : ''
+              }
+            </div>
+
+            <!-- السعر الإجمالي للتشكيلة -->
+            <div class="adm-field">
+              <label class="adm-label">
+                ${isFr ? 'Prix total de la collection (DA)' : 'السعر الإجمالي للتشكيلة (د.ج)'}
+              </label>
+              <input
+                name="price"
+                type="number"
+                min="0"
+                step="10"
+                class="adm-input"
+                placeholder="${autoSum > 0 ? (isFr ? `Auto: ${autoSum} DA` : `تلقائي حسب المنتجات: ${autoSum} د.ج`) : isFr ? 'Ex: 9500 (vide = somme auto)' : 'اتركه فارغاً للحساب التلقائي'}"
+                value="${dcf.price ?? (editingCol && editingCol.customPrice ? editingCol.customPrice : '')}"
+              />
+              <span id="adm-col-auto-sum" style="display:block; font-size:0.72rem; color:#DE1B61; font-weight:700; margin-top:0.25rem;">
+                ${
+                  isFr
+                    ? `Somme des produits sélectionnés : ${formatDA(autoSum, 'fr')}`
+                    : `مجموع أسعار المنتجات المختارة : ${formatDA(autoSum, 'ar')}`
+                }
+              </span>
+            </div>
+
+            <div class="adm-field">
+              <label class="adm-label">
+                ${isFr ? 'Ancien prix barré (Optionnel)' : 'السعر قبل التخفيض (اختياري)'}
+              </label>
+              <input
+                name="originalPrice"
+                type="number"
+                min="0"
+                step="10"
+                class="adm-input"
+                placeholder="${isFr ? 'Auto si prix total réduit' : 'تلقائي عند وضع سعر مخفض عن المجموع'}"
+                value="${dcf.originalPrice ?? (editingCol && editingCol.customOriginalPrice ? editingCol.customOriginalPrice : '')}"
               />
             </div>
 
@@ -2607,7 +2769,7 @@ function renderCollectionsManagerCard() {
                   ${
                     isFr
                       ? `Sélectionnez les produits de cette collection (${selectedIds.size} sélectionnés) :`
-                      : `اختر المنتجات التي ستظهر معاً في هذه التشكيلة (المحدد: ${selectedIds.size}) :`
+                      : `اختر المنتجات التي ستظهر تحت صورة هذه التشكيلة (المحدد: ${selectedIds.size}) :`
                   }
                 </label>
               </div>
@@ -2636,7 +2798,7 @@ function renderCollectionsManagerCard() {
                               <img src="${prod.image}" alt="${pName}" referrerpolicy="no-referrer" style="width:40px; height:40px; border-radius:8px; object-fit:cover; flex-shrink:0;" />
                               <div style="min-width:0; flex:1;">
                                 <span style="display:block; font-size:0.76rem; font-weight:700; color:#18181b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${pName}</span>
-                                <span style="display:block; font-size:0.7rem; color:#DE1B61; font-weight:700;">${formatDA(prod.price, lang)}</span>
+                                <span style="display:block; font-size:0.7rem; color:#DE1B61; font-weight:700;">${formatDA(getInvEffectivePrice(prod), lang)}</span>
                               </div>
                               <span style="width:18px; height:18px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; ${
                                 isChecked
@@ -2681,19 +2843,29 @@ function renderCollectionsManagerCard() {
           : `<div class="adm-categories-grid">
               ${collections
                 .map((col) => {
-                  const count = Array.isArray(col.productIds)
-                    ? col.productIds.filter((pid) => adminState.inventory.some((p) => p.id === pid)).length
-                    : 0;
+                  const matchedProds = Array.isArray(col.productIds)
+                    ? col.productIds
+                        .map((pid) => adminState.inventory.find((p) => p.id === pid))
+                        .filter(Boolean)
+                    : [];
+                  const count = matchedProds.length;
+                  const productsSum = matchedProds.reduce((s, p) => s + getInvEffectivePrice(p), 0);
+                  const totalDisplayPrice =
+                    col.customPrice && Number(col.customPrice) > 0
+                      ? Number(col.customPrice)
+                      : Number(col.price || 0) > 0
+                      ? Number(col.price)
+                      : productsSum;
                   return `
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:0.65rem; background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:0.6rem 0.8rem;">
                       <div style="display:flex; align-items:center; gap:0.65rem; min-width:0; flex:1;">
-                        ${renderCollageThumb(col.productIds)}
+                        ${renderCollageThumb(col)}
                         <div style="min-width:0; flex:1;">
                           <strong style="font-size:0.86rem; color:var(--adm-text-dark); display:block; line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                             ${isFr ? col.title_fr || col.title_ar : col.title_ar || col.title_fr}
                           </strong>
                           <span style="font-size:0.74rem; color:#DE1B61; font-weight:700; display:block; margin-top:2px;">
-                            ${count} ${isFr ? 'produits associés' : 'منتجات داخل التشكيلة'}
+                            ${formatDA(totalDisplayPrice, lang)} · ${count} ${isFr ? 'produits' : 'منتجات'}
                           </span>
                         </div>
                       </div>
@@ -4214,6 +4386,14 @@ export function setupAdminEvents() {
         adminState.isCollectionFormOpen = !adminState.isCollectionFormOpen;
         adminState.editingCollectionId = null;
         adminState.draftCollectionProductIds = [];
+        adminState.draftCollectionGallery = [];
+        adminState.draftCollectionForm = {
+          title_ar: '',
+          title_fr: '',
+          subtitle_ar: '',
+          price: '',
+          originalPrice: '',
+        };
         renderAdminDashboard();
         break;
       }
@@ -4226,6 +4406,19 @@ export function setupAdminEvents() {
           adminState.draftCollectionProductIds = Array.isArray(col.productIds)
             ? [...col.productIds]
             : [];
+          adminState.draftCollectionGallery =
+            Array.isArray(col.gallery) && col.gallery.length > 0
+              ? [...col.gallery.filter(Boolean)]
+              : col.image
+              ? [col.image]
+              : [];
+          adminState.draftCollectionForm = {
+            title_ar: col.title_ar || '',
+            title_fr: col.title_fr || '',
+            subtitle_ar: col.subtitle_ar || '',
+            price: col.customPrice ? String(col.customPrice) : '',
+            originalPrice: col.customOriginalPrice ? String(col.customOriginalPrice) : '',
+          };
           renderAdminDashboard();
         }
         break;
@@ -4235,7 +4428,41 @@ export function setupAdminEvents() {
         adminState.editingCollectionId = null;
         adminState.isCollectionFormOpen = false;
         adminState.draftCollectionProductIds = [];
+        adminState.draftCollectionGallery = [];
+        adminState.draftCollectionForm = {
+          title_ar: '',
+          title_fr: '',
+          subtitle_ar: '',
+          price: '',
+          originalPrice: '',
+        };
         renderAdminDashboard();
+        break;
+      }
+
+      case 'remove-col-img': {
+        const imgIdx = Number(btn.getAttribute('data-index'));
+        syncCurrentCollectionFormToDraft();
+        if (Array.isArray(adminState.draftCollectionGallery) && !Number.isNaN(imgIdx)) {
+          adminState.draftCollectionGallery.splice(imgIdx, 1);
+          renderAdminDashboard();
+        }
+        break;
+      }
+
+      case 'set-col-cover': {
+        const imgIdx = Number(btn.getAttribute('data-index'));
+        syncCurrentCollectionFormToDraft();
+        if (
+          Array.isArray(adminState.draftCollectionGallery) &&
+          !Number.isNaN(imgIdx) &&
+          imgIdx > 0 &&
+          imgIdx < adminState.draftCollectionGallery.length
+        ) {
+          const [picked] = adminState.draftCollectionGallery.splice(imgIdx, 1);
+          adminState.draftCollectionGallery.unshift(picked);
+          renderAdminDashboard();
+        }
         break;
       }
 
@@ -4260,6 +4487,25 @@ export function setupAdminEvents() {
             checkCircle.style.background = 'transparent';
             checkCircle.style.color = 'transparent';
             checkCircle.style.border = '1.5px solid #a1a1aa';
+          }
+        }
+        const sumEl = document.getElementById('adm-col-auto-sum');
+        if (sumEl) {
+          const newAutoSum = adminState.draftCollectionProductIds.reduce((sum, pid) => {
+            const p = adminState.inventory.find((item) => item.id === pid);
+            return sum + getInvEffectivePrice(p);
+          }, 0);
+          const langNow = getLang();
+          sumEl.textContent =
+            langNow === 'fr'
+              ? `Somme des produits sélectionnés : ${formatDA(newAutoSum, 'fr')}`
+              : `مجموع أسعار المنتجات المختارة : ${formatDA(newAutoSum, 'ar')}`;
+          const priceInp = document.querySelector('#adm-collection-form input[name="price"]');
+          if (priceInp instanceof HTMLInputElement && newAutoSum > 0) {
+            priceInp.placeholder =
+              langNow === 'fr'
+                ? `Auto: ${newAutoSum} DA`
+                : `تلقائي حسب المنتجات: ${newAutoSum} د.ج`;
           }
         }
         break;
@@ -5086,6 +5332,18 @@ export function setupAdminEvents() {
           const thumb = document.getElementById('adm-cat-img-preview');
           if (thumb instanceof HTMLImageElement) thumb.src = dataUrl;
           showToast(t().toasts.photoUploaded);
+        } else if (target.id === 'adm-collection-files-input') {
+          syncCurrentCollectionFormToDraft();
+          if (!Array.isArray(adminState.draftCollectionGallery)) {
+            adminState.draftCollectionGallery = [];
+          }
+          for (const f of files) {
+            const dataUrl = await readAndCompressImageFile(f);
+            adminState.draftCollectionGallery.push(dataUrl);
+          }
+          target.value = '';
+          renderAdminDashboard();
+          showToast(t().toasts.galleryAdded(files.length));
         }
       } catch {
         showToast(t().toasts.invalidImage);
@@ -5255,12 +5513,41 @@ export function setupAdminEvents() {
         return;
       }
 
+      const rawPrice = Number(fd.get('price') || 0);
+      const rawOrigPrice = Number(fd.get('originalPrice') || 0);
+      const productsSum = pickedIds.reduce((sum, pid) => {
+        const p = adminState.inventory.find((item) => item.id === pid);
+        return sum + getInvEffectivePrice(p);
+      }, 0);
+
+      const customPrice = !Number.isNaN(rawPrice) && rawPrice > 0 ? Math.round(rawPrice) : null;
+      const customOriginalPrice =
+        !Number.isNaN(rawOrigPrice) && rawOrigPrice > 0 ? Math.round(rawOrigPrice) : null;
+      const finalTotalPrice = customPrice || productsSum;
+      const finalOriginalPrice =
+        customOriginalPrice && customOriginalPrice > finalTotalPrice
+          ? customOriginalPrice
+          : productsSum > finalTotalPrice
+          ? productsSum
+          : null;
+
+      const gallery = Array.isArray(adminState.draftCollectionGallery)
+        ? adminState.draftCollectionGallery.filter(Boolean)
+        : [];
+
       const colPayload = {
         id: adminState.editingCollectionId || 'col-' + Date.now().toString().slice(-5),
         title_ar,
         title_fr,
         subtitle_ar: subtitle_ar || 'تشكيلة منتجات متناسقة',
         subtitle_fr: subtitle_ar || title_fr,
+        image: gallery[0] || '',
+        gallery,
+        customPrice,
+        customOriginalPrice,
+        price: finalTotalPrice,
+        originalPrice: finalOriginalPrice,
+        hasCustomPrice: Boolean(customPrice),
         productIds: pickedIds,
       };
 
@@ -5282,6 +5569,14 @@ export function setupAdminEvents() {
 
       adminState.isCollectionFormOpen = false;
       adminState.draftCollectionProductIds = [];
+      adminState.draftCollectionGallery = [];
+      adminState.draftCollectionForm = {
+        title_ar: '',
+        title_fr: '',
+        subtitle_ar: '',
+        price: '',
+        originalPrice: '',
+      };
       adminState.saveAll();
       syncCmsToSupabase(adminState.cms, 0, adminState.categories, adminState.collections);
       renderAdminDashboard();

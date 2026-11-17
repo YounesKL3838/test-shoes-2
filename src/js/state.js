@@ -80,6 +80,7 @@ export const store = {
   pdpSelectedColor: 'Rose',
   pdpSelectedSize: 37,
   pdpGalleryIndex: 0,
+  collectionGalleryIndex: 0,
 
   // État Landing Page (Page d'offre promotionnelle autonome)
   activeLandingId: 'lp-101',
@@ -219,6 +220,7 @@ export const store = {
     }
     if (options.collectionId) {
       this.activeCollectionId = options.collectionId;
+      this.collectionGalleryIndex = 0;
     }
     if (options.productId) {
       const prod =
@@ -315,29 +317,36 @@ export const store = {
     return this.wishlist.includes(productId);
   },
 
-  addToCart(productId, size, color, quantity = 1, silent = false) {
+  addToCart(productId, size, color, quantity = 1, silent = false, overridePrice = null) {
     const product = PRODUCTS.find((p) => p.id === productId);
     if (!product) return null;
 
     const chosenSize = size || (Array.isArray(product.sizes) && product.sizes.length > 0 ? (product.sizes.includes(37) ? 37 : product.sizes[0]) : '');
-    const chosenColor = color || product.colors[0];
+    const chosenColor = color || (Array.isArray(product.colors) && product.colors[0]) || product.colorName || 'Rose';
+    const hasOverride = overridePrice !== null && overridePrice !== undefined && !Number.isNaN(Number(overridePrice));
+    const normalizedOverride = hasOverride ? Math.max(0, Number(overridePrice)) : null;
 
     const existing = this.cart.find(
       (item) =>
         item.productId === productId &&
         item.size === chosenSize &&
-        item.color === chosenColor
+        item.color === chosenColor &&
+        (item.overridePrice ?? null) === normalizedOverride
     );
 
     if (existing) {
       existing.quantity += quantity;
     } else {
-      this.cart.push({
+      const entry = {
         productId,
         size: chosenSize,
         color: chosenColor,
         quantity,
-      });
+      };
+      if (normalizedOverride !== null) {
+        entry.overridePrice = normalizedOverride;
+      }
+      this.cart.push(entry);
     }
     if (silent) {
       this.save();
@@ -345,6 +354,40 @@ export const store = {
       this.notify();
     }
     return { product, size: chosenSize, color: chosenColor };
+  },
+
+  addCollectionToCart(productsList, customTotalPrice = null) {
+    const prods = Array.isArray(productsList) ? productsList.filter(Boolean) : [];
+    if (prods.length === 0) return 0;
+
+    const baseSum = prods.reduce((sum, p) => sum + Math.max(0, Number(p.price || 0)), 0);
+    const targetTotal =
+      customTotalPrice !== null && customTotalPrice !== undefined && Number(customTotalPrice) > 0
+        ? Math.round(Number(customTotalPrice))
+        : baseSum;
+    const useOverride = targetTotal > 0 && targetTotal !== baseSum;
+
+    let remaining = targetTotal;
+    prods.forEach((p, idx) => {
+      let itemOverride = null;
+      if (useOverride) {
+        if (idx === prods.length - 1) {
+          itemOverride = Math.max(0, remaining);
+        } else if (baseSum > 0) {
+          const share = Math.round((Math.max(0, Number(p.price || 0)) / baseSum) * targetTotal);
+          itemOverride = Math.max(0, share);
+          remaining -= itemOverride;
+        } else {
+          const share = Math.round(targetTotal / prods.length);
+          itemOverride = Math.max(0, share);
+          remaining -= itemOverride;
+        }
+      }
+      this.addToCart(p.id, '', '', 1, true, itemOverride);
+    });
+
+    this.notify();
+    return prods.length;
   },
 
   updateCartQuantity(index, delta) {
@@ -367,11 +410,16 @@ export const store = {
       .map((item, index) => {
         const product = PRODUCTS.find((p) => p.id === item.productId);
         if (!product) return null;
+        const unitPrice =
+          item.overridePrice !== undefined && item.overridePrice !== null
+            ? Number(item.overridePrice)
+            : Number(product.price || 0);
         return {
           ...item,
           index,
           product,
-          lineTotal: product.price * item.quantity,
+          unitPrice,
+          lineTotal: unitPrice * item.quantity,
         };
       })
       .filter(Boolean);
@@ -459,7 +507,7 @@ export const store = {
         size: item.size,
         color: item.color,
         quantity: item.quantity,
-        price: item.product.price,
+        price: item.unitPrice ?? item.product.price,
       })),
       subtotal: details.subtotal,
       shippingFee: details.shippingFee,

@@ -493,7 +493,7 @@ function renderHeader() {
   const isScrolled = (window.scrollY || 0) > 12;
   const scrollClass = isScrolled ? ' is-scrolled' : '';
 
-  if (screen === 'pdp') {
+  if (screen === 'pdp' || screen === 'collection') {
     headerEl.innerHTML = '';
     headerEl.className = `hidden lg:block ss-smart-header${scrollClass}`;
   } else {
@@ -1396,15 +1396,102 @@ function getCollectionProductImage(p) {
   );
 }
 
-function renderCollectionCollageHtml(prods, isPriority = false) {
+function getCollectionPricing(col, prods) {
+  const list = Array.isArray(prods) ? prods : [];
+  const productsSum = list.reduce(
+    (sum, p) => sum + Math.max(0, Number(p?.price || 0)),
+    0
+  );
+  const customPrice =
+    col?.customPrice && Number(col.customPrice) > 0
+      ? Number(col.customPrice)
+      : col?.hasCustomPrice && Number(col.price) > 0
+      ? Number(col.price)
+      : 0;
+
+  const totalPrice = customPrice > 0 ? customPrice : productsSum;
+  const customOrig =
+    col?.customOriginalPrice && Number(col.customOriginalPrice) > 0
+      ? Number(col.customOriginalPrice)
+      : col?.originalPrice && Number(col.originalPrice) > 0
+      ? Number(col.originalPrice)
+      : 0;
+
+  const originalTotal =
+    customOrig > totalPrice
+      ? customOrig
+      : productsSum > totalPrice
+      ? productsSum
+      : null;
+
+  const discountPercent =
+    originalTotal && originalTotal > totalPrice
+      ? Math.round(((originalTotal - totalPrice) / originalTotal) * 100)
+      : 0;
+
+  return {
+    productsSum,
+    totalPrice,
+    originalTotal,
+    discountPercent,
+    hasCustomPrice: customPrice > 0,
+  };
+}
+
+function getCollectionGallery(col, prods) {
+  const customImgs = [];
+  if (Array.isArray(col?.gallery)) {
+    col.gallery.filter(Boolean).forEach((src) => {
+      if (!customImgs.includes(src)) customImgs.push(src);
+    });
+  }
+  if (col?.image && !customImgs.includes(col.image)) {
+    customImgs.unshift(col.image);
+  }
+  if (customImgs.length > 0) {
+    return { images: customImgs, hasCustomImages: true };
+  }
+  const prodImgs = (Array.isArray(prods) ? prods : [])
+    .map((p) => getCollectionProductImage(p))
+    .filter(Boolean);
+  return {
+    images: prodImgs.length > 0 ? prodImgs : [IMAGES.talons],
+    hasCustomImages: false,
+  };
+}
+
+function renderCollectionCollageHtml(prods, isPriority = false, col = null) {
   const isAr = store.lang === 'ar';
   const list = Array.isArray(prods) ? prods : [];
   const visible = list.slice(0, 4);
   const extraCount = Math.max(0, list.length - 4);
   const loadAttr = isPriority ? 'eager' : 'lazy';
+  const colGallery = col ? getCollectionGallery(col, list) : { images: [], hasCustomImages: false };
+  const pricing = col ? getCollectionPricing(col, list) : { discountPercent: 0 };
 
   let innerHtml = '';
-  if (visible.length === 1) {
+  if (colGallery.hasCustomImages && colGallery.images.length > 0) {
+    const colTitle = isAr
+      ? col.title_ar || col.title_fr || ''
+      : col.title_fr || col.title_ar || '';
+    innerHtml = `
+      <img
+        src="${colGallery.images[0]}"
+        alt="${colTitle}"
+        referrerpolicy="no-referrer"
+        decoding="async"
+        loading="${loadAttr}"
+        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+      ${
+        colGallery.images.length > 1
+          ? `<span class="absolute top-2 end-2 z-10 px-2 py-0.5 rounded-full bg-black/55 backdrop-blur-xs text-white text-[10px] font-bold">
+              📷 ${colGallery.images.length}
+            </span>`
+          : ''
+      }
+    `;
+  } else if (visible.length === 1) {
     const p = visible[0];
     innerHtml = `
       <img
@@ -1506,6 +1593,13 @@ function renderCollectionCollageHtml(prods, isPriority = false) {
       <span class="absolute bottom-2 start-2 z-10 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-xs text-[#18181B] text-[10px] sm:text-xs font-extrabold shadow-xs border border-[#DE1B61]/15">
         ${list.length} ${isAr ? 'منتجات' : 'articles'}
       </span>
+      ${
+        pricing.discountPercent > 0
+          ? `<span class="absolute top-2 start-2 z-10 px-2 py-0.5 rounded-full bg-[#DE1B61] text-white text-[10px] sm:text-[11px] font-bold tabular-nums shadow-xs">
+              -${pricing.discountPercent}%
+            </span>`
+          : ''
+      }
     </div>
   `;
 }
@@ -1528,7 +1622,7 @@ function renderCollectionsSectionHtml(compact = false) {
           ${
             !compact
               ? `<p class="text-[11px] sm:text-xs text-[#71717A]">
-                  ${isAr ? 'منتجات منسقة مع بعضها — اضغطي على التشكيلة لتصفح جميع موديلاتها' : 'Plusieurs modèles réunis ensemble — cliquez pour voir tous les produits'}
+                  ${isAr ? 'تصفحي التشكيلات المتكاملة مع السعر الإجمالي ومنتجات كل تشكيلة' : 'Découvrez nos collections complètes avec prix total et articles inclus'}
                 </p>`
               : ''
           }
@@ -1543,6 +1637,7 @@ function renderCollectionsSectionHtml(compact = false) {
           .map(({ col, prods }, idx) => {
             const title = isAr ? col.title_ar || col.title_fr : col.title_fr || col.title_ar;
             const subtitle = isAr ? col.subtitle_ar || col.subtitle_fr : col.subtitle_fr || col.subtitle_ar;
+            const pricing = getCollectionPricing(col, prods);
             return `
               <article
                 data-action="open-collection"
@@ -1550,7 +1645,7 @@ function renderCollectionsSectionHtml(compact = false) {
                 style="--i: ${Math.min(idx, 6)};"
                 class="group animate-stagger-item ss-scroll-anim cursor-pointer bg-white rounded-2xl border border-[#DE1B61]/15 hover:border-[#DE1B61]/45 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col"
               >
-                ${renderCollectionCollageHtml(prods, !compact && idx < 3)}
+                ${renderCollectionCollageHtml(prods, !compact && idx < 3, col)}
                 <div class="p-2.5 sm:p-3.5 flex flex-col flex-1 justify-between gap-2">
                   <div>
                     <h3 class="text-[13px] sm:text-base font-extrabold text-[#18181B] group-hover:text-[#DE1B61] transition-colors truncate">
@@ -1561,6 +1656,18 @@ function renderCollectionsSectionHtml(compact = false) {
                         ? `<p class="text-[11px] sm:text-xs text-[#71717A] mt-0.5 line-clamp-1">${subtitle}</p>`
                         : ''
                     }
+                    <div class="mt-1.5 flex items-baseline gap-1.5 flex-wrap tabular-nums">
+                      <span class="text-[13px] sm:text-[15px] font-black text-[#DE1B61]">
+                        ${formatDA(pricing.totalPrice, store.lang)}
+                      </span>
+                      ${
+                        pricing.originalTotal
+                          ? `<span class="text-[10px] sm:text-xs text-[#8E8E93] line-through">
+                              ${formatDA(pricing.originalTotal, store.lang)}
+                            </span>`
+                          : ''
+                      }
+                    </div>
                   </div>
                   <div class="flex items-center justify-between pt-1.5 border-t border-black/5">
                     <span class="text-[11px] sm:text-xs font-bold text-[#DE1B61]">
@@ -1613,46 +1720,306 @@ function renderCollectionScreen() {
 
   const title = isAr ? col.title_ar || col.title_fr : col.title_fr || col.title_ar;
   const subtitle = isAr ? col.subtitle_ar || col.subtitle_fr : col.subtitle_fr || col.subtitle_ar;
+  const pricing = getCollectionPricing(col, prods);
+  const { images: gallery } = getCollectionGallery(col, prods);
+  const activeIdx = (store.collectionGalleryIndex || 0) % gallery.length;
 
   return `
-    <div class="max-w-6xl mx-auto pb-10 animate-screen-enter">
-      <!-- رأس التشكيلة مع صور المنتجات مجتمعة -->
-      <section class="px-3 sm:px-6 pt-3 pb-4">
-        <div class="bg-gradient-to-br from-[#FDF2F6] via-white to-[#FCE8EE]/70 rounded-2xl border border-[#DE1B61]/15 p-3.5 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-          <div class="w-full sm:w-56 md:w-64 shrink-0 rounded-2xl overflow-hidden border border-[#DE1B61]/20 shadow-xs">
-            ${renderCollectionCollageHtml(prods, true)}
-          </div>
-          <div class="flex-1 text-center sm:text-start space-y-2">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FCE8EE] text-[#DE1B61] text-[11px] sm:text-xs font-extrabold">
-              ✨ ${isAr ? `تشكيلة متكاملة · ${prods.length} منتجات` : `Collection · ${prods.length} articles`}
-            </span>
-            <h2 class="text-xl sm:text-3xl font-extrabold text-[#18181B]">${title}</h2>
-            ${
-              subtitle
-                ? `<p class="text-xs sm:text-sm text-[#52525B] max-w-xl">${subtitle}</p>`
-                : ''
-            }
-            <p class="text-[11px] sm:text-xs text-[#DE1B61] font-semibold">
-              ${isAr ? 'اضغطي على أي منتج أدناه للدخول إلى تفاصيله واختيار المقاس واللون' : 'Cliquez sur un produit ci-dessous pour voir ses détails, pointures et couleurs'}
-            </p>
+    <div class="min-h-screen bg-[#FAF8F9] pb-16 animate-screen-enter">
+      <div class="max-w-6xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-6">
+
+        <!-- الشريط العلوي للتنقل والمشاركة تماماً مثل صفحة المنتج -->
+        <div class="flex items-center justify-between mb-4 sm:mb-6">
+          <button
+            type="button"
+            data-action="go-back"
+            class="px-3.5 py-1.5 rounded-xl bg-white border border-[#E4E4E7] hover:border-[#D4D4D8] text-[#27272A] text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+          >
+            <span>${isAr ? '→ الرجوع' : '← Retour'}</span>
+          </button>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              data-action="share-product"
+              class="px-3 py-1.5 rounded-xl bg-white border border-[#E4E4E7] hover:border-[#D4D4D8] text-[#52525B] text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+              <span>${isAr ? 'مشاركة' : 'Partager'}</span>
+            </button>
           </div>
         </div>
-      </section>
 
-      <!-- جميع المنتجات داخل التشكيلة مع إمكانية الدخول لكل منتج -->
-      <section class="px-3 sm:px-6 py-2">
-        ${
-          prods.length > 0
-            ? `<div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
-                ${prods.map((p, idx) => renderShoeStyleCard(p, idx, true)).join('')}
-              </div>`
-            : `<div class="py-12 text-center bg-[#FDF5F7]/70 rounded-2xl border border-[#DE1B61]/15">
-                <p class="text-sm font-bold text-[#18181B]">
-                  ${isAr ? 'لا توجد منتجات في هذه التشكيلة حالياً' : 'Aucun produit dans cette collection pour le moment'}
-                </p>
-              </div>`
-        }
-      </section>
+        <!-- شبكة التصفح على شكل منتج (معرض صور التشكيلة + منتجات مصغرة تحت الصورة + تفاصيل والسعر الإجمالي) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start">
+
+          <!-- العمود الأيسر: صورة/معرض التشكيلة وتحته مباشرة المنتجات المصغرة -->
+          <div class="lg:col-span-7 bg-white rounded-3xl border border-[#EAE6E8] p-3 sm:p-5 shadow-2xs space-y-4">
+            <div
+              id="collection-gallery-swipe-box"
+              data-swipe-gallery="collection"
+              data-active-index="${activeIdx}"
+              data-total-slides="${gallery.length}"
+              class="ss-insta-gallery-box rounded-2xl bg-[#F7F5F6] overflow-hidden"
+            >
+              <div
+                class="ss-insta-track"
+                style="transform: translate3d(-${activeIdx * 100}%, 0, 0);"
+              >
+                ${gallery
+                  .map(
+                    (imgSrc, idx) => `
+                  <div class="ss-insta-slide" data-slide-index="${idx}">
+                    <img
+                      src="${imgSrc}"
+                      alt="${title} - ${idx + 1}"
+                      referrerpolicy="no-referrer"
+                      decoding="async"
+                      fetchpriority="${idx === activeIdx ? 'high' : 'low'}"
+                      loading="${idx === activeIdx ? 'eager' : 'lazy'}"
+                      draggable="false"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                `
+                  )
+                  .join('')}
+              </div>
+
+              ${
+                gallery.length > 1
+                  ? `
+                <button
+                  type="button"
+                  data-action="gallery-step"
+                  data-dir="-1"
+                  class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-[#18181B] shadow-md items-center justify-center text-lg font-bold cursor-pointer transition-transform hover:scale-105"
+                  aria-label="Previous"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  data-action="gallery-step"
+                  data-dir="1"
+                  class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-[#18181B] shadow-md items-center justify-center text-lg font-bold cursor-pointer transition-transform hover:scale-105"
+                  aria-label="Next"
+                >
+                  ›
+                </button>
+                <span
+                  data-gallery-counter
+                  dir="ltr"
+                  class="absolute bottom-3 end-3 z-10 px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-xs text-white text-xs font-semibold tabular-nums pointer-events-none"
+                >
+                  ${activeIdx + 1}/${gallery.length}
+                </span>
+              `
+                  : ''
+              }
+            </div>
+
+            <!-- صور معرض التشكيلة المصغرة للتبديل -->
+            ${
+              gallery.length > 1
+                ? `<div class="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                    ${gallery
+                      .map(
+                        (imgUrl, idx) => `
+                        <button
+                          type="button"
+                          data-action="collection-gallery-dot"
+                          data-index="${idx}"
+                          class="relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                            activeIdx === idx
+                              ? 'border-[#DE1B61] scale-105 shadow-xs'
+                              : 'border-transparent opacity-70 hover:opacity-100'
+                          }"
+                        >
+                          <img src="${imgUrl}" alt="Thumb ${idx + 1}" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
+                        </button>
+                      `
+                      )
+                      .join('')}
+                  </div>`
+                : ''
+            }
+
+            <!-- المنتجات مصغرة مباشرة تحت صورة التشكيلة مع إمكانية الدخول لأي منتج -->
+            <div class="pt-3 border-t border-[#F1EEF0]">
+              <div class="flex items-center justify-between gap-2 mb-2.5">
+                <h2 class="text-xs sm:text-sm font-extrabold text-[#18181B]">
+                  ${isAr ? `منتجات التشكيلة (${prods.length})` : `Produits du look (${prods.length})`}
+                </h2>
+                <span class="text-[11px] font-semibold text-[#DE1B61]">
+                  ${isAr ? 'اضغطي على المنتج للدخول' : 'Cliquez pour ouvrir'}
+                </span>
+              </div>
+
+              ${
+                prods.length > 0
+                  ? `<div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      ${prods
+                        .map((p) => {
+                          const pName = isAr ? p.name_ar || p.name_fr : p.name_fr || p.name_ar;
+                          return `
+                            <button
+                              type="button"
+                              data-action="open-pdp"
+                              data-id="${p.id}"
+                              class="group text-start bg-[#FAF8F9] hover:bg-white rounded-xl border border-[#EAE6E8] hover:border-[#DE1B61] p-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs flex flex-col"
+                            >
+                              <div class="aspect-square w-full rounded-lg overflow-hidden bg-white mb-1.5">
+                                <img
+                                  src="${getCollectionProductImage(p)}"
+                                  alt="${pName}"
+                                  referrerpolicy="no-referrer"
+                                  loading="lazy"
+                                  decoding="async"
+                                  class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                              </div>
+                              <span class="text-[11px] font-bold text-[#18181B] group-hover:text-[#DE1B61] truncate block w-full">
+                                ${pName}
+                              </span>
+                              <div class="flex items-center justify-between gap-1 mt-0.5 tabular-nums w-full">
+                                <span class="text-[11px] font-black text-[#DE1B61]">
+                                  ${formatDA(p.price, store.lang)}
+                                </span>
+                                <span class="text-[10px] font-bold text-[#71717A] group-hover:text-[#DE1B61]">
+                                  ${getArrowNext()}
+                                </span>
+                              </div>
+                            </button>
+                          `;
+                        })
+                        .join('')}
+                    </div>`
+                  : `<p class="text-xs text-[#71717A] py-4 text-center">
+                      ${isAr ? 'لا توجد منتجات في هذه التشكيلة حالياً' : 'Aucun produit dans cette collection'}
+                    </p>`
+              }
+            </div>
+          </div>
+
+          <!-- العمود الأيمن: تفاصيل التشكيلة والسعر الإجمالي وأزرار الطلب تماماً مثل صفحة المنتج -->
+          <div class="lg:col-span-5 bg-white rounded-3xl border border-[#EAE6E8] p-4 sm:p-6 shadow-2xs space-y-5 ss-order-panel-anim">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="text-xs font-bold tracking-wider uppercase text-[#DE1B61]">
+                  ${isAr ? '✨ تشكيلة متكاملة' : '✨ Collection & Look'}
+                </span>
+                <span class="px-2.5 py-0.5 rounded-full bg-[#FCE8EE] text-[#DE1B61] text-[11px] font-bold">
+                  ${prods.length} ${isAr ? 'منتجات' : 'articles'}
+                </span>
+              </div>
+
+              <h1 class="text-xl sm:text-2xl font-black text-[#18181B] leading-snug">
+                ${title}
+              </h1>
+
+              <!-- السعر الإجمالي للتشكيلة -->
+              <div class="mt-3 p-3 rounded-2xl bg-[#FDF5F7] border border-[#DE1B61]/15">
+                <span class="block text-[11px] font-bold text-[#52525B] mb-1">
+                  ${isAr ? 'السعر الإجمالي للتشكيلة :' : 'Prix total de la collection :'}
+                </span>
+                <div class="flex items-baseline gap-2.5 flex-wrap tabular-nums">
+                  <span class="text-2xl sm:text-3xl font-black text-[#DE1B61]">
+                    ${formatDA(pricing.totalPrice, store.lang)}
+                  </span>
+                  ${
+                    pricing.originalTotal && pricing.originalTotal > pricing.totalPrice
+                      ? `<span class="text-sm sm:text-base text-[#8E8E93] line-through">
+                          ${formatDA(pricing.originalTotal, store.lang)}
+                        </span>
+                        <span class="px-2 py-0.5 rounded-full bg-[#DE1B61] text-white text-xs font-bold">
+                          -${pricing.discountPercent}%
+                        </span>`
+                      : ''
+                  }
+                </div>
+              </div>
+            </div>
+
+            ${
+              subtitle
+                ? `<p class="text-xs sm:text-sm text-[#52525B] leading-relaxed">${subtitle}</p>`
+                : ''
+            }
+
+            <hr class="border-[#F1EEF0]" />
+
+            <!-- أزرار الشراء وإضافة التشكيلة كاملة للسلة -->
+            <div class="space-y-2.5">
+              <button
+                type="button"
+                data-action="collection-add-to-cart"
+                data-id="${col.id}"
+                ${prods.length === 0 ? 'disabled' : ''}
+                class="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#DE1B61] to-[#E53575] hover:from-[#C71555] hover:to-[#DE1B61] active:scale-[0.98] text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-lg shadow-[#DE1B61]/25 transition-all cursor-pointer ss-btn-order-cta ${
+                  prods.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                }"
+              >
+                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                <span>${isAr ? 'أضف التشكيلة كاملة للسلة' : 'Ajouter la collection au panier'}</span>
+              </button>
+
+              <button
+                type="button"
+                data-action="collection-buy-now"
+                data-id="${col.id}"
+                ${prods.length === 0 ? 'disabled' : ''}
+                class="w-full py-3 px-6 rounded-2xl bg-[#18181B] hover:bg-black active:scale-[0.98] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  prods.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                }"
+              >
+                <span>${isAr ? 'شراء التشكيلة الآن' : 'Commander la collection'}</span>
+                <span>${getArrowNext()}</span>
+              </button>
+            </div>
+
+            <!-- ضمانات الشراء -->
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-[#F1EEF0] text-center text-[10px] sm:text-xs text-[#52525B]">
+              <div class="p-2 rounded-xl bg-[#FAF8F9] flex flex-col items-center gap-1">
+                <svg class="w-4 h-4 text-[#DE1B61]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="1" y="3" width="15" height="13"></rect>
+                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+                <span class="font-bold">${isAr ? 'توصيل 69 ولاية' : 'Livraison 69 wilayas'}</span>
+              </div>
+
+              <div class="p-2 rounded-xl bg-[#FAF8F9] flex flex-col items-center gap-1">
+                <svg class="w-4 h-4 text-[#DE1B61]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                  <line x1="2" y1="10" x2="22" y2="10"></line>
+                </svg>
+                <span class="font-bold">${isAr ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}</span>
+              </div>
+
+              <div class="p-2 rounded-xl bg-[#FAF8F9] flex flex-col items-center gap-1">
+                <svg class="w-4 h-4 text-[#DE1B61]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span class="font-bold">${isAr ? 'استبدال المقاس' : 'Échange garanti'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       ${renderStoreFooter()}
     </div>
@@ -3058,7 +3425,7 @@ function renderCartScreen() {
                   </div>
 
                   <p class="mt-1 text-xs sm:text-sm font-extrabold text-[#DE1B61] tabular-nums">
-                    ${formatDA(item.product.price, store.lang)}
+                    ${formatDA(item.unitPrice ?? item.product.price, store.lang)}
                   </p>
 
                   <!-- Stepper (− 1 +) et Total Ligne à droite -->
@@ -4388,6 +4755,18 @@ function setGallerySlideIndex(galleryBox, targetIndex) {
           'relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-transparent opacity-70 hover:opacity-100';
       }
     });
+  } else if (galleryType === 'collection') {
+    store.collectionGalleryIndex = normalized;
+    document.querySelectorAll('[data-action="collection-gallery-dot"]').forEach((thumb) => {
+      const tIdx = Number(thumb.getAttribute('data-index'));
+      if (tIdx === normalized) {
+        thumb.className =
+          'relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-[#DE1B61] scale-105 shadow-xs';
+      } else {
+        thumb.className =
+          'relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-transparent opacity-70 hover:opacity-100';
+      }
+    });
   } else if (galleryType === 'lp') {
     store.lpGalleryIndex = normalized;
     document.querySelectorAll('[data-action="lp-select-thumb"]').forEach((thumb) => {
@@ -4692,6 +5071,48 @@ function setupEvents() {
         break;
       }
 
+      case 'collection-gallery-dot': {
+        e.stopPropagation();
+        const idx = Number(target.getAttribute('data-index'));
+        const colBox = document.getElementById('collection-gallery-swipe-box');
+        if (!Number.isNaN(idx) && colBox instanceof HTMLElement) {
+          setGallerySlideIndex(colBox, idx);
+        } else if (!Number.isNaN(idx)) {
+          store.collectionGalleryIndex = idx;
+        }
+        break;
+      }
+
+      case 'collection-add-to-cart': {
+        const col = getStoreCollections().find((c) => String(c.id) === String(id));
+        const prods = col ? getCollectionProducts(col) : [];
+        if (prods.length > 0) {
+          const pricing = getCollectionPricing(col, prods);
+          const customTotal = pricing.hasCustomPrice ? pricing.totalPrice : null;
+          store.addCollectionToCart(prods, customTotal);
+          animateFlyToCart(target);
+          showToast(
+            store.lang === 'ar'
+              ? `تمت إضافة التشكيلة (${prods.length} منتجات) للسلة ♥`
+              : `Collection ajoutée (${prods.length} articles) au panier ♥`
+          );
+        }
+        break;
+      }
+
+      case 'collection-buy-now': {
+        const col = getStoreCollections().find((c) => String(c.id) === String(id));
+        const prods = col ? getCollectionProducts(col) : [];
+        if (prods.length > 0) {
+          const pricing = getCollectionPricing(col, prods);
+          const customTotal = pricing.hasCustomPrice ? pricing.totalPrice : null;
+          store.addCollectionToCart(prods, customTotal);
+          updateCartBadgesInPlace();
+          store.navigate('checkout');
+        }
+        break;
+      }
+
       case 'lp-select-thumb': {
         const idx = Number(target.getAttribute('data-index'));
         if (!Number.isNaN(idx)) {
@@ -4900,12 +5321,20 @@ function setupEvents() {
       }
 
       case 'share-product': {
-        const prod = store.getActiveProduct();
-        const slugOrId = (prod && (prod.slug || prod.id)) || store.activeProductId;
-        const shareUrl = new URL(
-          `?product=${encodeURIComponent(slugOrId)}`,
-          window.location.href
-        ).href;
+        let shareUrl = window.location.href;
+        if (store.currentScreen === 'collection' && store.activeCollectionId) {
+          shareUrl = new URL(
+            `?collection=${encodeURIComponent(store.activeCollectionId)}`,
+            window.location.href
+          ).href;
+        } else {
+          const prod = store.getActiveProduct();
+          const slugOrId = (prod && (prod.slug || prod.id)) || store.activeProductId;
+          shareUrl = new URL(
+            `?product=${encodeURIComponent(slugOrId)}`,
+            window.location.href
+          ).href;
+        }
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(shareUrl).catch(() => {});
         }
