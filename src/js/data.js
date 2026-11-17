@@ -23,6 +23,19 @@ export const DEMO_CATEGORY_IDS = new Set([
 
 export const CATEGORIES = [];
 
+function getInitialCollections() {
+  try {
+    const raw = localStorage.getItem('shoestyle_collections_v1');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {}
+  return [];
+}
+
+export const COLLECTIONS = getInitialCollections();
+
 export const COLOR_SWATCHES = {
   Rose: { hex: '#F38BA8', label_fr: 'Rose', label_ar: 'وردي' },
   Noir: { hex: '#1A1A1E', label_fr: 'Noir', label_ar: 'أسود' },

@@ -116,6 +116,7 @@ export async function fetchAllFromSupabase(options = {}) {
 
     let parsedCms = null;
     let parsedCategories = null;
+    let parsedCollections = null;
     if (!cmsRes.skipped && !cmsRes.error && cmsRes.data) {
       let extraCms = {};
       const rawAnn = cmsRes.data.announcement_text;
@@ -126,6 +127,9 @@ export async function fetchAllFromSupabase(options = {}) {
             extraCms = decoded.extraCms || {};
             if (Array.isArray(decoded.categories) && decoded.categories.length > 0) {
               parsedCategories = decoded.categories;
+            }
+            if (Array.isArray(decoded.collections)) {
+              parsedCollections = decoded.collections;
             }
           }
         } catch {
@@ -238,6 +242,7 @@ export async function fetchAllFromSupabase(options = {}) {
 
       cms: parsedCms,
       categories: parsedCategories,
+      collections: parsedCollections,
 
       landingPages:
         !lpRes.skipped && !lpRes.error && Array.isArray(lpRes.data) && lpRes.data.length > 0
@@ -408,7 +413,12 @@ export async function deleteOrderFromSupabase(orderId) {
 /**
  * مزامنة إعدادات واجهة المتجر (CMS) والفئات مع جدول cms_settings في Supabase
  */
-export async function syncCmsToSupabase(cms, freeShippingThreshold = 0, categories = null) {
+export async function syncCmsToSupabase(
+  cms,
+  freeShippingThreshold = 0,
+  categories = null,
+  collections = null
+) {
   notifyCrossTabSync('cms_settings', 'upsert');
   if (!supabaseClient || !cms) return;
   try {
@@ -429,6 +439,7 @@ export async function syncCmsToSupabase(cms, freeShippingThreshold = 0, categori
         googleTagId: cms.googleTagId || '',
       },
       categories: Array.isArray(categories) ? categories : undefined,
+      collections: Array.isArray(collections) ? collections : undefined,
     });
 
     await supabaseClient.from('cms_settings').upsert(
@@ -530,7 +541,7 @@ export async function deleteShippingRateFromSupabase(code) {
 export async function syncAllStateToSupabase(state) {
   if (!supabaseClient || !state) return false;
   try {
-    await syncCmsToSupabase(state.cms, 0, state.categories);
+    await syncCmsToSupabase(state.cms, 0, state.categories, state.collections);
     if (Array.isArray(state.inventory)) {
       await Promise.all(state.inventory.map((p) => syncProductToSupabase(p)));
     }

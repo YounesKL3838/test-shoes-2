@@ -5,6 +5,7 @@
  */
 import {
   CATEGORIES,
+  COLLECTIONS,
   COLOR_SWATCHES,
   I18N,
   IMAGES,
@@ -606,8 +607,12 @@ function renderHeader() {
     return;
   }
 
-  if (screen === 'category' || screen === 'wishlist' || screen === 'account') {
+  if (screen === 'category' || screen === 'wishlist' || screen === 'account' || screen === 'collection') {
     const activeCatObj = CATEGORIES.find((c) => c.id === store.activeCategory);
+    const activeColObj =
+      screen === 'collection'
+        ? getStoreCollections().find((c) => String(c.id) === String(store.activeCollectionId))
+        : null;
     const catName =
       store.activeCategory === 'new'
         ? t.sections.newArrivals
@@ -622,7 +627,15 @@ function renderHeader() {
         : t.nav.all;
 
     const title =
-      screen === 'category'
+      screen === 'collection'
+        ? activeColObj
+          ? store.lang === 'ar'
+            ? activeColObj.title_ar || activeColObj.title_fr
+            : activeColObj.title_fr || activeColObj.title_ar
+          : store.lang === 'ar'
+          ? 'التشكيلة'
+          : 'Collection'
+        : screen === 'category'
         ? store.activeCategory === 'Tout'
           ? t.nav.all
           : catName
@@ -878,6 +891,9 @@ function renderHomeScreen() {
           ).join('')}
         </div>
       </section>
+
+      <!-- 2.5 التشكيلات المجمعة (صور منتجات مع بعضها) -->
+      ${renderCollectionsSectionHtml()}
 
       <!-- 3. Section Nouveautés -->
       <section class="reveal-on-scroll px-3 sm:px-6 py-4 sm:py-5">
@@ -1358,6 +1374,291 @@ function getFilteredCategoryProducts() {
   return filtered;
 }
 
+function getStoreCollections() {
+  if (Array.isArray(adminState?.collections)) {
+    return adminState.collections;
+  }
+  return Array.isArray(COLLECTIONS) ? COLLECTIONS : [];
+}
+
+function getCollectionProducts(col) {
+  if (!col || !Array.isArray(col.productIds)) return [];
+  return col.productIds
+    .map((pid) => PRODUCTS.find((p) => String(p.id) === String(pid)))
+    .filter(Boolean);
+}
+
+function getCollectionProductImage(p) {
+  return (
+    p?.image ||
+    (Array.isArray(p?.gallery) && p.gallery.find(Boolean)) ||
+    IMAGES.talons
+  );
+}
+
+function renderCollectionCollageHtml(prods, isPriority = false) {
+  const isAr = store.lang === 'ar';
+  const list = Array.isArray(prods) ? prods : [];
+  const visible = list.slice(0, 4);
+  const extraCount = Math.max(0, list.length - 4);
+  const loadAttr = isPriority ? 'eager' : 'lazy';
+
+  let innerHtml = '';
+  if (visible.length === 1) {
+    const p = visible[0];
+    innerHtml = `
+      <img
+        src="${getCollectionProductImage(p)}"
+        alt="${isAr ? p.name_ar || p.name_fr : p.name_fr || p.name_ar}"
+        referrerpolicy="no-referrer"
+        decoding="async"
+        loading="${loadAttr}"
+        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+    `;
+  } else if (visible.length === 2) {
+    innerHtml = `
+      <div class="grid grid-cols-2 gap-1 w-full h-full bg-white">
+        ${visible
+          .map(
+            (p) => `
+          <div class="relative w-full h-full overflow-hidden bg-[#FDF5F7]">
+            <img
+              src="${getCollectionProductImage(p)}"
+              alt="${isAr ? p.name_ar || p.name_fr : p.name_fr || p.name_ar}"
+              referrerpolicy="no-referrer"
+              decoding="async"
+              loading="${loadAttr}"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+    `;
+  } else if (visible.length === 3) {
+    innerHtml = `
+      <div class="grid grid-cols-2 grid-rows-2 gap-1 w-full h-full bg-white">
+        <div class="row-span-2 relative w-full h-full overflow-hidden bg-[#FDF5F7]">
+          <img
+            src="${getCollectionProductImage(visible[0])}"
+            alt="${isAr ? visible[0].name_ar || visible[0].name_fr : visible[0].name_fr || visible[0].name_ar}"
+            referrerpolicy="no-referrer"
+            decoding="async"
+            loading="${loadAttr}"
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </div>
+        ${visible
+          .slice(1)
+          .map(
+            (p) => `
+          <div class="relative w-full h-full overflow-hidden bg-[#FDF5F7]">
+            <img
+              src="${getCollectionProductImage(p)}"
+              alt="${isAr ? p.name_ar || p.name_fr : p.name_fr || p.name_ar}"
+              referrerpolicy="no-referrer"
+              decoding="async"
+              loading="${loadAttr}"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+    `;
+  } else {
+    innerHtml = `
+      <div class="grid grid-cols-2 grid-rows-2 gap-1 w-full h-full bg-white">
+        ${visible
+          .map((p, idx) => {
+            const isLastExtra = idx === 3 && extraCount > 0;
+            return `
+              <div class="relative w-full h-full overflow-hidden bg-[#FDF5F7]">
+                <img
+                  src="${getCollectionProductImage(p)}"
+                  alt="${isAr ? p.name_ar || p.name_fr : p.name_fr || p.name_ar}"
+                  referrerpolicy="no-referrer"
+                  decoding="async"
+                  loading="${loadAttr}"
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                ${
+                  isLastExtra
+                    ? `<div class="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center text-white font-extrabold text-sm sm:text-base">
+                        +${extraCount}
+                      </div>`
+                    : ''
+                }
+              </div>
+            `;
+          })
+          .join('')}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="relative aspect-[4/3] w-full overflow-hidden bg-[#FDF5F7]">
+      ${innerHtml}
+      <span class="absolute bottom-2 start-2 z-10 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-xs text-[#18181B] text-[10px] sm:text-xs font-extrabold shadow-xs border border-[#DE1B61]/15">
+        ${list.length} ${isAr ? 'منتجات' : 'articles'}
+      </span>
+    </div>
+  `;
+}
+
+function renderCollectionsSectionHtml(compact = false) {
+  const isAr = store.lang === 'ar';
+  const validCollections = getStoreCollections()
+    .map((col) => ({ col, prods: getCollectionProducts(col) }))
+    .filter((entry) => entry.prods.length > 0);
+
+  if (validCollections.length === 0) return '';
+
+  return `
+    <section class="${compact ? 'px-3 sm:px-6 pt-3 pb-2' : 'reveal-on-scroll px-3 sm:px-6 py-4 sm:py-5'}">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h2 class="${compact ? 'text-xs sm:text-sm' : 'text-base sm:text-xl'} font-extrabold text-[#18181B]">
+            ${isAr ? 'تشكيلات مختارة' : 'Collections & Looks'}
+          </h2>
+          ${
+            !compact
+              ? `<p class="text-[11px] sm:text-xs text-[#71717A]">
+                  ${isAr ? 'منتجات منسقة مع بعضها — اضغطي على التشكيلة لتصفح جميع موديلاتها' : 'Plusieurs modèles réunis ensemble — cliquez pour voir tous les produits'}
+                </p>`
+              : ''
+          }
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full bg-[#FCE8EE] text-[#DE1B61] text-[10px] sm:text-xs font-bold">
+          ${validCollections.length} ${isAr ? 'تشكيلات' : 'looks'}
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-5">
+        ${validCollections
+          .map(({ col, prods }, idx) => {
+            const title = isAr ? col.title_ar || col.title_fr : col.title_fr || col.title_ar;
+            const subtitle = isAr ? col.subtitle_ar || col.subtitle_fr : col.subtitle_fr || col.subtitle_ar;
+            return `
+              <article
+                data-action="open-collection"
+                data-id="${col.id}"
+                style="--i: ${Math.min(idx, 6)};"
+                class="group animate-stagger-item ss-scroll-anim cursor-pointer bg-white rounded-2xl border border-[#DE1B61]/15 hover:border-[#DE1B61]/45 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col"
+              >
+                ${renderCollectionCollageHtml(prods, !compact && idx < 3)}
+                <div class="p-2.5 sm:p-3.5 flex flex-col flex-1 justify-between gap-2">
+                  <div>
+                    <h3 class="text-[13px] sm:text-base font-extrabold text-[#18181B] group-hover:text-[#DE1B61] transition-colors truncate">
+                      ${title}
+                    </h3>
+                    ${
+                      subtitle
+                        ? `<p class="text-[11px] sm:text-xs text-[#71717A] mt-0.5 line-clamp-1">${subtitle}</p>`
+                        : ''
+                    }
+                  </div>
+                  <div class="flex items-center justify-between pt-1.5 border-t border-black/5">
+                    <span class="text-[11px] sm:text-xs font-bold text-[#DE1B61]">
+                      ${isAr ? 'الدخول للتشكيلة' : 'Découvrir'}
+                    </span>
+                    <span class="text-xs font-bold text-[#DE1B61] transition-transform group-hover:translate-x-0.5">
+                      ${getArrowNext()}
+                    </span>
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderCollectionScreen() {
+  const isAr = store.lang === 'ar';
+  const col = getStoreCollections().find(
+    (c) => String(c.id) === String(store.activeCollectionId)
+  );
+  const prods = col ? getCollectionProducts(col) : [];
+
+  if (!col) {
+    return `
+      <div class="max-w-4xl mx-auto px-4 py-16 text-center animate-screen-enter">
+        <div class="bg-white rounded-3xl p-8 border border-[#DE1B61]/15 shadow-xs max-w-md mx-auto space-y-4">
+          <div class="w-14 h-14 mx-auto rounded-full bg-[#FCE8EE] text-[#DE1B61] flex items-center justify-center text-2xl">✨</div>
+          <h2 class="text-lg font-extrabold text-[#18181B]">
+            ${isAr ? 'التشكيلة غير موجودة' : 'Collection introuvable'}
+          </h2>
+          <p class="text-xs sm:text-sm text-[#71717A]">
+            ${isAr ? 'ربما تم تعديل أو حذف هذه التشكيلة مؤخراً.' : 'Cette collection a peut-être été modifiée ou supprimée.'}
+          </p>
+          <button
+            type="button"
+            data-action="nav-screen"
+            data-screen="home"
+            class="ss-btn-pink px-6 py-2.5 text-sm inline-flex items-center justify-center"
+          >
+            ${isAr ? 'العودة للرئيسية' : "Retour à l'accueil"}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  const title = isAr ? col.title_ar || col.title_fr : col.title_fr || col.title_ar;
+  const subtitle = isAr ? col.subtitle_ar || col.subtitle_fr : col.subtitle_fr || col.subtitle_ar;
+
+  return `
+    <div class="max-w-6xl mx-auto pb-10 animate-screen-enter">
+      <!-- رأس التشكيلة مع صور المنتجات مجتمعة -->
+      <section class="px-3 sm:px-6 pt-3 pb-4">
+        <div class="bg-gradient-to-br from-[#FDF2F6] via-white to-[#FCE8EE]/70 rounded-2xl border border-[#DE1B61]/15 p-3.5 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+          <div class="w-full sm:w-56 md:w-64 shrink-0 rounded-2xl overflow-hidden border border-[#DE1B61]/20 shadow-xs">
+            ${renderCollectionCollageHtml(prods, true)}
+          </div>
+          <div class="flex-1 text-center sm:text-start space-y-2">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FCE8EE] text-[#DE1B61] text-[11px] sm:text-xs font-extrabold">
+              ✨ ${isAr ? `تشكيلة متكاملة · ${prods.length} منتجات` : `Collection · ${prods.length} articles`}
+            </span>
+            <h2 class="text-xl sm:text-3xl font-extrabold text-[#18181B]">${title}</h2>
+            ${
+              subtitle
+                ? `<p class="text-xs sm:text-sm text-[#52525B] max-w-xl">${subtitle}</p>`
+                : ''
+            }
+            <p class="text-[11px] sm:text-xs text-[#DE1B61] font-semibold">
+              ${isAr ? 'اضغطي على أي منتج أدناه للدخول إلى تفاصيله واختيار المقاس واللون' : 'Cliquez sur un produit ci-dessous pour voir ses détails, pointures et couleurs'}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- جميع المنتجات داخل التشكيلة مع إمكانية الدخول لكل منتج -->
+      <section class="px-3 sm:px-6 py-2">
+        ${
+          prods.length > 0
+            ? `<div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
+                ${prods.map((p, idx) => renderShoeStyleCard(p, idx, true)).join('')}
+              </div>`
+            : `<div class="py-12 text-center bg-[#FDF5F7]/70 rounded-2xl border border-[#DE1B61]/15">
+                <p class="text-sm font-bold text-[#18181B]">
+                  ${isAr ? 'لا توجد منتجات في هذه التشكيلة حالياً' : 'Aucun produit dans cette collection pour le moment'}
+                </p>
+              </div>`
+        }
+      </section>
+
+      ${renderStoreFooter()}
+    </div>
+  `;
+}
+
 /**
  * ÉCRAN 2 : PAGE CATÉGORIE
  */
@@ -1461,6 +1762,8 @@ function renderCategoryScreen() {
             </div>`
           : ''
       }
+
+      ${store.activeCategory === 'Tout' ? renderCollectionsSectionHtml(true) : ''}
 
       <!-- Sélecteur rapide de catégories -->
       <div class="px-3 sm:px-6 pt-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
@@ -3664,6 +3967,9 @@ function renderAll() {
     case 'category':
       mainEl.innerHTML = renderCategoryScreen();
       break;
+    case 'collection':
+      mainEl.innerHTML = renderCollectionScreen();
+      break;
     case 'pdp':
       mainEl.innerHTML = renderPDPScreen();
       break;
@@ -4380,6 +4686,12 @@ function setupEvents() {
         break;
       }
 
+      case 'open-collection': {
+        if (!id) break;
+        store.navigate('collection', { collectionId: id });
+        break;
+      }
+
       case 'lp-select-thumb': {
         const idx = Number(target.getAttribute('data-index'));
         if (!Number.isNaN(idx)) {
@@ -5058,6 +5370,7 @@ function checkUrlForLandingPage() {
     const params = new URLSearchParams(window.location.search);
     const prodParam = (params.get('product') || params.get('p') || '').trim();
     const lpParam = (params.get('lp') || params.get('offer') || '').trim();
+    const colParam = (params.get('collection') || '').trim();
     const catParam = (params.get('category') || '').trim();
 
     if (prodParam) {
@@ -5092,6 +5405,12 @@ function checkUrlForLandingPage() {
       return;
     }
 
+    if (colParam) {
+      store.activeCollectionId = colParam;
+      store.currentScreen = 'collection';
+      return;
+    }
+
     if (catParam) {
       store.activeCategory = catParam;
       store.currentScreen = 'category';
@@ -5111,11 +5430,14 @@ window.addEventListener('popstate', () => {
     params.has('p') ||
     params.has('lp') ||
     params.has('offer') ||
+    params.has('collection') ||
     params.has('category')
   ) {
     checkUrlForLandingPage();
     if (wasInProduct && store.currentScreen === 'category') {
       store.pendingScrollRestore = Number(store.savedScrollPositions.category || 0);
+    } else if (wasInProduct && store.currentScreen === 'collection') {
+      store.pendingScrollRestore = Number(store.savedScrollPositions.collection || 0);
     }
   } else {
     store.currentScreen = 'home';

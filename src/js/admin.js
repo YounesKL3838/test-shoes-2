@@ -2,7 +2,7 @@
  * ShoeStyle — لوحة التحكم الإدارية الشاملة ثنائية اللغة (العربية / Français)
  * Mobile-First Chic Blush Pink & Ivory Identity — Vanilla JS + LocalStorage
  */
-import { CATEGORIES, COLOR_SWATCHES, DEMO_CATEGORY_IDS, DEMO_PRODUCT_IDS, IMAGES, PRODUCTS, WILAYAS, formatDA, getProductColorHex } from './data.js';
+import { CATEGORIES, COLLECTIONS, COLOR_SWATCHES, DEMO_CATEGORY_IDS, DEMO_PRODUCT_IDS, IMAGES, PRODUCTS, WILAYAS, formatDA, getProductColorHex } from './data.js';
 import { store, showToast } from './app_bridge.js';
 import {
   deleteLandingPageFromSupabase,
@@ -25,6 +25,7 @@ const LANDING_STORAGE_KEY = 'shoestyle_landing_pages_v1';
 const INVENTORY_STORAGE_KEY = 'shoestyle_inventory_v1';
 const CATEGORIES_STORAGE_KEY = 'shoestyle_categories_v2';
 const LEGACY_CATEGORIES_KEY = 'shoestyle_categories_v1';
+const COLLECTIONS_STORAGE_KEY = 'shoestyle_collections_v1';
 const SHIPPING_STORAGE_KEY = 'shoestyle_shipping_v1';
 const ORDERS_ADMIN_KEY = 'shoestyle_orders_v2';
 
@@ -917,6 +918,7 @@ export const adminState = {
   editingLandingId: null,
   editingProductId: null,
   editingCategoryId: null,
+  editingCollectionId: null,
   previewLandingId: null,
   orderFilterStatus: 'all',
   inventorySearch: '',
@@ -926,10 +928,12 @@ export const adminState = {
   // إخفاء النماذج الطويلة افتراضياً لتكون اللوحة مريحة للعين وبسيطة جداً
   isProductFormOpen: false,
   isCategoryFormOpen: false,
+  isCollectionFormOpen: false,
   showAdvancedProductFields: false,
   isLandingFormOpen: false,
 
   draftCategoryImage: IMAGES.talons,
+  draftCollectionProductIds: [],
 
   // حالة مسودة إضافة/تعديل المنتج التفصيلية
   draftProductBrief: '',
@@ -969,6 +973,7 @@ export const adminState = {
 
   cms: { ...DEFAULT_CMS, ...loadJSON(CMS_STORAGE_KEY, DEFAULT_CMS), announcementEnabled: false },
   categories: loadInitialCategories(),
+  collections: loadJSON(COLLECTIONS_STORAGE_KEY, []),
   landingPages: loadJSON(LANDING_STORAGE_KEY, DEFAULT_LANDING_PAGES),
   inventory: loadJSON(INVENTORY_STORAGE_KEY, []),
   orders: loadJSON(ORDERS_ADMIN_KEY, DEFAULT_ORDERS),
@@ -1001,6 +1006,13 @@ export const adminState = {
           ar: `${cat.name_ar} (${cat.name_fr || cat.id})`,
           fr: `${cat.name_fr || cat.id} (${cat.name_ar})`,
         };
+      });
+    }
+
+    if (Array.isArray(this.collections)) {
+      COLLECTIONS.length = 0;
+      this.collections.forEach((col) => {
+        if (col && col.id) COLLECTIONS.push({ ...col });
       });
     }
 
@@ -1119,6 +1131,7 @@ export const adminState = {
   reloadFromStorage() {
     this.cms = { ...DEFAULT_CMS, ...loadJSON(CMS_STORAGE_KEY, this.cms), announcementEnabled: false };
     this.categories = loadJSON(CATEGORIES_STORAGE_KEY, this.categories);
+    this.collections = loadJSON(COLLECTIONS_STORAGE_KEY, this.collections);
     this.landingPages = loadJSON(LANDING_STORAGE_KEY, this.landingPages);
     this.inventory = loadJSON(INVENTORY_STORAGE_KEY, this.inventory);
     this.orders = loadJSON(ORDERS_ADMIN_KEY, this.orders);
@@ -1143,6 +1156,7 @@ export const adminState = {
       }
     };
     writeKey('categories', CATEGORIES_STORAGE_KEY, this.categories);
+    writeKey('collections', COLLECTIONS_STORAGE_KEY, this.collections);
     writeKey('cms', CMS_STORAGE_KEY, this.cms);
     writeKey('orders', ORDERS_ADMIN_KEY, this.orders);
     writeKey('shipping', SHIPPING_STORAGE_KEY, this.shipping);
@@ -1211,6 +1225,13 @@ export async function initAdminFromSupabase(options = {}) {
   ) {
     adminState.categories = remoteData.categories;
     changedKeys.add('categories');
+  }
+  if (
+    Array.isArray(remoteData.collections) &&
+    !areEqualJson(remoteData.collections, adminState.collections)
+  ) {
+    adminState.collections = remoteData.collections;
+    changedKeys.add('collections');
   }
   if (
     remoteData.landingPages &&
@@ -2318,6 +2339,9 @@ function renderInventorySection() {
     <!-- قسم التحكم بالفئات / الأقسام (إضافة، تعديل، تغيير صورة، حذف) -->
     ${renderCategoryManagerCard()}
 
+    <!-- قسم التشكيلات المجمعة (صور منتجات مع بعضها) -->
+    ${renderCollectionsManagerCard()}
+
     <!-- قائمة المنتجات الحالية -->
     <div class="adm-card">
       <div class="adm-card-head">
@@ -2470,6 +2494,219 @@ function renderCategoryManagerCard() {
           )
           .join('')}
       </div>
+    </div>
+  `;
+}
+
+function renderCollectionsManagerCard() {
+  const lang = getLang();
+  const isFr = lang === 'fr';
+  const collections = Array.isArray(adminState.collections) ? adminState.collections : [];
+  const editingCol = adminState.editingCollectionId
+    ? collections.find((c) => c.id === adminState.editingCollectionId)
+    : null;
+  const isFormOpen = Boolean(adminState.isCollectionFormOpen || editingCol);
+  const selectedIds = new Set(
+    Array.isArray(adminState.draftCollectionProductIds) ? adminState.draftCollectionProductIds : []
+  );
+
+  const renderCollageThumb = (prodIds) => {
+    const imgs = (Array.isArray(prodIds) ? prodIds : [])
+      .map((pid) => adminState.inventory.find((p) => p.id === pid)?.image)
+      .filter(Boolean)
+      .slice(0, 4);
+    if (imgs.length === 0) {
+      return `<div style="width:52px; height:52px; border-radius:10px; background:#fce8ee; color:#de1b61; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">✨</div>`;
+    }
+    if (imgs.length === 1) {
+      return `<img src="${imgs[0]}" alt="" referrerpolicy="no-referrer" style="width:52px; height:52px; border-radius:10px; object-fit:cover; border:1px solid rgba(216,27,96,0.25); flex-shrink:0;" />`;
+    }
+    return `
+      <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; display:grid; grid-template-columns:repeat(2,1fr); gap:1.5px; background:#fff; border:1.5px solid rgba(216,27,96,0.28); flex-shrink:0;">
+        ${imgs
+          .map(
+            (src) =>
+              `<img src="${src}" alt="" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover; display:block;" />`
+          )
+          .join('')}
+      </div>
+    `;
+  };
+
+  return `
+    <div class="adm-card">
+      <div class="adm-card-head">
+        <div>
+          <h2 class="adm-card-title">
+            ${
+              isFr
+                ? `Collections & Looks (${collections.length})`
+                : `التشكيلات المجمعة — صور منتجات مع بعضها (${collections.length})`
+            }
+          </h2>
+          <p class="adm-card-sub">
+            ${
+              isFr
+                ? 'Regroupez plusieurs produits dans une même collection visuelle cliquable'
+                : 'اجمع عدة منتجات في تشكيلة واحدة تظهر صورها مع بعضها، وعند الدخول إليها تظهر جميع منتجاتها'
+            }
+          </p>
+        </div>
+        ${
+          !isFormOpen
+            ? `<button type="button" data-adm-action="toggle-collection-form" class="adm-btn adm-btn-pink adm-btn-sm">
+                ${isFr ? '+ Nouvelle Collection' : '+ إضافة تشكيلة جديدة'}
+              </button>`
+            : `<button type="button" data-adm-action="cancel-collection-edit" class="adm-btn adm-btn-outline adm-btn-sm">
+                ${isFr ? 'Fermer' : 'إغلاق'}
+              </button>`
+        }
+      </div>
+
+      ${
+        isFormOpen
+          ? `
+          <form id="adm-collection-form" class="adm-form-grid" style="background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:1rem; margin-bottom:1rem;">
+            <div class="adm-field">
+              <label class="adm-label">${isFr ? 'Nom de la collection (Arabe) *' : 'اسم التشكيلة (بالعربية) *'}</label>
+              <input
+                name="title_ar"
+                type="text"
+                class="adm-input"
+                placeholder="${isFr ? 'Ex: Collection Soirée' : 'مثال: تشكيلة السهرات الراقية'}"
+                value="${editingCol ? editingCol.title_ar || '' : ''}"
+                required
+              />
+            </div>
+
+            <div class="adm-field">
+              <label class="adm-label">${isFr ? 'Nom en Français (Optionnel)' : 'اسم التشكيلة بالفرنسية (اختياري)'}</label>
+              <input
+                name="title_fr"
+                type="text"
+                class="adm-input"
+                placeholder="Ex: Look Soirée Chic"
+                value="${editingCol ? editingCol.title_fr || '' : ''}"
+              />
+            </div>
+
+            <div class="adm-field full">
+              <label class="adm-label">${isFr ? 'Courte description (Optionnel)' : 'وصف قصير للتشكيلة (اختياري)'}</label>
+              <input
+                name="subtitle_ar"
+                type="text"
+                class="adm-input"
+                placeholder="${isFr ? 'Ex: Sélection assortie pour vos sorties' : 'مثال: تنسيق أنيق يجمع أجمل موديلات الموسم'}"
+                value="${editingCol ? editingCol.subtitle_ar || '' : ''}"
+              />
+            </div>
+
+            <div class="adm-field full">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; margin-bottom:0.5rem;">
+                <label class="adm-label" style="margin:0;">
+                  ${
+                    isFr
+                      ? `Sélectionnez les produits de cette collection (${selectedIds.size} sélectionnés) :`
+                      : `اختر المنتجات التي ستظهر معاً في هذه التشكيلة (المحدد: ${selectedIds.size}) :`
+                  }
+                </label>
+              </div>
+              <div
+                id="adm-collection-product-picker"
+                style="display:grid; grid-template-columns:repeat(auto-fill, minmax(175px, 1fr)); gap:0.55rem; max-height:260px; overflow-y:auto; padding:0.35rem; background:#fff; border:1px solid #e4e4e7; border-radius:10px;"
+              >
+                ${
+                  adminState.inventory.length === 0
+                    ? `<p style="font-size:0.8rem; color:#71717a; padding:0.75rem;">${
+                        isFr ? 'Ajoutez d’abord des produits' : 'أضف منتجات للمتجر أولاً لاختيارها هنا'
+                      }</p>`
+                    : adminState.inventory
+                        .map((prod) => {
+                          const isChecked = selectedIds.has(prod.id);
+                          const pName = getProdDisplayName(prod);
+                          return `
+                            <button
+                              type="button"
+                              data-adm-action="toggle-collection-prod"
+                              data-id="${prod.id}"
+                              style="display:flex; align-items:center; gap:0.5rem; padding:0.45rem; border-radius:10px; text-align:start; cursor:pointer; border:${
+                                isChecked ? '2px solid #DE1B61' : '1px solid #e4e4e7'
+                              }; background:${isChecked ? '#FDF2F6' : '#FAFAFA'}; transition:all 150ms ease;"
+                            >
+                              <img src="${prod.image}" alt="${pName}" referrerpolicy="no-referrer" style="width:40px; height:40px; border-radius:8px; object-fit:cover; flex-shrink:0;" />
+                              <div style="min-width:0; flex:1;">
+                                <span style="display:block; font-size:0.76rem; font-weight:700; color:#18181b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${pName}</span>
+                                <span style="display:block; font-size:0.7rem; color:#DE1B61; font-weight:700;">${formatDA(prod.price, lang)}</span>
+                              </div>
+                              <span style="width:18px; height:18px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; ${
+                                isChecked
+                                  ? 'background:#DE1B61; color:#fff;'
+                                  : 'border:1.5px solid #a1a1aa; color:transparent;'
+                              }">✓</span>
+                            </button>
+                          `;
+                        })
+                        .join('')
+                }
+              </div>
+            </div>
+
+            <div class="adm-field full">
+              <button type="submit" class="adm-btn adm-btn-pink" style="width:100%;">
+                ${
+                  editingCol
+                    ? isFr
+                      ? 'Mettre à jour la collection'
+                      : 'حفظ تعديلات التشكيلة'
+                    : isFr
+                    ? '+ Enregistrer la collection'
+                    : '+ حفظ وإضافة التشكيلة للمتجر'
+                }
+              </button>
+            </div>
+          </form>
+        `
+          : ''
+      }
+
+      ${
+        collections.length === 0
+          ? `<div style="padding:1rem; text-align:center; background:#fafafa; border:1px dashed #e4e4e7; border-radius:12px; font-size:0.82rem; color:#71717a;">
+              ${
+                isFr
+                  ? 'Aucune collection créée pour le moment. Créez-en une pour regrouper plusieurs produits.'
+                  : 'لا توجد تشكيلات بعد. اضغط على "+ إضافة تشكيلة جديدة" لتجميع عدة منتجات معاً.'
+              }
+            </div>`
+          : `<div class="adm-categories-grid">
+              ${collections
+                .map((col) => {
+                  const count = Array.isArray(col.productIds)
+                    ? col.productIds.filter((pid) => adminState.inventory.some((p) => p.id === pid)).length
+                    : 0;
+                  return `
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:0.65rem; background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:0.6rem 0.8rem;">
+                      <div style="display:flex; align-items:center; gap:0.65rem; min-width:0; flex:1;">
+                        ${renderCollageThumb(col.productIds)}
+                        <div style="min-width:0; flex:1;">
+                          <strong style="font-size:0.86rem; color:var(--adm-text-dark); display:block; line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            ${isFr ? col.title_fr || col.title_ar : col.title_ar || col.title_fr}
+                          </strong>
+                          <span style="font-size:0.74rem; color:#DE1B61; font-weight:700; display:block; margin-top:2px;">
+                            ${count} ${isFr ? 'produits associés' : 'منتجات داخل التشكيلة'}
+                          </span>
+                        </div>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:0.35rem; flex-shrink:0;">
+                        <button type="button" data-adm-action="edit-collection" data-id="${col.id}" class="adm-btn adm-btn-soft adm-btn-sm" style="padding:0.32rem 0.65rem; font-size:0.75rem; font-weight:700;">${isFr ? 'Modifier' : 'تعديل'}</button>
+                        <button type="button" data-adm-action="delete-collection" data-id="${col.id}" class="adm-btn adm-btn-danger adm-btn-sm" style="padding:0.32rem 0.65rem; font-size:0.75rem; font-weight:700;">${isFr ? 'Supprimer' : 'حذف'}</button>
+                      </div>
+                    </div>
+                  `;
+                })
+                .join('')}
+            </div>`
+      }
     </div>
   `;
 }
@@ -3967,9 +4204,73 @@ export function setupAdminEvents() {
         }
         adminState.categories = adminState.categories.filter((c) => c.id !== id);
         adminState.saveAll();
-        syncCmsToSupabase(adminState.cms, 0, adminState.categories);
+        syncCmsToSupabase(adminState.cms, 0, adminState.categories, adminState.collections);
         renderAdminDashboard();
         showToast(getLang() === 'fr' ? 'Catégorie supprimée' : 'تم حذف الفئة بنجاح');
+        break;
+      }
+
+      case 'toggle-collection-form': {
+        adminState.isCollectionFormOpen = !adminState.isCollectionFormOpen;
+        adminState.editingCollectionId = null;
+        adminState.draftCollectionProductIds = [];
+        renderAdminDashboard();
+        break;
+      }
+
+      case 'edit-collection': {
+        const col = (adminState.collections || []).find((c) => c.id === id);
+        if (col) {
+          adminState.editingCollectionId = col.id;
+          adminState.isCollectionFormOpen = true;
+          adminState.draftCollectionProductIds = Array.isArray(col.productIds)
+            ? [...col.productIds]
+            : [];
+          renderAdminDashboard();
+        }
+        break;
+      }
+
+      case 'cancel-collection-edit': {
+        adminState.editingCollectionId = null;
+        adminState.isCollectionFormOpen = false;
+        adminState.draftCollectionProductIds = [];
+        renderAdminDashboard();
+        break;
+      }
+
+      case 'toggle-collection-prod': {
+        if (!id) break;
+        const idx = adminState.draftCollectionProductIds.indexOf(id);
+        if (idx === -1) {
+          adminState.draftCollectionProductIds.push(id);
+        } else {
+          adminState.draftCollectionProductIds.splice(idx, 1);
+        }
+        const selectedNow = adminState.draftCollectionProductIds.includes(id);
+        btn.style.border = selectedNow ? '2px solid #DE1B61' : '1px solid #e4e4e7';
+        btn.style.background = selectedNow ? '#FDF2F6' : '#FAFAFA';
+        const checkCircle = btn.querySelector('span:last-child');
+        if (checkCircle instanceof HTMLElement) {
+          if (selectedNow) {
+            checkCircle.style.background = '#DE1B61';
+            checkCircle.style.color = '#fff';
+            checkCircle.style.border = 'none';
+          } else {
+            checkCircle.style.background = 'transparent';
+            checkCircle.style.color = 'transparent';
+            checkCircle.style.border = '1.5px solid #a1a1aa';
+          }
+        }
+        break;
+      }
+
+      case 'delete-collection': {
+        adminState.collections = (adminState.collections || []).filter((c) => c.id !== id);
+        adminState.saveAll();
+        syncCmsToSupabase(adminState.cms, 0, adminState.categories, adminState.collections);
+        renderAdminDashboard();
+        showToast(getLang() === 'fr' ? 'Collection supprimée' : 'تم حذف التشكيلة بنجاح');
         break;
       }
 
@@ -4897,7 +5198,7 @@ export function setupAdminEvents() {
         })),
       };
       adminState.saveAll();
-      syncCmsToSupabase(adminState.cms, 0, adminState.categories);
+      syncCmsToSupabase(adminState.cms, 0, adminState.categories, adminState.collections);
       showToast(t().toasts.cmsSaved);
       renderAdminDashboard();
     } else if (form.id === 'adm-category-form') {
@@ -4931,7 +5232,58 @@ export function setupAdminEvents() {
       }
       adminState.isCategoryFormOpen = false;
       adminState.saveAll();
-      syncCmsToSupabase(adminState.cms, 0, adminState.categories);
+      syncCmsToSupabase(adminState.cms, 0, adminState.categories, adminState.collections);
+      renderAdminDashboard();
+    } else if (form.id === 'adm-collection-form') {
+      const title_ar = String(fd.get('title_ar') || '').trim();
+      const title_fr = String(fd.get('title_fr') || '').trim() || title_ar;
+      const subtitle_ar = String(fd.get('subtitle_ar') || '').trim();
+      if (!title_ar) return;
+
+      const pickedIds = Array.isArray(adminState.draftCollectionProductIds)
+        ? adminState.draftCollectionProductIds.filter((pid) =>
+            adminState.inventory.some((p) => p.id === pid)
+          )
+        : [];
+
+      if (pickedIds.length === 0) {
+        showToast(
+          getLang() === 'fr'
+            ? 'Veuillez sélectionner au moins un produit'
+            : 'يرجى اختيار منتج واحد على الأقل داخل التشكيلة'
+        );
+        return;
+      }
+
+      const colPayload = {
+        id: adminState.editingCollectionId || 'col-' + Date.now().toString().slice(-5),
+        title_ar,
+        title_fr,
+        subtitle_ar: subtitle_ar || 'تشكيلة منتجات متناسقة',
+        subtitle_fr: subtitle_ar || title_fr,
+        productIds: pickedIds,
+      };
+
+      if (!Array.isArray(adminState.collections)) {
+        adminState.collections = [];
+      }
+
+      if (adminState.editingCollectionId) {
+        const idx = adminState.collections.findIndex(
+          (c) => c.id === adminState.editingCollectionId
+        );
+        if (idx !== -1) adminState.collections[idx] = colPayload;
+        adminState.editingCollectionId = null;
+        showToast(getLang() === 'fr' ? 'Collection mise à jour' : 'تم تحديث التشكيلة بنجاح');
+      } else {
+        adminState.collections.unshift(colPayload);
+        showToast(getLang() === 'fr' ? 'Collection ajoutée' : 'تمت إضافة التشكيلة بنجاح');
+      }
+
+      adminState.isCollectionFormOpen = false;
+      adminState.draftCollectionProductIds = [];
+      adminState.saveAll();
+      syncCmsToSupabase(adminState.cms, 0, adminState.categories, adminState.collections);
       renderAdminDashboard();
     } else if (form.id === 'adm-landing-form') {
       const mainImg = adminState.draftLandingMainImage || IMAGES.talons;

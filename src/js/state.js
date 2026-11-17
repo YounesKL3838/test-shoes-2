@@ -49,16 +49,18 @@ export const store = {
   // Langue active: 'fr' | 'ar'
   lang: initialLang,
 
-  // 'home' | 'category' | 'pdp' | 'cart' | 'checkout' | 'confirmation' | 'wishlist' | 'account'
+  // 'home' | 'category' | 'collection' | 'pdp' | 'cart' | 'checkout' | 'confirmation' | 'wishlist' | 'account'
   currentScreen: 'home',
   previousScreen: 'home',
   savedScrollPositions: {
     home: 0,
     category: 0,
+    collection: 0,
     wishlist: 0,
   },
   pendingScrollRestore: null,
   activeCategory: 'Tout',
+  activeCollectionId: '',
   searchQuery: '',
   searchOpen: false,
   orderTrackQuery: '',
@@ -152,6 +154,8 @@ export const store = {
         if (slugOrId) {
           targetUrl = `${window.location.pathname}?product=${encodeURIComponent(slugOrId)}`;
         }
+      } else if (this.currentScreen === 'collection' && this.activeCollectionId) {
+        targetUrl = `${window.location.pathname}?collection=${encodeURIComponent(this.activeCollectionId)}`;
       } else if (this.currentScreen === 'landing' && this.activeLandingId) {
         targetUrl = `${window.location.pathname}?lp=${encodeURIComponent(this.activeLandingId)}`;
       } else if (this.currentScreen === 'category' && this.activeCategory) {
@@ -164,6 +168,7 @@ export const store = {
           screen: this.currentScreen,
           productId: this.activeProductId,
           category: this.activeCategory,
+          collectionId: this.activeCollectionId,
           landingId: this.activeLandingId,
         };
         if (replace) {
@@ -187,6 +192,7 @@ export const store = {
       if (
         this.currentScreen === 'home' ||
         this.currentScreen === 'category' ||
+        this.currentScreen === 'collection' ||
         this.currentScreen === 'wishlist'
       ) {
         this.savedScrollPositions[this.currentScreen] = currentY;
@@ -194,12 +200,15 @@ export const store = {
     }
 
     const fromProductDetail =
-      this.currentScreen === 'pdp' || this.currentScreen === 'landing';
+      this.currentScreen === 'pdp' ||
+      this.currentScreen === 'landing' ||
+      this.currentScreen === 'collection';
     const isReturningToFeed =
       Boolean(options.restoreScroll) ||
       (fromProductDetail &&
-        (screen === 'home' || screen === 'category' || screen === 'wishlist') &&
-        !options.category);
+        (screen === 'home' || screen === 'category' || screen === 'collection' || screen === 'wishlist') &&
+        !options.category &&
+        !options.collectionId);
 
     if (screen !== this.currentScreen) {
       this.previousScreen = this.currentScreen;
@@ -207,6 +216,9 @@ export const store = {
     this.currentScreen = screen;
     if (options.category) {
       this.activeCategory = options.category;
+    }
+    if (options.collectionId) {
+      this.activeCollectionId = options.collectionId;
     }
     if (options.productId) {
       const prod =
@@ -255,9 +267,17 @@ export const store = {
   goBack() {
     if (this.currentScreen === 'checkout') {
       this.navigate('cart');
-    } else if (this.currentScreen === 'pdp' || this.currentScreen === 'landing') {
+    } else if (this.currentScreen === 'collection') {
       const targetScreen =
         this.previousScreen === 'category' || this.previousScreen === 'wishlist'
+          ? this.previousScreen
+          : 'home';
+      this.navigate(targetScreen, { restoreScroll: true });
+    } else if (this.currentScreen === 'pdp' || this.currentScreen === 'landing') {
+      const targetScreen =
+        this.previousScreen === 'category' ||
+        this.previousScreen === 'collection' ||
+        this.previousScreen === 'wishlist'
           ? this.previousScreen
           : 'home';
       this.navigate(targetScreen, { restoreScroll: true });
