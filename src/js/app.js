@@ -37,54 +37,54 @@ const HERO_SLIDES = [
     titleHtml_fr: 'Élégance<br />à chaque pas',
     titleHtml_ar: 'أناقة<br />في كل خطوة',
     subtitle_fr:
-      'Découvrez nos sneakers tendances, escarpins vernis rose poudré, sandales fines et bottines élégantes.',
+      'Découvrez notre nouvelle collection sélectionnée avec soin, livrée rapidement sur les 69 wilayas.',
     subtitle_ar:
-      'اكتشفي تشكيلة السنيكرز العصرية، أحذية الكعب الوردي اللامع، الصنادل الرقيقة والبوتينات الفخمة.',
+      'اكتشفي أحدث تشكيلتنا المختارة بعناية مع خدمة الدفع عند الاستلام وتوصيل سريع لـ 69 ولاية.',
     ctaLabel_fr: 'Découvrir',
     ctaLabel_ar: 'اكتشفي الآن',
-    targetCategory: 'Talons',
+    targetCategory: 'Tout',
     image: IMAGES.hero,
   },
   {
-    kicker_fr: 'Édition Soirée & Satin',
-    kicker_ar: 'تشكيلة السهرات والساتان',
+    kicker_fr: 'Meilleures Ventes',
+    kicker_ar: 'الأكثر مبيعاً',
     titleHtml_fr: 'Féminité<br />&amp; Raffinement',
     titleHtml_ar: 'أنوثة<br />وفخامة راقية',
     subtitle_fr:
-      'Des talons galbés et confortables pensés pour sublimer chacune de vos occasions spéciales.',
+      'Des modèles confortables et élégants pensés pour sublimer chacune de vos occasions spéciales.',
     subtitle_ar:
-      'أحذية كعب مريحة ومصممة بعناية لتتألقي في جميع مناسباتك وسهراتك الخاصة.',
-    ctaLabel_fr: 'Voir les Talons',
-    ctaLabel_ar: 'تشكيلة الكعب',
-    targetCategory: 'Talons',
+      'موديلات مريحة ومصممة بعناية لتتألقي في جميع مناسباتك وإطلالاتك الخاصة.',
+    ctaLabel_fr: 'Meilleures Ventes',
+    ctaLabel_ar: 'الأكثر مبيعاً',
+    targetCategory: 'bestSellers',
     image: IMAGES.talons,
   },
   {
     kicker_fr: 'Allure Citadine',
-    kicker_ar: 'أناقة يومية عصرية',
+    kicker_ar: 'وصل حديثاً',
     titleHtml_fr: 'Douceur<br />au Quotidien',
     titleHtml_ar: 'خفة ونعومة<br />لكل يوم',
     subtitle_fr:
-      'Sneakers en cuir souple et daim rose poudré : l’alliance parfaite du style et de la légèreté.',
+      'L’alliance parfaite du style moderne et de la légèreté pour vos sorties quotidiennes.',
     subtitle_ar:
-      'سنيكرز من جلد مرن ومخمل وردي ناعم: المزيج المثالي بين الراحة والجاذبية.',
-    ctaLabel_fr: 'Voir les Sneakers',
-    ctaLabel_ar: 'تشكيلة السنيكرز',
-    targetCategory: 'Sneakers',
+      'المزيج المثالي بين الأناقة العصرية والراحة الفائقة لإطلالاتك اليومية.',
+    ctaLabel_fr: 'Nouveautés',
+    ctaLabel_ar: 'الجديد في المتجر',
+    targetCategory: 'new',
     image: IMAGES.sneakers,
   },
   {
-    kicker_fr: 'Finesse & Légèreté',
-    kicker_ar: 'رقة وانسيابية',
-    titleHtml_fr: 'Brides Fines<br />&amp; Cuir Doux',
-    titleHtml_ar: 'شرائط ناعمة<br />ولمسة ناعمة',
+    kicker_fr: 'Offres Spéciales',
+    kicker_ar: 'عروض وتخفيضات',
+    titleHtml_fr: 'Qualité<br />&amp; Petits Prix',
+    titleHtml_ar: 'جودة عالية<br />وأسعار مميزة',
     subtitle_fr:
-      'Sandales à brides croisées et ballerines Mary Jane livrées en 24h–48h sur les 69 wilayas.',
+      'Profitez de nos offres exclusives livrées en 24h–48h avec paiement à la livraison.',
     subtitle_ar:
-      'صنادل بشرائط متداخلة وباليرين ماري جين مع توصيل سريع خلال 24 إلى 48 ساعة لجميع الـ 69 ولاية.',
-    ctaLabel_fr: 'Explorer',
-    ctaLabel_ar: 'استكشاف التشكيلة',
-    targetCategory: 'Sandales',
+      'استفيدي من عروضنا الحصرية مع توصيل سريع خلال 24 إلى 48 ساعة والدفع عند الاستلام.',
+    ctaLabel_fr: 'Voir les Offres',
+    ctaLabel_ar: 'استكشاف العروض',
+    targetCategory: 'specialOffers',
     image: IMAGES.sandales,
   },
 ];
@@ -334,6 +334,11 @@ function getActiveHeroSlide(index = 0) {
     const ctaAr = btnParts[0] || baseSlide.ctaLabel_ar;
     const ctaFr = btnParts[1] || btnParts[0] || baseSlide.ctaLabel_fr;
 
+    const rawLink = cms.heroBtnLink;
+    const isValidSpecial = ['Tout', 'new', 'bestSellers', 'specialOffers'].includes(rawLink);
+    const isValidCustomCat = CATEGORIES.some((c) => c.id === rawLink);
+    const safeTargetCat = isValidSpecial || isValidCustomCat ? rawLink : (CATEGORIES[0]?.id || 'Tout');
+
     return {
       ...baseSlide,
       titleHtml_ar: titleAr,
@@ -342,7 +347,7 @@ function getActiveHeroSlide(index = 0) {
       subtitle_fr: cms.heroSubtitle || baseSlide.subtitle_fr,
       ctaLabel_ar: ctaAr,
       ctaLabel_fr: ctaFr,
-      targetCategory: cms.heroBtnLink || baseSlide.targetCategory,
+      targetCategory: safeTargetCat,
       image: cms.heroBgUrl || baseSlide.image,
     };
   }
@@ -862,35 +867,39 @@ function renderHomeScreen() {
         </div>
       </section>
 
-      <!-- 2. Catégories Rondes bilingues -->
-      <section class="reveal-on-scroll px-3 sm:px-6 py-1 sm:py-1.5">
-        <div class="flex items-center justify-between sm:justify-around gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar pt-3.5 pb-3.5 px-1">
-          ${CATEGORIES.map(
-            (cat, idx) => `
-            <button
-              type="button"
-              data-action="nav-screen"
-              data-screen="category"
-              data-category="${cat.id}"
-              style="--i: ${idx};"
-              class="ss-category-btn animate-stagger-item flex flex-col items-center gap-1.5 sm:gap-2 shrink-0 group"
-            >
-              <div class="ss-category-circle">
-                <img
-                  src="${cat.image}"
-                  alt="${store.lang === 'ar' ? cat.name_ar : cat.name_fr}"
-                  referrerpolicy="no-referrer"
-                  class="w-full h-full object-cover"
-                />
+      <!-- 2. Catégories Rondes bilingues (مخفية تلقائياً إذا لم توجد فئات مخصصة) -->
+      ${
+        CATEGORIES.length > 0
+          ? `<section class="reveal-on-scroll px-3 sm:px-6 py-1 sm:py-1.5">
+              <div class="flex items-center justify-between sm:justify-around gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar pt-3.5 pb-3.5 px-1">
+                ${CATEGORIES.map(
+                  (cat, idx) => `
+                  <button
+                    type="button"
+                    data-action="nav-screen"
+                    data-screen="category"
+                    data-category="${cat.id}"
+                    style="--i: ${idx};"
+                    class="ss-category-btn animate-stagger-item flex flex-col items-center gap-1.5 sm:gap-2 shrink-0 group"
+                  >
+                    <div class="ss-category-circle">
+                      <img
+                        src="${cat.image}"
+                        alt="${store.lang === 'ar' ? cat.name_ar : cat.name_fr}"
+                        referrerpolicy="no-referrer"
+                        class="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span class="text-[11px] sm:text-[13px] font-semibold text-[#18181B] group-hover:text-[#DE1B61] transition-colors whitespace-nowrap">
+                      ${store.lang === 'ar' ? cat.name_ar : cat.name_fr}
+                    </span>
+                  </button>
+                `
+                ).join('')}
               </div>
-              <span class="text-[11px] sm:text-[13px] font-semibold text-[#18181B] group-hover:text-[#DE1B61] transition-colors whitespace-nowrap">
-                ${store.lang === 'ar' ? cat.name_ar : cat.name_fr}
-              </span>
-            </button>
-          `
-          ).join('')}
-        </div>
-      </section>
+            </section>`
+          : ''
+      }
 
       <!-- 2.5 التشكيلات المجمعة (صور منتجات مع بعضها) -->
       ${renderCollectionsSectionHtml()}
@@ -5238,7 +5247,7 @@ function setupEvents() {
       }
 
       case 'select-category-pill': {
-        const cat = target.getAttribute('data-category') || 'Talons';
+        const cat = target.getAttribute('data-category') || 'Tout';
         store.activeCategory = cat;
         store.syncUrlWithState(true);
         updateCategoryInPlace(true);

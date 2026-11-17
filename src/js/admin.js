@@ -295,7 +295,7 @@ const ADMIN_I18N = {
     },
     cms: {
       livePreviewBanner: 'Aperçu en direct de la boutique (Mise à jour instantanée)',
-      navLinksPreview: 'Accueil · Talons · Sneakers',
+      navLinksPreview: 'Accueil · Boutique · Offres',
       formTitle: 'Personnaliser les textes et images de la vitrine',
       formSub: 'Modifiez le nom, la barre d’annonce, la bannière Hero et les avantages',
       saveBtn: 'Enregistrer',
@@ -393,13 +393,7 @@ function t() {
   return ADMIN_I18N[getLang()];
 }
 
-const CATEGORY_LABELS = {
-  Talons: { ar: 'كعب عالي (Talons)', fr: 'Talons (Escarpins)' },
-  Sneakers: { ar: 'سنيكرز (Sneakers)', fr: 'Sneakers (Baskets)' },
-  Sandales: { ar: 'صنادل (Sandales)', fr: 'Sandales' },
-  Ballerines: { ar: 'باليرين (Ballerines)', fr: 'Ballerines' },
-  Bottes: { ar: 'بوتين (Bottes)', fr: 'Bottes & Bottines' },
-};
+const CATEGORY_LABELS = {};
 
 /**
  * توحيد حالات الطلب بين العربية والفرنسية
@@ -516,7 +510,7 @@ const DEFAULT_CMS = {
     'اكتشفي أحدث تشكيلة من الأحذية النسائية الفاخرة، الكعب الوردي اللامع، والسنيكرز العصرية.',
   heroBgUrl: IMAGES.hero,
   heroBtnText: 'اكتشفي التشكيلة · Découvrir',
-  heroBtnLink: 'Talons',
+  heroBtnLink: 'Tout',
   phone: '0550 12 34 56',
   location_ar: 'الجزائر العاصمة — باب الزوار، المركز التجاري',
   location_fr: 'Alger — Bab Ezzouar, Centre Commercial',
@@ -697,23 +691,16 @@ function loadJSON(key, fallback) {
 
 function loadInitialCategories() {
   try {
+    localStorage.removeItem(LEGACY_CATEGORIES_KEY);
     const v2Raw = localStorage.getItem(CATEGORIES_STORAGE_KEY);
     if (v2Raw) {
       const parsed = JSON.parse(v2Raw);
       if (Array.isArray(parsed)) {
-        return parsed.filter((c) => c && !DEMO_CATEGORY_IDS.has(c.id));
-      }
-    }
-    const v1Raw = localStorage.getItem(LEGACY_CATEGORIES_KEY);
-    if (v1Raw) {
-      const parsedV1 = JSON.parse(v1Raw);
-      localStorage.removeItem(LEGACY_CATEGORIES_KEY);
-      if (Array.isArray(parsedV1)) {
-        const customCats = parsedV1.filter((c) => c && !DEMO_CATEGORY_IDS.has(c.id));
-        if (customCats.length > 0) {
-          saveJSON(CATEGORIES_STORAGE_KEY, customCats);
-          return customCats;
+        const cleaned = parsed.filter((c) => c && c.id && !DEMO_CATEGORY_IDS.has(c.id));
+        if (cleaned.length !== parsed.length) {
+          saveJSON(CATEGORIES_STORAGE_KEY, cleaned);
         }
+        return cleaned;
       }
     }
   } catch {
@@ -783,17 +770,17 @@ function generateProductFromBrief(rawBrief = '') {
   const text = (rawBrief || 'صندل بيج بكعب مريح للسهرات').trim();
   const lower = text.toLowerCase();
 
-  // 1. استنتاج التصنيف (Category)
-  let category = 'Talons';
-  let catSlug = 'escarpin-talon';
-  let catArLabel = 'حذاء بكعب';
-  let catFrNoun = 'Escarpins à Talon';
+  // 1. استنتاج التصنيف من الفئات الحالية للمستخدم فقط (دون فرض فئات قديمة)
+  const userCats = typeof adminState !== 'undefined' && Array.isArray(adminState.categories) ? adminState.categories : [];
+  let category = userCats[0]?.id || '';
+  let catSlug = 'modele-femme';
+  let catArLabel = 'حذاء نسائي';
+  let catFrNoun = 'Modèle Élégant';
 
   if (lower.includes('صندل') || lower.includes('sandale')) {
-    category = 'Sandales';
-    catSlug = 'sandale-talon';
+    catSlug = 'sandale-femme';
     catArLabel = 'صندل نسائي';
-    catFrNoun = 'Sandales à Talon';
+    catFrNoun = 'Sandale Chic';
   } else if (
     lower.includes('رياضي') ||
     lower.includes('سنيكرز') ||
@@ -801,17 +788,15 @@ function generateProductFromBrief(rawBrief = '') {
     lower.includes('sneaker') ||
     lower.includes('basket')
   ) {
-    category = 'Sneakers';
-    catSlug = 'sneakers-mode';
-    catArLabel = 'حذاء رياضي سنيكرز';
-    catFrNoun = 'Sneakers Chic';
+    catSlug = 'baskets-mode';
+    catArLabel = 'حذاء رياضي مريح';
+    catFrNoun = 'Baskets Chic';
   } else if (
     lower.includes('بوت') ||
     lower.includes('بوتين') ||
     lower.includes('botte') ||
     lower.includes('bottine')
   ) {
-    category = 'Bottes';
     catSlug = 'bottines-cuir';
     catArLabel = 'بوت نسائي أنيق';
     catFrNoun = 'Bottines Élégantes';
@@ -820,10 +805,9 @@ function generateProductFromBrief(rawBrief = '') {
     lower.includes('مسطح') ||
     lower.includes('ballerine')
   ) {
-    category = 'Ballerines';
-    catSlug = 'ballerine-confort';
-    catArLabel = 'باليرين مريحة';
-    catFrNoun = 'Ballerines Souples';
+    catSlug = 'chaussure-souple';
+    catArLabel = 'حذاء مسطح مريح';
+    catFrNoun = 'Modèle Souple';
   }
 
   // 2. استنتاج اللون وكود الـ Hex
@@ -976,6 +960,20 @@ export const adminState = {
 
   draftLandingMainImage: IMAGES.talons,
   draftLandingGallery: [IMAGES.talons],
+  draftLandingMeta: {
+    linkedProductId: '',
+    colors: ['Rose', 'Beige', 'Noir'],
+    colorHexes: {},
+    sizes: [36, 37, 38, 39, 40, 41],
+    variants: [],
+    badgeText: 'عرض حصري لفترة محدودة',
+    highlights: [
+      'خامة عالية الجودة ومريحة للارتداء طوال اليوم',
+      'توصيل سريع إلى باب المنزل أو المكتب عبر 69 ولاية',
+      'الدفع عند الاستلام بعد معاينة الطلبية بالكامل',
+    ],
+    whatsappOrderEnabled: true,
+  },
   draftCmsLogo: null,
   draftCmsHeroBg: null,
 
@@ -1002,17 +1000,16 @@ export const adminState = {
     }
 
     if (Array.isArray(this.categories)) {
+      this.categories = this.categories.filter(
+        (cat) => cat && cat.id && !DEMO_CATEGORY_IDS.has(cat.id)
+      );
       CATEGORIES.length = 0;
+      Object.keys(CATEGORY_LABELS).forEach((k) => delete CATEGORY_LABELS[k]);
       this.categories.forEach((cat) => {
-        if (cat.id === 'Bottes' && (!cat.image || cat.image.includes('shoe_ballerines_boots'))) {
-          cat.image = IMAGES.boots;
-        } else if (cat.id === 'Ballerines' && (!cat.image || cat.image.includes('shoe_ballerines_boots'))) {
-          cat.image = IMAGES.ballerines;
-        }
         CATEGORIES.push({ ...cat });
         CATEGORY_LABELS[cat.id] = {
-          ar: `${cat.name_ar} (${cat.name_fr || cat.id})`,
-          fr: `${cat.name_fr || cat.id} (${cat.name_ar})`,
+          ar: `${cat.name_ar}${cat.name_fr ? ` (${cat.name_fr})` : ''}`,
+          fr: `${cat.name_fr || cat.id}${cat.name_ar ? ` (${cat.name_ar})` : ''}`,
         };
       });
     }
@@ -1138,7 +1135,10 @@ export const adminState = {
 
   reloadFromStorage() {
     this.cms = { ...DEFAULT_CMS, ...loadJSON(CMS_STORAGE_KEY, this.cms), announcementEnabled: false };
-    this.categories = loadJSON(CATEGORIES_STORAGE_KEY, this.categories);
+    const loadedCats = loadJSON(CATEGORIES_STORAGE_KEY, this.categories);
+    this.categories = Array.isArray(loadedCats)
+      ? loadedCats.filter((c) => c && c.id && !DEMO_CATEGORY_IDS.has(c.id))
+      : [];
     this.collections = loadJSON(COLLECTIONS_STORAGE_KEY, this.collections);
     this.landingPages = loadJSON(LANDING_STORAGE_KEY, this.landingPages);
     this.inventory = loadJSON(INVENTORY_STORAGE_KEY, this.inventory);
@@ -1226,13 +1226,17 @@ export async function initAdminFromSupabase(options = {}) {
       changedKeys.add('cms');
     }
   }
-  if (
-    Array.isArray(remoteData.categories) &&
-    remoteData.categories.length > 0 &&
-    !areEqualJson(remoteData.categories, adminState.categories)
-  ) {
-    adminState.categories = remoteData.categories;
-    changedKeys.add('categories');
+  if (Array.isArray(remoteData.categories)) {
+    const cleanedRemoteCats = remoteData.categories.filter(
+      (c) => c && c.id && !DEMO_CATEGORY_IDS.has(c.id)
+    );
+    if (!areEqualJson(cleanedRemoteCats, adminState.categories)) {
+      adminState.categories = cleanedRemoteCats;
+      changedKeys.add('categories');
+    }
+    if (remoteData.hadDemoCategories) {
+      syncCmsToSupabase(adminState.cms, 0, cleanedRemoteCats, adminState.collections);
+    }
   }
   if (
     Array.isArray(remoteData.collections) &&
@@ -3439,6 +3443,62 @@ function renderCMSSection() {
 /**
  * القسم 4: منشئ صفحات الهبوط الترويجية الاحترافي (مرتبط بمنتجات المتجر وروابط الإعلانات الحقيقية)
  */
+function buildLandingPayloadFromProduct(prod, overrides = {}) {
+  const gallery =
+    Array.isArray(prod.gallery) && prod.gallery.filter(Boolean).length > 0
+      ? [...prod.gallery.filter(Boolean)]
+      : [prod.image].filter(Boolean);
+  const mainImg = gallery[0] || prod.image || IMAGES.talons;
+  const prodPrice = Number(prod.price || prod.discountPrice || 4500);
+  const origPrice = Number(prod.originalPrice || Math.round(prodPrice * 1.25));
+  const cleanSizes = Array.isArray(prod.sizes)
+    ? prod.sizes.filter((s) => s !== null && s !== undefined && String(s).trim() !== '' && String(s) !== 'NaN')
+    : [];
+  const colors =
+    Array.isArray(prod.colors) && prod.colors.length > 0
+      ? [...prod.colors]
+      : [prod.colorName || 'Beige'];
+  const colorHexes = prod.colorHexes && typeof prod.colorHexes === 'object' ? { ...prod.colorHexes } : {};
+  if (prod.colorName && prod.colorHex && !colorHexes[prod.colorName]) {
+    colorHexes[prod.colorName] = prod.colorHex;
+  }
+
+  return {
+    id: overrides.id || 'lp-' + Date.now().toString().slice(-4),
+    title: prod.name_fr && prod.name && prod.name_fr !== prod.name
+      ? `${prod.name} · ${prod.name_fr}`
+      : prod.name || prod.name_fr || 'عرض خاص',
+    slug: `/offer/${prod.slug || prod.id || 'promo'}`,
+    originalPrice: origPrice,
+    discountPrice: prodPrice,
+    imageUrl: mainImg,
+    gallery: gallery.length > 0 ? gallery : [mainImg],
+    description:
+      prod.description_ar ||
+      prod.description_fr ||
+      `استفيدي من العرض الحصري على ${prod.name || prod.name_fr} مع خدمة الدفع عند الاستلام والتوصيل السريع لـ 69 ولاية.`,
+    badgeText: 'عرض حصري لفترة محدودة',
+    highlights: [
+      'خامة مريحة وجودة عالية مختارة بعناية',
+      'توصيل سريع لباب المنزل أو المكتب (69 ولاية)',
+      'الدفع عند الاستلام بعد المعاينة التامة',
+    ],
+    colors,
+    colorHexes,
+    sizes: cleanSizes,
+    variants: Array.isArray(prod.variants) ? [...prod.variants] : [],
+    linkedProductId: prod.id || '',
+    offerEnabled: true,
+    offerMinQty: 2,
+    offerFreeShipping: true,
+    offerText: 'اشترِ 2 واحصل على شحن مجاني',
+    whatsappOrderEnabled: true,
+    quickFormEnabled: true,
+    createdAt: new Date().toISOString().slice(0, 10),
+    ...overrides,
+  };
+}
+
 function renderLandingBuilderSection() {
   const tr = t();
   const lang = getLang();
@@ -3453,14 +3513,88 @@ function renderLandingBuilderSection() {
   const mainImg =
     adminState.draftLandingMainImage || (editingPage ? editingPage.imageUrl : IMAGES.talons);
   const galleryList =
-    adminState.draftLandingGallery ||
-    (editingPage && editingPage.gallery ? editingPage.gallery : [mainImg]);
+    Array.isArray(adminState.draftLandingGallery) && adminState.draftLandingGallery.length > 0
+      ? adminState.draftLandingGallery
+      : editingPage && Array.isArray(editingPage.gallery) && editingPage.gallery.length > 0
+      ? editingPage.gallery
+      : [mainImg].filter(Boolean);
+
+  const meta = adminState.draftLandingMeta || {};
+  const colorsList = editingPage
+    ? Array.isArray(editingPage.colors) && editingPage.colors.length > 0
+      ? editingPage.colors
+      : ['Rose', 'Beige', 'Noir']
+    : Array.isArray(meta.colors) && meta.colors.length > 0
+    ? meta.colors
+    : ['Rose', 'Beige', 'Noir'];
+
+  const sizesList = editingPage
+    ? Array.isArray(editingPage.sizes)
+      ? editingPage.sizes
+      : []
+    : Array.isArray(meta.sizes)
+    ? meta.sizes
+    : [36, 37, 38, 39, 40, 41];
+
+  const highlightsList =
+    editingPage && Array.isArray(editingPage.highlights) && editingPage.highlights.length > 0
+      ? editingPage.highlights
+      : Array.isArray(meta.highlights) && meta.highlights.length > 0
+      ? meta.highlights
+      : [
+          'خامة مريحة وجودة عالية مختارة بعناية',
+          'توصيل سريع لباب المنزل أو المكتب (69 ولاية)',
+          'الدفع عند الاستلام بعد المعاينة التامة',
+        ];
+
+  const badgeTextVal = editingPage
+    ? editingPage.badgeText || ''
+    : meta.badgeText || 'عرض حصري لفترة محدودة';
+
+  const whatsappEnabled = editingPage
+    ? editingPage.whatsappOrderEnabled !== false
+    : meta.whatsappOrderEnabled !== false;
 
   return `
+    <!-- شريط الإنشاء الفوري السهل بضغطة واحدة من منتجات المتجر -->
+    <div class="adm-card" style="background:linear-gradient(135deg,#fff,#fdf5f7); border-color:rgba(222,27,97,0.22); margin-bottom:1.1rem;">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.85rem;">
+        <div>
+          <h2 class="adm-card-title" style="margin-bottom:0.2rem;">
+            ${isFr ? 'Création instantanée en 1 clic' : 'إنشاء صفحة هبوط احترافية في ثانية واحدة'}
+          </h2>
+          <p class="adm-card-sub">
+            ${
+              isFr
+                ? 'Choisissez un produit de votre boutique pour générer automatiquement sa page de vente complète (photos, couleurs, pointures, prix et formulaire COD)'
+                : 'اختر أي منتج من متجرك وسيتم توليد صفحة هبوط جاهزة للإعلانات بالصور والألوان والمقاسات واستمارة الدفع عند الاستلام فوراً'
+            }
+          </p>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; width:100%; max-width:560px;">
+          <select id="adm-lp-quick-prod-select" class="adm-select" style="flex:1; min-width:210px; background:#fff; font-weight:700;">
+            <option value="">${isFr ? '-- Sélectionner un produit --' : '-- اختر منتجاً للإنشاء الفوري --'}</option>
+            ${adminState.inventory
+              .map(
+                (prod) =>
+                  `<option value="${prod.id}">${getProdDisplayName(prod)} — ${formatDA(prod.price, lang)}</option>`
+              )
+              .join('')}
+          </select>
+          <button type="button" data-adm-action="quick-create-landing" class="adm-btn adm-btn-pink" style="white-space:nowrap;">
+            ${isFr ? '⚡ Générer maintenant' : '⚡ إنشاء صفحة جاهزة الآن'}
+          </button>
+          <button type="button" data-adm-action="toggle-landing-form" class="adm-btn adm-btn-outline" style="white-space:nowrap; background:#fff;">
+            ${isLpFormVisible ? (isFr ? '✕ Fermer l’éditeur' : '✕ إغلاق المحرر') : (isFr ? '+ Page personnalisée' : '+ تخصيص يدوي')}
+          </button>
+        </div>
+      </div>
+    </div>
+
     ${
       isLpFormVisible
         ? `
-      <div class="adm-card" style="border-color:rgba(216, 27, 96, 0.28);">
+      <div class="adm-card" style="border-color:rgba(216, 27, 96, 0.28); margin-bottom:1.1rem;">
         <div class="adm-card-head">
           <div>
             <h2 class="adm-card-title">
@@ -3473,18 +3607,15 @@ function renderLandingBuilderSection() {
           </button>
         </div>
 
-        <!-- شريط الاستيراد السريع من منتجات المتجر بضغطة واحدة -->
+        <!-- شريط الاستيراد الذكي داخل المحرر -->
         <div style="background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:0.85rem 1rem; margin-bottom:1.15rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
           <div>
             <strong style="font-size:0.84rem; color:var(--adm-text-dark); display:block;">
-              ${isFr ? 'Importation rapide depuis votre catalogue :' : 'تعبئة ذكية من منتجات متجرك بضغطة واحدة:'}
+              ${isFr ? 'Importer les données d’un produit :' : 'استيراد بيانات منتج تلقائياً (الصور، الألوان، المقاسات والأسعار):'}
             </strong>
-            <span style="font-size:0.74rem; color:var(--adm-text-muted);">
-              ${isFr ? 'Sélectionnez une chaussure pour remplir automatiquement les photos, prix et textes' : 'اختر أي حذاء من متجرك وسيتم ملء الصور والأسعار والوصف التسويقي تلقائياً'}
-            </span>
           </div>
-          <select id="adm-lp-import-product" class="adm-select" style="max-width:290px; font-weight:700;">
-            <option value="">${isFr ? '-- Choisir un produit du catalogue --' : '-- اختر حذاءً من الكتالوج للتعبئة التلقائية --'}</option>
+          <select id="adm-lp-import-product" class="adm-select" style="max-width:300px; font-weight:700; background:#fff;">
+            <option value="">${isFr ? '-- Choisir un produit du catalogue --' : '-- اختر منتجاً للتعبئة الذكية --'}</option>
             ${adminState.inventory
               .map(
                 (prod) =>
@@ -3509,15 +3640,14 @@ function renderLandingBuilderSection() {
           </div>
 
           <div class="adm-field">
-            <label class="adm-label">${tr.lp.slugLabel}</label>
+            <label class="adm-label">${isFr ? 'Badge d’offre / Accroche courte' : 'شارة العرض الترويجية (أعلى العنوان)'}</label>
             <input
-              id="adm-lp-slug-input"
-              name="slug"
+              id="adm-lp-badge-input"
+              name="badgeText"
               type="text"
-              dir="ltr"
               class="adm-input"
-              value="${editingPage ? editingPage.slug : '/offer/special-promo'}"
-              required
+              placeholder="${isFr ? 'Ex: Offre Exclusive -30%' : 'مثال: عرض حصري لفترة محدودة'}"
+              value="${badgeTextVal}"
             />
           </div>
 
@@ -3544,6 +3674,44 @@ function renderLandingBuilderSection() {
               class="adm-input"
               value="${editingPage ? editingPage.discountPrice : '4500'}"
               required
+            />
+          </div>
+
+          <div class="adm-field">
+            <label class="adm-label">${tr.lp.slugLabel}</label>
+            <input
+              id="adm-lp-slug-input"
+              name="slug"
+              type="text"
+              dir="ltr"
+              class="adm-input"
+              value="${editingPage ? editingPage.slug : '/offer/special-promo'}"
+              required
+            />
+          </div>
+
+          <div class="adm-field">
+            <label class="adm-label">${isFr ? 'Couleurs disponibles (séparées par virgule)' : 'الألوان المتوفرة (افصل بينها بفاصلة)'}</label>
+            <input
+              id="adm-lp-colors-input"
+              name="colorsText"
+              type="text"
+              class="adm-input"
+              placeholder="Rose, Beige, Noir"
+              value="${colorsList.join(', ')}"
+            />
+          </div>
+
+          <div class="adm-field full">
+            <label class="adm-label">${isFr ? 'Pointures / Tailles (laissez vide si produit sans taille)' : 'المقاسات المتاحة (اتركه فارغاً للمنتجات بدون مقاس مثل الحقائب)'}</label>
+            <input
+              id="adm-lp-sizes-input"
+              name="sizesText"
+              type="text"
+              dir="ltr"
+              class="adm-input"
+              placeholder="36, 37, 38, 39, 40, 41"
+              value="${sizesList.join(', ')}"
             />
           </div>
 
@@ -3576,6 +3744,31 @@ function renderLandingBuilderSection() {
             </div>
           </div>
 
+          ${
+            galleryList.length > 0
+              ? `<div class="adm-field full">
+                  <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    ${galleryList
+                      .map(
+                        (imgUrl, idx) => `
+                        <div style="position:relative; width:64px; height:64px; border-radius:10px; overflow:hidden; border:1px solid #e4e4e7;">
+                          <img src="${imgUrl}" alt="Gallery ${idx + 1}" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" />
+                          <button
+                            type="button"
+                            data-adm-action="remove-lp-gallery-img"
+                            data-index="${idx}"
+                            style="position:absolute; top:2px; right:2px; width:20px; height:20px; border-radius:99px; border:none; background:rgba(24,24,27,0.78); color:#fff; font-size:0.7rem; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                            title="${isFr ? 'Retirer' : 'حذف الصورة'}"
+                          >✕</button>
+                        </div>
+                      `
+                      )
+                      .join('')}
+                  </div>
+                </div>`
+              : ''
+          }
+
           <div class="adm-field full">
             <label class="adm-label">${tr.lp.descLabel}</label>
             <textarea
@@ -3588,17 +3781,39 @@ function renderLandingBuilderSection() {
             >${editingPage ? editingPage.description : ''}</textarea>
           </div>
 
-          <!-- العرض الاختياري في صفحة الهبوط (مثال: تاخذ 2 شحن مجاني) -->
+          <!-- 3 نقاط قوة / مميزات سريعة تزيد معدل التحويل -->
+          <div class="adm-field full" style="background:#fafafa; border:1px solid #ece7ea; border-radius:12px; padding:0.9rem;">
+            <strong style="display:block; font-size:0.84rem; color:#18181b; margin-bottom:0.65rem;">
+              ${isFr ? '3 Points forts affichés sous le prix (Augmente les conversions) :' : '3 مميزات إقناعية تظهر مباشرة للزبون (تزيد المبيعات):'}
+            </strong>
+            <div style="display:grid; grid-template-columns:1fr; gap:0.45rem;">
+              <input name="highlight_0" type="text" class="adm-input" style="background:#fff;" value="${highlightsList[0] || ''}" placeholder="${isFr ? 'Point fort 1' : 'الميزة الأولى...'}" />
+              <input name="highlight_1" type="text" class="adm-input" style="background:#fff;" value="${highlightsList[1] || ''}" placeholder="${isFr ? 'Point fort 2' : 'الميزة الثانية...'}" />
+              <input name="highlight_2" type="text" class="adm-input" style="background:#fff;" value="${highlightsList[2] || ''}" placeholder="${isFr ? 'Point fort 3' : 'الميزة الثالثة...'}" />
+            </div>
+          </div>
+
+          <!-- العرض الاختياري وخيار واتساب -->
           <div class="adm-field full" style="background:#faf8f9; border:1px solid #ece7ea; border-radius:12px; padding:0.9rem;">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
-              <label style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.86rem; font-weight:800; color:#18181b; cursor:pointer;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; margin-bottom:0.75rem;">
+              <label style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.85rem; font-weight:800; color:#18181b; cursor:pointer;">
                 <input
                   type="checkbox"
                   name="offerEnabled"
                   style="width:17px; height:17px; accent-color:var(--adm-pink); cursor:pointer;"
                   ${!editingPage || editingPage.offerEnabled !== false ? 'checked' : ''}
                 />
-                <span>${isFr ? 'Activer une offre optionnelle (ex: Prenez 2 = Livraison Gratuite)' : 'تفعيل عرض اختياري في صفحة الهبوط (مثال: تاخذ 2 شحن مجاني)'}</span>
+                <span>${isFr ? 'Activer une offre quantité (ex: Prenez 2 = Livraison Gratuite)' : 'تفعيل عرض الكمية (مثال: تاخذ 2 = شحن مجاني)'}</span>
+              </label>
+
+              <label style="display:inline-flex; align-items:center; gap:0.45rem; font-size:0.82rem; font-weight:700; color:#15803d; cursor:pointer;">
+                <input
+                  type="checkbox"
+                  name="whatsappOrderEnabled"
+                  style="width:16px; height:16px; accent-color:#15803d; cursor:pointer;"
+                  ${whatsappEnabled ? 'checked' : ''}
+                />
+                <span>${isFr ? 'Bouton commande rapide WhatsApp' : 'إظهار زر الطلب السريع عبر واتساب'}</span>
               </label>
             </div>
 
@@ -3617,7 +3832,7 @@ function renderLandingBuilderSection() {
               </div>
 
               <div class="adm-field">
-                <label class="adm-label">${isFr ? 'Texte de l’offre affiché au client' : 'نص العرض الاختياري للزبون'}</label>
+                <label class="adm-label">${isFr ? 'Texte de l’offre affiché au client' : 'نص العرض للزبون'}</label>
                 <input
                   name="offerText"
                   type="text"
@@ -3643,7 +3858,7 @@ function renderLandingBuilderSection() {
           </div>
 
           <div class="adm-field full">
-            <button type="submit" class="adm-btn adm-btn-pink" style="width:100%; padding:0.85rem;">
+            <button type="submit" class="adm-btn adm-btn-pink" style="width:100%; padding:0.9rem;">
               ${editingPage ? tr.lp.updateBtn : tr.lp.createBtn}
             </button>
           </div>
@@ -3658,128 +3873,147 @@ function renderLandingBuilderSection() {
         <div>
           <h2 class="adm-card-title">${tr.lp.activeListTitle(adminState.landingPages.length)}</h2>
           <p class="adm-card-sub">
-            ${isFr ? 'Pages d’atterrissage prêtes pour vos publicités Facebook, Instagram & TikTok avec formulaire COD intégré' : 'صفحات هبوط احترافية جاهزة لإعلانات فيسبوك، إنستغرام وتيك توك مع استمارة الدفع عند الاستلام'}
+            ${isFr ? 'Pages d’atterrissage prêtes pour vos publicités Facebook, Instagram & TikTok avec formulaire COD intégré' : 'صفحات هبوط احترافية سريعة التحميل وجاهزة لإعلانات فيسبوك، إنستغرام وتيك توك مع استمارة الدفع عند الاستلام'}
           </p>
         </div>
-        ${
-          !isLpFormVisible
-            ? `<button type="button" data-adm-action="toggle-landing-form" class="adm-btn adm-btn-pink">
-                ${tr.lp.createTitle}
-              </button>`
-            : ''
-        }
       </div>
 
-      <div class="adm-orders-list">
-        ${adminState.landingPages
-          .map((lp) => {
-            const orig = Number(lp.originalPrice || 0);
-            const disc = Number(lp.discountPrice || 0);
-            const saved = Math.max(0, orig - disc);
-            const pct = orig > disc && orig > 0 ? Math.round(((orig - disc) / orig) * 100) : 25;
-            const liveUrl = `./landing.html?id=${encodeURIComponent(lp.id)}`;
+      ${
+        adminState.landingPages.length === 0
+          ? `<div style="text-align:center; padding:2.2rem 1rem; color:var(--adm-text-muted); font-size:0.86rem;">
+              ${isFr ? 'Aucune landing page pour le moment. Utilisez le générateur en 1 clic ci-dessus !' : 'لا توجد صفحات هبوط حالياً. اختر أي منتج من القائمة أعلاه واضغط على "إنشاء صفحة جاهزة الآن" للبدء فوراً.'}
+            </div>`
+          : `<div class="adm-orders-list">
+              ${adminState.landingPages
+                .map((lp) => {
+                  const orig = Number(lp.originalPrice || 0);
+                  const disc = Number(lp.discountPrice || 0);
+                  const saved = Math.max(0, orig - disc);
+                  const pct = orig > disc && orig > 0 ? Math.round(((orig - disc) / orig) * 100) : 0;
+                  const liveUrl = `./landing.html?id=${encodeURIComponent(lp.id)}`;
+                  const lpColorsCount = Array.isArray(lp.colors) ? lp.colors.length : 0;
+                  const lpSizesCount = Array.isArray(lp.sizes) ? lp.sizes.length : 0;
 
-            return `
-            <article class="adm-order-card" style="justify-content:space-between;">
-              <div>
-                <div style="display:flex; gap:0.9rem; align-items:flex-start;">
-                  <div style="position:relative; width:84px; height:84px; border-radius:12px; overflow:hidden; flex-shrink:0; border:1px solid #ece7ea;">
-                    <img src="${lp.imageUrl}" alt="${lp.title}" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" />
-                    <span style="position:absolute; top:4px; right:4px; background:var(--adm-pink); color:#fff; font-size:0.68rem; font-weight:800; padding:2px 6px; border-radius:99px;">
-                      -${pct}%
-                    </span>
-                  </div>
+                  return `
+                  <article class="adm-order-card" style="justify-content:space-between;">
+                    <div>
+                      <div style="display:flex; gap:0.9rem; align-items:flex-start;">
+                        <div style="position:relative; width:84px; height:84px; border-radius:12px; overflow:hidden; flex-shrink:0; border:1px solid #ece7ea;">
+                          <img src="${lp.imageUrl}" alt="${lp.title}" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" />
+                          ${
+                            pct > 0
+                              ? `<span style="position:absolute; top:4px; right:4px; background:var(--adm-pink); color:#fff; font-size:0.68rem; font-weight:800; padding:2px 6px; border-radius:99px;">
+                                  -${pct}%
+                                </span>`
+                              : ''
+                          }
+                        </div>
 
-                  <div style="flex:1; min-width:0;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:0.4rem; margin-bottom:0.25rem;">
-                      <span class="adm-badge adm-badge-delivered" style="font-size:0.68rem;">
-                        ${isFr ? 'Active · Prête Ads' : 'نشطة · جاهزة للإعلانات'}
-                      </span>
-                      <span dir="ltr" style="font-size:0.72rem; color:var(--adm-text-muted); font-family:monospace;">
-                        ?lp=${lp.id}
-                      </span>
+                        <div style="flex:1; min-width:0;">
+                          <div style="display:flex; align-items:center; justify-content:space-between; gap:0.4rem; margin-bottom:0.25rem; flex-wrap:wrap;">
+                            <span style="font-size:0.72rem; font-weight:700; color:#059669;">
+                              ${isFr ? 'Active · Prête Ads' : 'نشطة · جاهزة للإعلانات'}
+                            </span>
+                            <span dir="ltr" style="font-size:0.72rem; color:var(--adm-text-muted); font-family:monospace;">
+                              ?id=${lp.id}
+                            </span>
+                          </div>
+
+                          <strong style="font-size:0.94rem; color:var(--adm-text-dark); display:block; line-height:1.35;">
+                            ${lp.title}
+                          </strong>
+
+                          <div style="margin-top:0.35rem; display:flex; align-items:baseline; gap:0.5rem; flex-wrap:wrap;">
+                            <strong style="color:var(--adm-pink); font-size:1.05rem;">${formatDA(disc, lang)}</strong>
+                            ${
+                              orig > disc
+                                ? `<span style="text-decoration:line-through; color:var(--adm-text-muted); font-size:0.78rem;">${formatDA(orig, lang)}</span>`
+                                : ''
+                            }
+                            ${
+                              saved > 0
+                                ? `<span style="font-size:0.72rem; font-weight:700; color:#15803d;">
+                                    · ${isFr ? `Économie ${formatDA(saved, 'fr')}` : `توفير ${formatDA(saved, 'ar')}`}
+                                  </span>`
+                                : ''
+                            }
+                          </div>
+
+                          <div style="margin-top:0.3rem; font-size:0.72rem; color:var(--adm-text-muted);">
+                            ${lpColorsCount > 0 ? `${lpColorsCount} ${isFr ? 'couleurs' : 'ألوان'}` : ''}
+                            ${lpColorsCount > 0 && lpSizesCount > 0 ? ' · ' : ''}
+                            ${lpSizesCount > 0 ? `${lpSizesCount} ${isFr ? 'pointures' : 'مقاسات'}` : ''}
+                          </div>
+                        </div>
+                      </div>
+
+                      <p style="font-size:0.78rem; color:var(--adm-text-body); margin:0.65rem 0 0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                        ${lp.description || ''}
+                      </p>
                     </div>
 
-                    <strong style="font-size:0.94rem; color:var(--adm-text-dark); display:block; line-height:1.35;">
-                      ${lp.title}
-                    </strong>
+                    <div style="display:flex; gap:0.4rem; flex-wrap:wrap; justify-content:space-between; align-items:center; border-top:1px solid #ece7ea; padding-top:0.7rem; margin-top:0.4rem;">
+                      <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+                        <a
+                          href="${liveUrl}"
+                          target="_blank"
+                          rel="noopener"
+                          class="adm-btn adm-btn-pink adm-btn-sm"
+                          style="text-decoration:none;"
+                        >
+                          ${isFr ? 'Ouvrir la page' : 'فتح الصفحة'}
+                        </a>
+                        <button
+                          type="button"
+                          data-adm-action="copy-landing-link"
+                          data-id="${lp.id}"
+                          class="adm-btn adm-btn-soft adm-btn-sm"
+                        >
+                          ${isFr ? 'Copier Lien' : 'نسخ الرابط'}
+                        </button>
+                        <button
+                          type="button"
+                          data-adm-action="preview-landing"
+                          data-id="${lp.id}"
+                          class="adm-btn adm-btn-outline adm-btn-sm"
+                        >
+                          ${isFr ? 'Aperçu' : 'معاينة'}
+                        </button>
+                      </div>
 
-                    <div style="margin-top:0.4rem; display:flex; align-items:baseline; gap:0.5rem; flex-wrap:wrap;">
-                      <strong style="color:var(--adm-pink); font-size:1.05rem;">${formatDA(disc, lang)}</strong>
-                      ${
-                        orig > disc
-                          ? `<span style="text-decoration:line-through; color:var(--adm-text-muted); font-size:0.78rem;">${formatDA(orig, lang)}</span>`
-                          : ''
-                      }
-                      ${
-                        saved > 0
-                          ? `<span style="font-size:0.72rem; font-weight:700; color:#15803d; background:#ecfdf5; padding:2px 7px; border-radius:6px;">
-                              ${isFr ? `Économie ${formatDA(saved, 'fr')}` : `توفير ${formatDA(saved, 'ar')}`}
-                            </span>`
-                          : ''
-                      }
+                      <div style="display:flex; gap:0.35rem;">
+                        <button
+                          type="button"
+                          data-adm-action="duplicate-landing"
+                          data-id="${lp.id}"
+                          class="adm-btn adm-btn-outline adm-btn-sm"
+                        >
+                          ${isFr ? 'Dupliquer' : 'نسخ'}
+                        </button>
+                        <button
+                          type="button"
+                          data-adm-action="edit-landing"
+                          data-id="${lp.id}"
+                          class="adm-btn adm-btn-outline adm-btn-sm"
+                        >
+                          ${tr.inv.editBtn}
+                        </button>
+                        <button
+                          type="button"
+                          data-adm-action="delete-landing"
+                          data-id="${lp.id}"
+                          class="adm-btn adm-btn-danger adm-btn-sm"
+                        >
+                          ${tr.inv.deleteBtn}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </div>
-
-                <p style="font-size:0.78rem; color:var(--adm-text-body); margin:0.65rem 0 0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
-                  ${lp.description || ''}
-                </p>
-              </div>
-
-              <div style="display:flex; gap:0.4rem; flex-wrap:wrap; justify-content:space-between; align-items:center; border-top:1px solid #ece7ea; padding-top:0.7rem; margin-top:0.4rem;">
-                <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
-                  <button
-                    type="button"
-                    data-adm-action="preview-landing"
-                    data-id="${lp.id}"
-                    class="adm-btn adm-btn-pink adm-btn-sm"
-                  >
-                    ${tr.lp.previewBtn}
-                  </button>
-                  <a
-                    href="${liveUrl}"
-                    target="_blank"
-                    rel="noopener"
-                    class="adm-btn adm-btn-soft adm-btn-sm"
-                    style="text-decoration:none;"
-                  >
-                    ${isFr ? 'Ouvrir la page' : 'فتح الصفحة'}
-                  </a>
-                  <button
-                    type="button"
-                    data-adm-action="copy-landing-link"
-                    data-id="${lp.id}"
-                    class="adm-btn adm-btn-outline adm-btn-sm"
-                  >
-                    ${isFr ? 'Copier Lien' : 'نسخ الرابط'}
-                  </button>
-                </div>
-
-                <div style="display:flex; gap:0.35rem;">
-                  <button
-                    type="button"
-                    data-adm-action="edit-landing"
-                    data-id="${lp.id}"
-                    class="adm-btn adm-btn-outline adm-btn-sm"
-                  >
-                    ${tr.inv.editBtn}
-                  </button>
-                  <button
-                    type="button"
-                    data-adm-action="delete-landing"
-                    data-id="${lp.id}"
-                    class="adm-btn adm-btn-danger adm-btn-sm"
-                  >
-                    ${tr.inv.deleteBtn}
-                  </button>
-                </div>
-              </div>
-            </article>
-          `;
-          })
-          .join('')}
-      </div>
+                  </article>
+                `;
+                })
+                .join('')}
+            </div>`
+      }
     </div>
   `;
 }
@@ -3806,10 +4040,11 @@ function renderLandingPreviewModal() {
       ? `Prenez ${offerMinQty} = Livraison Gratuite`
       : `اشترِ ${offerMinQty} واحصل على شحن مجاني`);
   const liveUrl = `./landing.html?id=${encodeURIComponent(lp.id)}`;
+  const lpColors = Array.isArray(lp.colors) && lp.colors.length > 0 ? lp.colors : ['Rose', 'Beige', 'Noir'];
+  const lpSizes = Array.isArray(lp.sizes) ? lp.sizes : [];
 
   return `
     <div class="adm-modal-card" dir="${dir}" style="max-width:860px; background:#faf8f9;">
-      <!-- شريط علوي هادئ ومريح للعين -->
       <div style="background:#ffffff; border-bottom:1px solid #ece7ea; padding:0.75rem 1.15rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
         <strong style="font-size:0.88rem; color:#18181b;">${tr.lp.modalHeader(lp.slug)}</strong>
 
@@ -3844,7 +4079,6 @@ function renderLandingPreviewModal() {
       </div>
 
       <div class="adm-lp-modal-grid">
-        <!-- العمود الأول: المنتج مع صوره فقط -->
         <div style="background:#fff; border:1px solid #ece7ea; border-radius:14px; padding:0.9rem;">
           <div style="position:relative; border-radius:12px; overflow:hidden; aspect-ratio:4/5; margin-bottom:0.65rem; background:#f7f4f5;">
             <img id="lp-modal-main-img" src="${lp.imageUrl}" alt="${lp.title}" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" />
@@ -3884,32 +4118,27 @@ function renderLandingPreviewModal() {
           <p style="font-size:0.8rem; color:#52525b; line-height:1.55; margin:0;">${lp.description || ''}</p>
         </div>
 
-        <!-- العمود الثاني: الكمية + العرض الاختياري + معلومات الزبون فقط -->
         <div style="background:#fff; border:1px solid #ece7ea; border-radius:14px; padding:1rem;">
           <h4 style="margin:0 0 0.85rem; font-size:0.95rem; font-weight:800; color:#18181b;">
-            ${isFr ? 'Quantité & Informations client' : 'الكمية ومعلومات الزبون'}
+            ${isFr ? 'Test rapide de commande' : 'تجربة الطلب السريع'}
           </h4>
 
           <form id="adm-lp-quick-order-form" data-lp-id="${lp.id}" style="display:flex; flex-direction:column; gap:0.75rem;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-              <div>
-                <label class="adm-label" style="margin-bottom:0.25rem;">${isFr ? 'Pointure' : 'المقاس'}</label>
-                <select name="size" class="adm-select">
-                  <option value="36">36</option>
-                  <option value="37" selected>37</option>
-                  <option value="38">38</option>
-                  <option value="39">39</option>
-                  <option value="40">40</option>
-                  <option value="41">41</option>
-                </select>
-              </div>
+            <div style="display:grid; grid-template-columns:${lpSizes.length > 0 ? '1fr 1fr' : '1fr'}; gap:0.5rem;">
+              ${
+                lpSizes.length > 0
+                  ? `<div>
+                      <label class="adm-label" style="margin-bottom:0.25rem;">${isFr ? 'Pointure' : 'المقاس'}</label>
+                      <select name="size" class="adm-select">
+                        ${lpSizes.map((s) => `<option value="${s}">${s}</option>`).join('')}
+                      </select>
+                    </div>`
+                  : ''
+              }
               <div>
                 <label class="adm-label" style="margin-bottom:0.25rem;">${isFr ? 'Couleur' : 'اللون'}</label>
                 <select name="color" class="adm-select">
-                  <option value="Rose">Rose / وردي</option>
-                  <option value="Beige">Beige / بيج</option>
-                  <option value="Noir">Noir / أسود</option>
-                  <option value="Blanc">Blanc / أبيض</option>
+                  ${lpColors.map((c) => `<option value="${c}">${c}</option>`).join('')}
                 </select>
               </div>
             </div>
@@ -4370,10 +4599,6 @@ export function setupAdminEvents() {
       }
 
       case 'delete-category': {
-        if (adminState.categories.length <= 1) {
-          showToast(getLang() === 'fr' ? 'Gardez au moins une catégorie' : 'يجب الإبقاء على فئة واحدة على الأقل');
-          break;
-        }
         adminState.categories = adminState.categories.filter((c) => c.id !== id);
         adminState.saveAll();
         syncCmsToSupabase(adminState.cms, 0, adminState.categories, adminState.collections);
@@ -4526,12 +4751,81 @@ export function setupAdminEvents() {
         break;
       }
 
-      case 'toggle-landing-form': {
-        adminState.isLandingFormOpen = !adminState.isLandingFormOpen;
+      case 'quick-create-landing': {
+        const sel = document.getElementById('adm-lp-quick-prod-select');
+        const prodId = sel instanceof HTMLSelectElement ? sel.value : '';
+        const prod = adminState.inventory.find((p) => p.id === prodId) || adminState.inventory[0];
+        if (!prod) {
+          showToast(
+            getLang() === 'fr'
+              ? 'Ajoutez d’abord un produit dans le catalogue'
+              : 'يرجى إضافة منتج أولاً من قسم المنتجات'
+          );
+          break;
+        }
+        const newLp = buildLandingPayloadFromProduct(prod);
+        adminState.landingPages.unshift(newLp);
+        adminState.isLandingFormOpen = false;
+        adminState.editingLandingId = null;
+        adminState.saveAll();
+        syncLandingPageToSupabase(newLp);
         renderAdminDashboard();
+        showToast(
+          getLang() === 'fr'
+            ? `Landing Page "${newLp.title}" créée avec succès`
+            : 'تم إنشاء صفحة الهبوط الاحترافية في ثانية واحدة!'
+        );
+        break;
+      }
+
+      case 'duplicate-landing': {
+        const src = adminState.landingPages.find((item) => item.id === id);
+        if (src) {
+          const copyLp = {
+            ...src,
+            id: 'lp-' + Date.now().toString().slice(-4),
+            title: `${src.title} (${getLang() === 'fr' ? 'Copie' : 'نسخة'})`,
+            slug: `${src.slug}-copy-${Date.now().toString().slice(-3)}`,
+            createdAt: new Date().toISOString().slice(0, 10),
+          };
+          adminState.landingPages.unshift(copyLp);
+          adminState.saveAll();
+          syncLandingPageToSupabase(copyLp);
+          renderAdminDashboard();
+          showToast(getLang() === 'fr' ? 'Landing Page dupliquée' : 'تم نسخ صفحة الهبوط بنجاح');
+        }
+        break;
+      }
+
+      case 'toggle-landing-form': {
+        adminState.editingLandingId = null;
+        adminState.isLandingFormOpen = !adminState.isLandingFormOpen;
         if (adminState.isLandingFormOpen) {
+          const firstProd = adminState.inventory[0];
+          if (firstProd) {
+            adminState.draftLandingMainImage = firstProd.image || IMAGES.talons;
+            adminState.draftLandingGallery =
+              Array.isArray(firstProd.gallery) && firstProd.gallery.length > 0
+                ? [...firstProd.gallery]
+                : [adminState.draftLandingMainImage];
+          }
+          adminState.draftLandingMeta = {
+            linkedProductId: '',
+            colors: ['Rose', 'Beige', 'Noir'],
+            colorHexes: {},
+            sizes: [36, 37, 38, 39, 40, 41],
+            variants: [],
+            badgeText: 'عرض حصري لفترة محدودة',
+            highlights: [
+              'خامة مريحة وجودة عالية مختارة بعناية',
+              'توصيل سريع لباب المنزل أو المكتب (69 ولاية)',
+              'الدفع عند الاستلام بعد المعاينة التامة',
+            ],
+            whatsappOrderEnabled: true,
+          };
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+        renderAdminDashboard();
         break;
       }
 
@@ -4550,6 +4844,22 @@ export function setupAdminEvents() {
           adminState.draftLandingGallery = Array.isArray(lp.gallery)
             ? [...lp.gallery]
             : [lp.imageUrl];
+          adminState.draftLandingMeta = {
+            linkedProductId: lp.linkedProductId || '',
+            colors: Array.isArray(lp.colors) ? [...lp.colors] : ['Rose', 'Beige', 'Noir'],
+            colorHexes: lp.colorHexes ? { ...lp.colorHexes } : {},
+            sizes: Array.isArray(lp.sizes) ? [...lp.sizes] : [],
+            variants: Array.isArray(lp.variants) ? [...lp.variants] : [],
+            badgeText: lp.badgeText || 'عرض حصري لفترة محدودة',
+            highlights: Array.isArray(lp.highlights)
+              ? [...lp.highlights]
+              : [
+                  'خامة مريحة وجودة عالية مختارة بعناية',
+                  'توصيل سريع لباب المنزل أو المكتب (69 ولاية)',
+                  'الدفع عند الاستلام بعد المعاينة التامة',
+                ],
+            whatsappOrderEnabled: lp.whatsappOrderEnabled !== false,
+          };
           renderAdminDashboard();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -4560,15 +4870,18 @@ export function setupAdminEvents() {
         adminState.editingLandingId = null;
         adminState.isLandingFormOpen = false;
         adminState.draftLandingMainImage = IMAGES.talons;
-        adminState.draftLandingGallery = [IMAGES.talons, IMAGES.hero];
+        adminState.draftLandingGallery = [IMAGES.talons];
         renderAdminDashboard();
         break;
       }
 
       case 'remove-lp-gallery-img': {
         const idx = Number(btn.getAttribute('data-index'));
-        if (!Number.isNaN(idx)) {
+        if (!Number.isNaN(idx) && Array.isArray(adminState.draftLandingGallery)) {
           adminState.draftLandingGallery.splice(idx, 1);
+          if (adminState.draftLandingGallery.length > 0) {
+            adminState.draftLandingMainImage = adminState.draftLandingGallery[0];
+          }
           renderAdminDashboard();
         }
         break;
@@ -4586,13 +4899,13 @@ export function setupAdminEvents() {
       case 'copy-landing-link': {
         if (!id) break;
         const shareUrl = new URL(`./landing.html?id=${encodeURIComponent(id)}`, window.location.href).href;
-        if (navigator.clipboard) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(shareUrl).catch(() => {});
         }
         showToast(
           getLang() === 'fr'
-            ? `Lien de la page d'atterrissage copié : ${shareUrl}`
-            : `تم نسخ رابط صفحة الهبوط المستقلة بنجاح`
+            ? `Lien copié : ${shareUrl}`
+            : `تم نسخ رابط صفحة الهبوط بنجاح`
         );
         break;
       }
@@ -5355,44 +5668,42 @@ export function setupAdminEvents() {
       const prodId = target.value;
       const prod = adminState.inventory.find((p) => p.id === prodId);
       if (prod) {
-        adminState.draftLandingMainImage = prod.image;
-        adminState.draftLandingGallery =
-          Array.isArray(prod.gallery) && prod.gallery.length > 0
-            ? [...prod.gallery]
-            : [prod.image];
+        const built = buildLandingPayloadFromProduct(prod);
+        adminState.draftLandingMainImage = built.imageUrl;
+        adminState.draftLandingGallery = [...built.gallery];
+        adminState.draftLandingMeta = {
+          linkedProductId: prod.id,
+          colors: built.colors,
+          colorHexes: built.colorHexes,
+          sizes: built.sizes,
+          variants: built.variants,
+          badgeText: built.badgeText,
+          highlights: built.highlights,
+          whatsappOrderEnabled: true,
+        };
 
         const titleInp = document.getElementById('adm-lp-title-input');
         const slugInp = document.getElementById('adm-lp-slug-input');
         const origInp = document.getElementById('adm-lp-orig-price');
         const discInp = document.getElementById('adm-lp-disc-price');
         const descInp = document.getElementById('adm-lp-desc-input');
+        const colorsInp = document.getElementById('adm-lp-colors-input');
+        const sizesInp = document.getElementById('adm-lp-sizes-input');
         const mainThumb = document.getElementById('lp-main-preview-thumb');
 
-        if (titleInp instanceof HTMLInputElement) {
-          titleInp.value = `عرض خاص: ${prod.name || prod.name_fr} · ${prod.name_fr || prod.name}`;
-        }
-        if (slugInp instanceof HTMLInputElement) {
-          slugInp.value = `/offer/${prod.slug || prod.id}`;
-        }
-        if (origInp instanceof HTMLInputElement) {
-          origInp.value = String(prod.originalPrice || Math.round(prod.price * 1.3));
-        }
-        if (discInp instanceof HTMLInputElement) {
-          discInp.value = String(prod.price);
-        }
-        if (descInp instanceof HTMLTextAreaElement) {
-          descInp.value =
-            prod.description_ar ||
-            prod.description_fr ||
-            `استفيدي من العرض الترويجي الحصري على ${prod.name || prod.name_fr} مع الدفع عند الاستلام وتوصيل سريع لـ 58 ولاية.`;
-        }
-        if (mainThumb instanceof HTMLImageElement) {
-          mainThumb.src = prod.image;
-        }
+        if (titleInp instanceof HTMLInputElement) titleInp.value = built.title;
+        if (slugInp instanceof HTMLInputElement) slugInp.value = built.slug;
+        if (origInp instanceof HTMLInputElement) origInp.value = String(built.originalPrice);
+        if (discInp instanceof HTMLInputElement) discInp.value = String(built.discountPrice);
+        if (descInp instanceof HTMLTextAreaElement) descInp.value = built.description;
+        if (colorsInp instanceof HTMLInputElement) colorsInp.value = built.colors.join(', ');
+        if (sizesInp instanceof HTMLInputElement) sizesInp.value = built.sizes.join(', ');
+        if (mainThumb instanceof HTMLImageElement) mainThumb.src = built.imageUrl;
+
         showToast(
           getLang() === 'fr'
-            ? 'Données du produit importées dans la Landing Page'
-            : 'تم استيراد بيانات وصور الحذاء إلى صفحة الهبوط تلقائياً'
+            ? 'Produit importé (photos, couleurs, pointures et prix)'
+            : 'تم استيراد الصور والألوان والمقاسات والأسعار تلقائياً'
         );
       }
       return;
@@ -5436,7 +5747,7 @@ export function setupAdminEvents() {
         heroSubtitle: String(fd.get('heroSubtitle') || '').trim(),
         heroBgUrl: adminState.draftCmsHeroBg || adminState.cms.heroBgUrl || IMAGES.hero,
         heroBtnText: String(fd.get('heroBtnText') || 'Découvrir').trim(),
-        heroBtnLink: 'Talons',
+        heroBtnLink: adminState.categories[0]?.id || 'Tout',
         footerFarewell: String(fd.get('footerFarewell') || 'À bientôt sur ShoeStyle ♥ ♥').trim(),
         phone: String(fd.get('phone') || '0550 12 34 56').trim(),
         whatsappNumber: String(fd.get('whatsappNumber') || '213550123456').trim(),
@@ -5587,6 +5898,26 @@ export function setupAdminEvents() {
           ? [...adminState.draftLandingGallery]
           : [mainImg];
 
+      const rawColors = String(fd.get('colorsText') || '')
+        .split(/[,،]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const rawSizes = String(fd.get('sizesText') || '')
+        .split(/[,،]+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((s) => {
+          const n = Number(s);
+          return !Number.isNaN(n) && s !== '' ? n : s;
+        });
+      const highlights = [
+        String(fd.get('highlight_0') || '').trim(),
+        String(fd.get('highlight_1') || '').trim(),
+        String(fd.get('highlight_2') || '').trim(),
+      ].filter(Boolean);
+
+      const meta = adminState.draftLandingMeta || {};
+
       const payload = {
         id: adminState.editingLandingId || 'lp-' + Date.now().toString().slice(-4),
         title: String(fd.get('title') || '').trim(),
@@ -5596,6 +5927,21 @@ export function setupAdminEvents() {
         imageUrl: mainImg,
         gallery,
         description: String(fd.get('description') || '').trim(),
+        badgeText: String(fd.get('badgeText') || '').trim(),
+        highlights:
+          highlights.length > 0
+            ? highlights
+            : [
+                'خامة مريحة وجودة عالية مختارة بعناية',
+                'توصيل سريع لباب المنزل أو المكتب (69 ولاية)',
+                'الدفع عند الاستلام بعد المعاينة التامة',
+              ],
+        colors: rawColors.length > 0 ? rawColors : ['Rose', 'Beige', 'Noir'],
+        colorHexes: meta.colorHexes && typeof meta.colorHexes === 'object' ? { ...meta.colorHexes } : {},
+        sizes: rawSizes,
+        variants: Array.isArray(meta.variants) ? [...meta.variants] : [],
+        linkedProductId: meta.linkedProductId || '',
+        whatsappOrderEnabled: fd.has('whatsappOrderEnabled'),
         offerEnabled: fd.has('offerEnabled'),
         offerMinQty: Math.max(2, Number(fd.get('offerMinQty') || 2)),
         offerFreeShipping: fd.has('offerFreeShipping'),
@@ -5632,8 +5978,7 @@ export function setupAdminEvents() {
         .replace(/^-|-$/g, '');
 
       const rawCat = String(fd.get('category') || df.category || '').trim();
-      const category =
-        rawCat || (adminState.categories[0] ? adminState.categories[0].id : 'Sandales');
+      const category = rawCat || '';
 
       const descriptionAr = String(fd.get('description_ar') || df.description_ar || '').trim();
       const descriptionFr = String(fd.get('description_fr') || df.description_fr || '').trim();

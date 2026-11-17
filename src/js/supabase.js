@@ -4,6 +4,8 @@
  * تعمل مباشرة عبر المتصفح (Pure Vanilla JS + Supabase CDN v2) بدون أي Bundler
  */
 
+import { DEMO_CATEGORY_IDS } from './data.js';
+
 const { createClient } = typeof supabase !== 'undefined' ? supabase : {};
 
 // 1. يدعم القراءة التلقائية من متغيرات البيئة (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY) على Vercel / Netlify / GitHub
@@ -117,6 +119,7 @@ export async function fetchAllFromSupabase(options = {}) {
     let parsedCms = null;
     let parsedCategories = null;
     let parsedCollections = null;
+    let hadDemoCategories = false;
     if (!cmsRes.skipped && !cmsRes.error && cmsRes.data) {
       let extraCms = {};
       const rawAnn = cmsRes.data.announcement_text;
@@ -125,8 +128,14 @@ export async function fetchAllFromSupabase(options = {}) {
           const decoded = JSON.parse(rawAnn);
           if (decoded && decoded.__cms_ext_v2) {
             extraCms = decoded.extraCms || {};
-            if (Array.isArray(decoded.categories) && decoded.categories.length > 0) {
-              parsedCategories = decoded.categories;
+            if (Array.isArray(decoded.categories)) {
+              const cleanedCats = decoded.categories.filter(
+                (c) => c && c.id && !DEMO_CATEGORY_IDS.has(c.id)
+              );
+              if (cleanedCats.length !== decoded.categories.length) {
+                hadDemoCategories = true;
+              }
+              parsedCategories = cleanedCats;
             }
             if (Array.isArray(decoded.collections)) {
               parsedCollections = decoded.collections;
@@ -146,7 +155,10 @@ export async function fetchAllFromSupabase(options = {}) {
         heroSubtitle: cmsRes.data.hero_subtitle,
         heroBgUrl: cmsRes.data.hero_bg_url,
         heroBtnText: cmsRes.data.hero_btn_text,
-        heroBtnLink: cmsRes.data.hero_btn_link || 'Talons',
+        heroBtnLink:
+          cmsRes.data.hero_btn_link && !DEMO_CATEGORY_IDS.has(cmsRes.data.hero_btn_link)
+            ? cmsRes.data.hero_btn_link
+            : 'Tout',
         features: Array.isArray(cmsRes.data.features) ? cmsRes.data.features : [],
         freeShippingThreshold: Number(cmsRes.data.free_shipping_threshold ?? 0),
         ...extraCms,
@@ -204,7 +216,8 @@ export async function fetchAllFromSupabase(options = {}) {
                 slug: row.slug || `shoe-${row.id}`,
                 name: row.name_ar || row.name_fr,
                 name_fr: row.name_fr || row.name_ar,
-                category: row.category || 'Talons',
+                category:
+                  row.category && !DEMO_CATEGORY_IDS.has(row.category) ? row.category : '',
                 description_ar: row.description_ar || '',
                 description_fr: row.description_fr || '',
                 price: Number(row.price || 0),
@@ -242,6 +255,7 @@ export async function fetchAllFromSupabase(options = {}) {
 
       cms: parsedCms,
       categories: parsedCategories,
+      hadDemoCategories,
       collections: parsedCollections,
 
       landingPages:
@@ -273,6 +287,19 @@ export async function fetchAllFromSupabase(options = {}) {
                 offerFreeShipping:
                   extraLp.offerFreeShipping !== undefined ? Boolean(extraLp.offerFreeShipping) : true,
                 offerText: extraLp.offerText || 'اشترِ 2 واحصل على شحن مجاني',
+                colors: Array.isArray(extraLp.colors) ? extraLp.colors : undefined,
+                colorHexes:
+                  extraLp.colorHexes && typeof extraLp.colorHexes === 'object'
+                    ? extraLp.colorHexes
+                    : undefined,
+                sizes: Array.isArray(extraLp.sizes) ? extraLp.sizes : undefined,
+                variants: Array.isArray(extraLp.variants) ? extraLp.variants : undefined,
+                highlights: Array.isArray(extraLp.highlights) ? extraLp.highlights : undefined,
+                badgeText: extraLp.badgeText || '',
+                linkedProductId: extraLp.linkedProductId || '',
+                whatsappOrderEnabled:
+                  extraLp.whatsappOrderEnabled !== undefined ? Boolean(extraLp.whatsappOrderEnabled) : true,
+                reviews: Array.isArray(extraLp.reviews) ? extraLp.reviews : undefined,
                 createdAt: extraLp.date || row.created_at || '',
               };
             })
@@ -453,7 +480,8 @@ export async function syncCmsToSupabase(
         hero_subtitle: cms.heroSubtitle,
         hero_bg_url: cms.heroBgUrl,
         hero_btn_text: cms.heroBtnText,
-        hero_btn_link: cms.heroBtnLink || 'Talons',
+        hero_btn_link:
+          cms.heroBtnLink && !DEMO_CATEGORY_IDS.has(cms.heroBtnLink) ? cms.heroBtnLink : 'Tout',
         features: Array.isArray(cms.features) ? cms.features : [],
         free_shipping_threshold: Number(freeShippingThreshold ?? 0),
         updated_at: new Date().toISOString(),
@@ -477,6 +505,15 @@ export async function syncLandingPageToSupabase(lp) {
       offerMinQty: Number(lp.offerMinQty || 2),
       offerFreeShipping: lp.offerFreeShipping !== false,
       offerText: lp.offerText || 'اشترِ 2 واحصل على شحن مجاني',
+      colors: Array.isArray(lp.colors) ? lp.colors : undefined,
+      colorHexes: lp.colorHexes && typeof lp.colorHexes === 'object' ? lp.colorHexes : undefined,
+      sizes: Array.isArray(lp.sizes) ? lp.sizes : undefined,
+      variants: Array.isArray(lp.variants) ? lp.variants : undefined,
+      highlights: Array.isArray(lp.highlights) ? lp.highlights : undefined,
+      badgeText: lp.badgeText || '',
+      linkedProductId: lp.linkedProductId || '',
+      whatsappOrderEnabled: lp.whatsappOrderEnabled !== false,
+      reviews: Array.isArray(lp.reviews) ? lp.reviews : undefined,
     });
 
     await supabaseClient.from('landing_pages').upsert(
