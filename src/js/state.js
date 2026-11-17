@@ -529,12 +529,10 @@ export const store = {
     return newOrder;
   },
 
-  addReview({ name, city, product, rating, comment }) {
+  addReview({ name, rating, comment }) {
     const newReview = {
       id: 'rev-' + Date.now(),
       name: String(name || '').trim(),
-      city: String(city || '').trim(),
-      product: String(product || '').trim(),
       rating: Math.min(5, Math.max(1, Number(rating || 5))),
       comment: String(comment || '').trim(),
       date: new Date().toISOString().slice(0, 10),

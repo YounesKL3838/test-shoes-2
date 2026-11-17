@@ -986,29 +986,25 @@ function renderRealReviewsSection() {
   const isAr = store.lang === 'ar';
   const reviews = Array.isArray(store.reviews) ? store.reviews : [];
   const activeRating = Number(store.reviewFormRating || 5);
-  const catalogProducts =
-    Array.isArray(adminState?.products) && adminState.products.length > 0
-      ? adminState.products
-      : PRODUCTS;
 
   return `
     <section id="real-reviews-section" class="px-4 sm:px-6 py-4 bg-[#FDF5F7] border-t border-[#DE1B61]/10 reveal-on-scroll">
       <div class="max-w-3xl mx-auto">
-        <!-- نافذة مصغرة ومرتبة لإضافة رأي حقيقي -->
+        <!-- نافذة مبسطة لإضافة رأي (الاسم + التقييم + التعليق فقط) -->
         <form
           id="shoestyle-review-form"
-          class="bg-white p-3 sm:p-3.5 rounded-2xl border border-[#DE1B61]/15 shadow-2xs space-y-2.5"
+          class="bg-white p-3 sm:p-4 rounded-2xl border border-[#DE1B61]/15 shadow-2xs space-y-2.5"
         >
-          <!-- السطر العلوي: العنوان + اختيار النجوم في نفس السطر -->
+          <!-- السطر العلوي: العنوان + اختيار النجوم -->
           <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-black/5">
             <div class="flex items-center gap-2">
               <span class="text-sm font-extrabold text-[#18181B]">
-                ✍️ ${isAr ? 'شاركينا رأيكِ الحقيقي' : 'Partagez votre avis'}
+                ${isAr ? 'شاركينا رأيكِ الحقيقي' : 'Partagez votre avis'}
               </span>
               ${
                 reviews.length > 0
-                  ? `<span class="px-2 py-0.5 rounded-full bg-[#FCE8EE] text-[#DE1B61] text-[10px] font-bold">
-                      ★ ${(reviews.reduce((acc, r) => acc + Number(r.rating || 5), 0) / reviews.length).toFixed(1)} (${reviews.length})
+                  ? `<span class="text-[11px] font-bold text-[#DE1B61] tabular-nums">
+                      · ★ ${(reviews.reduce((acc, r) => acc + Number(r.rating || 5), 0) / reviews.length).toFixed(1)} (${reviews.length})
                     </span>`
                   : `<span class="text-[10px] text-[#71717A] hidden sm:inline">
                       · ${isAr ? 'ينشر فوراً' : 'Publié instantanément'}
@@ -1027,7 +1023,7 @@ function renderRealReviewsSection() {
                   type="button"
                   data-action="select-review-star"
                   data-rating="${star}"
-                  class="w-6 h-6 rounded-lg border transition-all flex items-center justify-center text-xs ${
+                  class="w-7 h-7 rounded-lg border transition-all flex items-center justify-center text-xs cursor-pointer ${
                     star <= activeRating
                       ? 'bg-[#FFFBEB] border-[#FBBF24] text-[#FBBF24] shadow-2xs scale-105'
                       : 'bg-[#F8F6F7] border-black/8 text-[#D4D4D8]'
@@ -1039,71 +1035,38 @@ function renderRealReviewsSection() {
               `
                 )
                 .join('')}
-              <span id="review-rating-badge" class="ms-1 text-[11px] font-bold text-[#DE1B61]">
+              <span id="review-rating-badge" class="ms-1 text-[11px] font-bold text-[#DE1B61] tabular-nums">
                 ${activeRating}/5
               </span>
               <input type="hidden" name="rating" id="review-rating-input" value="${activeRating}" />
             </div>
           </div>
 
-          <!-- السطر الأول من الحقول: الاسم + الولاية + الموديل -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <!-- الحقول: الاسم + التعليق + زر النشر فقط -->
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
             <input
               type="text"
               name="reviewerName"
               required
               placeholder="${isAr ? 'الاسم (مثال: سارة م.) *' : 'Votre nom *'}"
-              class="w-full h-10 sm:h-9 px-3 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
+              class="sm:col-span-4 w-full h-10 sm:h-9 px-3 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
             />
 
-            <select
-              name="reviewerCity"
-              required
-              aria-label="${isAr ? 'الولاية' : 'Wilaya'}"
-              class="w-full h-10 sm:h-9 px-2.5 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
-            >
-              ${WILAYAS.map(
-                (w) => `
-                <option value="${isAr ? w.name_ar : w.name_fr}">
-                  ${isAr ? w.name_ar : w.name_fr}
-                </option>
-              `
-              ).join('')}
-            </select>
-
-            <select
-              name="reviewerProduct"
-              aria-label="${isAr ? 'الموديل' : 'Modèle'}"
-              class="w-full h-10 sm:h-9 px-2.5 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
-            >
-              <option value="${isAr ? 'تجربة عامة للمتجر' : 'Expérience générale'}">
-                ${isAr ? 'الموديل: تجربة عامة للمتجر' : 'Modèle : Expérience générale'}
-              </option>
-              ${catalogProducts
-                .map((p) => {
-                  const pName = isAr ? p.name_ar || p.name : p.name_fr || p.name;
-                  return `<option value="${pName}">${pName}</option>`;
-                })
-                .join('')}
-            </select>
-          </div>
-
-          <!-- السطر الثاني: خانة كتابة التعليق + زر النشر بجانبها مباشرة -->
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <input
               type="text"
               name="reviewerComment"
               required
               placeholder="${
                 isAr
-                  ? 'اكتبي رأيكِ باختصار حول الجودة والمقاس والتوصيل... *'
-                  : 'Votre commentaire sur la qualité, la pointure et la livraison... *'
+                  ? 'اكتبي تعليقكِ باختصار... *'
+                  : 'Écrivez votre commentaire... *'
               }"
-              class="flex-1 h-10 sm:h-9 px-3 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
+              class="sm:col-span-6 w-full h-10 sm:h-9 px-3 rounded-xl bg-[#FDF5F7]/70 border border-black/10 text-xs text-[#18181B] focus:outline-none focus:border-[#DE1B61]"
             />
+
             <button
               type="submit"
-              class="h-10 sm:h-9 px-4 ss-btn-pink text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+              class="sm:col-span-2 w-full h-10 sm:h-9 px-4 ss-btn-pink text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer whitespace-nowrap"
             >
               <span>${isAr ? 'نشر الرأي' : 'Publier'}</span>
               <span>♥</span>
@@ -1111,7 +1074,7 @@ function renderRealReviewsSection() {
           </div>
         </form>
 
-        <!-- عرض الآراء المضافة إن وجدت (بحجم مدمج وأنيق) -->
+        <!-- عرض الآراء المضافة (الاسم + التقييم + التعليق فقط) -->
         ${
           reviews.length > 0
             ? `
@@ -1121,27 +1084,17 @@ function renderRealReviewsSection() {
                 (rev, idx) => `
               <article
                 style="--i: ${idx};"
-                class="animate-stagger-item bg-white p-3 rounded-xl border border-[#DE1B61]/12 shadow-2xs flex flex-col justify-between"
+                class="animate-stagger-item bg-white p-3 rounded-xl border border-[#DE1B61]/12 shadow-2xs flex flex-col justify-between gap-2"
               >
-                <div>
-                  <div class="flex items-center justify-between text-[11px]">
-                    <span class="text-[#FBBF24] tracking-wider">
-                      ${'★'.repeat(Number(rev.rating || 5))}${'☆'.repeat(Math.max(0, 5 - Number(rev.rating || 5)))}
-                    </span>
-                    <span class="text-[#71717A] truncate max-w-[110px]">${rev.city || ''}</span>
-                  </div>
-                  <p class="mt-1.5 text-xs text-[#18181B] leading-snug break-words">
-                    « ${rev.comment} »
-                  </p>
+                <div class="flex items-center justify-between gap-2">
+                  <strong class="text-xs text-[#18181B] truncate">${rev.name}</strong>
+                  <span class="text-[#FBBF24] tracking-wider text-xs shrink-0">
+                    ${'★'.repeat(Number(rev.rating || 5))}${'☆'.repeat(Math.max(0, 5 - Number(rev.rating || 5)))}
+                  </span>
                 </div>
-                <div class="mt-2 pt-1.5 border-t border-black/5 flex items-center justify-between text-[11px] gap-1">
-                  <strong class="text-[#18181B] truncate">${rev.name}</strong>
-                  ${
-                    rev.product
-                      ? `<span class="text-[#DE1B61] font-semibold text-[10px] bg-[#FCE8EE]/60 px-2 py-0.5 rounded-full truncate max-w-[110px]">${rev.product}</span>`
-                      : ''
-                  }
-                </div>
+                <p class="text-xs text-[#3F3F46] leading-snug break-words">
+                  « ${rev.comment} »
+                </p>
               </article>
             `
               )
@@ -5454,13 +5407,11 @@ function setupEvents() {
       e.preventDefault();
       const data = new FormData(form);
       const name = String(data.get('reviewerName') || '').trim();
-      const city = String(data.get('reviewerCity') || '').trim();
-      const product = String(data.get('reviewerProduct') || '').trim();
       const rating = Number(data.get('rating') || store.reviewFormRating || 5);
       const comment = String(data.get('reviewerComment') || '').trim();
       if (!name || !comment) return;
 
-      store.addReview({ name, city, product, rating, comment });
+      store.addReview({ name, rating, comment });
       form.reset();
       showToast(
         store.lang === 'ar'
