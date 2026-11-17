@@ -18,7 +18,11 @@ import {
   adminState,
   initAdminFromSupabase,
 } from './admin.js';
-import { subscribeRealtimeSync, syncOrderToSupabase } from './supabase.js';
+import {
+  fetchOrdersFromSupabase,
+  subscribeRealtimeSync,
+  syncOrderToSupabase,
+} from './supabase.js';
 
 let toastTimeout = null;
 let heroSlideIndex = 0;
@@ -260,24 +264,34 @@ function initScrollReveal() {
     scrollObserver.disconnect();
   }
   const elements = document.querySelectorAll('.reveal-on-scroll');
+  if (!elements.length) return;
   if (!('IntersectionObserver' in window)) {
     elements.forEach((el) => el.classList.add('is-visible'));
     return;
   }
 
+  const vh = window.innerHeight || 800;
   scrollObserver = new IntersectionObserver(
     (entries) => {
-      entries.forEach((entry) => {
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
         if (entry.isIntersecting) {
           entry.target.classList.add('is-visible');
           scrollObserver.unobserve(entry.target);
         }
-      });
+      }
     },
-    { threshold: 0.08, rootMargin: '0px 0px -20px 0px' }
+    { threshold: 0.04, rootMargin: '40px 0px 40px 0px' }
   );
 
-  elements.forEach((el) => scrollObserver.observe(el));
+  elements.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < vh + 60) {
+      el.classList.add('is-visible');
+    } else {
+      scrollObserver.observe(el);
+    }
+  });
 }
 
 /**
@@ -337,7 +351,7 @@ function getActiveHeroSlide(index = 0) {
 /**
  * Carte Produit ShoeStyle bilingue avec animation d'entrée en cascade
  */
-function renderShoeStyleCard(product, staggerIndex = 0) {
+function renderShoeStyleCard(product, staggerIndex = 0, eager = false) {
   const wishlisted = store.isWishlisted(product.id);
   const t = getT();
   const prodName = store.lang === 'ar' ? product.name_ar || product.name : product.name_fr || product.name;
@@ -345,11 +359,12 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
     product.image ||
     (Array.isArray(product.gallery) && product.gallery.find(Boolean)) ||
     IMAGES.talons;
+  const isPriority = Boolean(eager) && staggerIndex < 4;
 
   return `
     <article
       class="ss-product-card group animate-stagger-item ss-scroll-anim"
-      style="--i: ${staggerIndex};"
+      style="--i: ${Math.min(staggerIndex, 6)};"
     >
       <div
         class="ss-product-img-box cursor-pointer"
@@ -361,7 +376,8 @@ function renderShoeStyleCard(product, staggerIndex = 0) {
           alt="${prodName}"
           referrerpolicy="no-referrer"
           decoding="async"
-          fetchpriority="${staggerIndex < 4 ? 'high' : 'auto'}"
+          loading="${isPriority ? 'eager' : 'lazy'}"
+          fetchpriority="${isPriority ? 'high' : 'low'}"
           draggable="false"
           class="ss-single-product-img"
           onerror="this.style.display='none';"
@@ -757,6 +773,9 @@ function renderHomeScreen() {
                 src="${slide.image}"
                 alt="ShoeStyle Collection"
                 referrerpolicy="no-referrer"
+                decoding="async"
+                loading="eager"
+                fetchpriority="high"
                 class="w-full h-full object-cover object-center animate-hero-zoom transition-opacity duration-300"
               />
               <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/45 to-[#FCE8EE]/95 md:to-transparent pointer-events-none"></div>
@@ -877,7 +896,7 @@ function renderHomeScreen() {
         </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
-          ${newArrivals.map((p, idx) => renderShoeStyleCard(p, idx)).join('')}
+          ${newArrivals.map((p, idx) => renderShoeStyleCard(p, idx, true)).join('')}
         </div>
       </section>
 
@@ -901,7 +920,7 @@ function renderHomeScreen() {
         </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
-          ${bestSellers.map((p, idx) => renderShoeStyleCard(p, idx)).join('')}
+          ${bestSellers.map((p, idx) => renderShoeStyleCard(p, idx, false)).join('')}
         </div>
       </section>
 
@@ -925,7 +944,7 @@ function renderHomeScreen() {
         </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
-          ${specialOffers.map((p, idx) => renderShoeStyleCard(p, idx)).join('')}
+          ${specialOffers.map((p, idx) => renderShoeStyleCard(p, idx, false)).join('')}
         </div>
       </section>
 
@@ -1533,7 +1552,7 @@ function renderCategoryScreen() {
       <div id="category-products-grid" class="px-3 sm:px-6 pt-1 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
         ${
           filtered.length > 0
-            ? filtered.map((p, idx) => renderShoeStyleCard(p, idx)).join('')
+            ? filtered.map((p, idx) => renderShoeStyleCard(p, idx, true)).join('')
             : `<div class="col-span-2 lg:col-span-4 py-12 text-center bg-[#FDF5F7]/60 rounded-2xl border border-[#DE1B61]/15">
                 <p class="text-sm sm:text-base font-bold text-[#18181B]">
                   ${isAr ? 'لا توجد منتجات في هذا القسم حالياً' : 'Aucun produit dans cette section pour le moment'}
@@ -3220,10 +3239,9 @@ function getCustomerOrdersWithLiveStatus() {
   });
 }
 
-function renderAccountScreen() {
+function renderAccountOrdersContentHtml(trackedOrders) {
   const t = getT();
   const isAr = store.lang === 'ar';
-  const trackedOrders = getCustomerOrdersWithLiveStatus();
 
   const stepsMeta = [
     {
@@ -3255,6 +3273,207 @@ function renderAccountScreen() {
     delivered: 3,
   };
 
+  if (trackedOrders.length === 0) {
+    return `<div class="p-8 rounded-2xl bg-[#FAFAFA] border border-black/8 text-center space-y-3">
+      <div class="w-12 h-12 rounded-full bg-[#FCE8EE] text-[#DE1B61] flex items-center justify-center mx-auto text-lg">
+        📦
+      </div>
+      <p class="text-xs sm:text-sm font-bold text-[#18181B]">
+        ${
+          store.orderTrackQuery
+            ? isAr
+              ? 'لم يتم العثور على طلب مطابق لبحثك'
+              : 'Aucune commande trouvée pour cette recherche'
+            : t.account.noOrders
+        }
+      </p>
+      <button
+        type="button"
+        data-action="nav-screen"
+        data-screen="home"
+        class="ss-btn-pink px-5 py-2.5 text-xs inline-flex items-center gap-1.5"
+      >
+        <span>${isAr ? 'تصفح المنتجات الآن' : 'Découvrir la collection'}</span>
+      </button>
+    </div>`;
+  }
+
+  return `<div id="account-orders-list" class="space-y-4">
+    ${trackedOrders
+      .map((o, idx) => {
+        const normStatus = normalizeOrderStatusForTracking(o.status);
+        const currentStepIdx = statusRank[normStatus] ?? 0;
+        const isCancelled = normStatus === 'cancelled';
+        const customerName = o.fullName || o.customer?.fullName || '';
+        const customerPhone = o.phone || o.customer?.phone || '';
+        const customerWilaya = o.wilaya || o.customer?.wilaya || '';
+        const customerAddress = o.address || o.customer?.address || '';
+        const itemsText =
+          o.itemsSummary ||
+          (Array.isArray(o.items)
+            ? o.items
+                .map(
+                  (it) =>
+                    `${it.name} (${it.size ? `${isAr ? 'مقاس' : 'P.'} ${it.size} × ` : '× '}${it.quantity})`
+                )
+                .join(' + ')
+            : '');
+
+        const statusBadge = isCancelled
+          ? `<span class="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-[11px] font-extrabold">${
+              isAr ? 'طلبية ملغاة' : 'Annulée'
+            }</span>`
+          : normStatus === 'delivered'
+          ? `<span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-extrabold">✓ ${
+              isAr ? 'تم التوصيل' : 'Livrée'
+            }</span>`
+          : normStatus === 'shipping'
+          ? `<span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[11px] font-extrabold">🚚 ${
+              isAr ? 'في الطريق للتوصيل' : 'En cours de livraison'
+            }</span>`
+          : normStatus === 'confirming'
+          ? `<span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-extrabold">⏳ ${
+              isAr ? 'قيد التأكيد والتجهيز' : 'En confirmation'
+            }</span>`
+          : `<span class="px-2.5 py-1 rounded-full bg-[#FCE8EE] text-[#DE1B61] text-[11px] font-extrabold">✨ ${
+              isAr ? 'تم استلام الطلب' : 'Commande reçue'
+            }</span>`;
+
+        return `
+          <div
+            style="--i: ${Math.min(idx, 5)};"
+            class="animate-stagger-item p-4 sm:p-5 rounded-2xl bg-white border border-[#DE1B61]/15 shadow-xs space-y-3.5"
+          >
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-black/6">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm sm:text-base font-extrabold text-[#18181B] tabular-nums">
+                    ${t.account.orderPrefix} #${o.id}
+                  </span>
+                  ${statusBadge}
+                </div>
+                <span class="block text-[11px] text-[#71717A] mt-0.5 tabular-nums">
+                  📅 ${o.date || new Date().toISOString().slice(0, 10)}
+                </span>
+              </div>
+              <div class="text-end">
+                <span class="block text-[10px] text-[#71717A] font-semibold">
+                  ${isAr ? 'المبلغ الإجمالي' : 'Montant total'}
+                </span>
+                <span class="text-base sm:text-lg font-extrabold text-[#DE1B61] tabular-nums">
+                  ${formatDA(o.total, store.lang)}
+                </span>
+              </div>
+            </div>
+
+            <div class="space-y-1.5 text-xs">
+              ${
+                itemsText
+                  ? `<div class="p-2.5 rounded-xl bg-[#FDF5F7]/80 border border-[#DE1B61]/10 text-[#18181B] font-bold leading-relaxed">
+                      🛍️ ${itemsText}
+                    </div>`
+                  : ''
+              }
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[#52525B] pt-1">
+                ${customerName ? `<span>👤 <strong>${customerName}</strong></span>` : ''}
+                ${customerPhone ? `<span dir="ltr" class="tabular-nums">📞 ${customerPhone}</span>` : ''}
+                ${customerWilaya ? `<span>📍 ${customerWilaya}</span>` : ''}
+              </div>
+              ${
+                customerAddress
+                  ? `<p class="text-[11px] text-[#71717A]">🏠 ${customerAddress}</p>`
+                  : ''
+              }
+            </div>
+
+            ${
+              !isCancelled
+                ? `<div class="pt-2">
+                    <div class="grid grid-cols-4 gap-1.5 text-center">
+                      ${stepsMeta
+                        .map((step, sIdx) => {
+                          const isDone = sIdx <= currentStepIdx;
+                          const isCurrent = sIdx === currentStepIdx;
+                          return `
+                            <div class="flex flex-col items-center gap-1">
+                              <div class="w-full h-1.5 rounded-full transition-colors ${
+                                isDone ? 'bg-[#DE1B61]' : 'bg-[#E4E4E7]'
+                              }"></div>
+                              <span class="text-[10px] sm:text-[11px] font-bold ${
+                                isCurrent
+                                  ? 'text-[#DE1B61]'
+                                  : isDone
+                                  ? 'text-[#18181B]'
+                                  : 'text-[#A1A1AA]'
+                              }">
+                                ${isDone ? '✓ ' : ''}${step.label}
+                              </span>
+                            </div>
+                          `;
+                        })
+                        .join('')}
+                    </div>
+                    <p class="mt-2 text-[11px] font-semibold text-[#15803D] bg-emerald-50/80 border border-emerald-200/70 rounded-xl px-3 py-1.5 text-center">
+                      ${stepsMeta[currentStepIdx]?.desc || ''}
+                    </p>
+                  </div>`
+                : ''
+            }
+          </div>
+        `;
+      })
+      .join('')}
+  </div>`;
+}
+
+let lastAccountOrdersSyncAt = 0;
+let accountOrdersSyncInFlight = false;
+
+async function syncAccountOrdersOnDemand() {
+  if (accountOrdersSyncInFlight) return;
+  const now = Date.now();
+  if (now - lastAccountOrdersSyncAt < 8000) return;
+  accountOrdersSyncInFlight = true;
+  try {
+    const remoteOrders = await fetchOrdersFromSupabase();
+    lastAccountOrdersSyncAt = Date.now();
+    if (Array.isArray(remoteOrders)) {
+      const nextJson = JSON.stringify(remoteOrders);
+      const prevJson = JSON.stringify(adminState?.orders || []);
+      if (nextJson !== prevJson && adminState) {
+        adminState.orders = remoteOrders;
+        adminState.saveAll({ notifyTabs: false, skipStorefrontSync: true, changedKeys: new Set(['orders']) });
+        if (store.currentScreen === 'account') {
+          updateAccountOrdersInPlace();
+        }
+      }
+    }
+  } finally {
+    accountOrdersSyncInFlight = false;
+  }
+}
+
+function updateAccountOrdersInPlace() {
+  const container = document.getElementById('account-orders-container');
+  const countEl = document.getElementById('account-orders-count');
+  const trackedOrders = getCustomerOrdersWithLiveStatus();
+  if (countEl) {
+    const isAr = store.lang === 'ar';
+    countEl.textContent = `${trackedOrders.length} ${isAr ? 'طلب' : 'cmd'}`;
+  }
+  if (container) {
+    container.innerHTML = renderAccountOrdersContentHtml(trackedOrders);
+  }
+}
+
+function renderAccountScreen() {
+  const t = getT();
+  const isAr = store.lang === 'ar';
+  const trackedOrders = getCustomerOrdersWithLiveStatus();
+  setTimeout(() => {
+    syncAccountOrdersOnDemand();
+  }, 0);
+
   return `
     <div class="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-5 animate-screen-enter">
       <!-- بطاقة الترحيب -->
@@ -3270,7 +3489,7 @@ function renderAccountScreen() {
             }</p>
           </div>
         </div>
-        <span class="px-3 py-1 rounded-full bg-white text-[#DE1B61] text-xs font-extrabold border border-[#DE1B61]/20 tabular-nums shrink-0">
+        <span id="account-orders-count" class="px-3 py-1 rounded-full bg-white text-[#DE1B61] text-xs font-extrabold border border-[#DE1B61]/20 tabular-nums shrink-0">
           ${trackedOrders.length} ${isAr ? 'طلب' : 'cmd'}
         </span>
       </div>
@@ -3303,160 +3522,9 @@ function renderAccountScreen() {
           </h3>
         </div>
 
-        ${
-          trackedOrders.length === 0
-            ? `<div class="p-8 rounded-2xl bg-[#FAFAFA] border border-black/8 text-center space-y-3">
-                <div class="w-12 h-12 rounded-full bg-[#FCE8EE] text-[#DE1B61] flex items-center justify-center mx-auto text-lg">
-                  📦
-                </div>
-                <p class="text-xs sm:text-sm font-bold text-[#18181B]">
-                  ${
-                    store.orderTrackQuery
-                      ? isAr
-                        ? 'لم يتم العثور على طلب مطابق لبحثك'
-                        : 'Aucune commande trouvée pour cette recherche'
-                      : t.account.noOrders
-                  }
-                </p>
-                <button
-                  type="button"
-                  data-action="nav-screen"
-                  data-screen="home"
-                  class="ss-btn-pink px-5 py-2.5 text-xs inline-flex items-center gap-1.5"
-                >
-                  <span>${isAr ? 'تصفح المنتجات الآن' : 'Découvrir la collection'}</span>
-                </button>
-              </div>`
-            : `<div id="account-orders-list" class="space-y-4">
-                ${trackedOrders
-                  .map((o, idx) => {
-                    const normStatus = normalizeOrderStatusForTracking(o.status);
-                    const currentStepIdx = statusRank[normStatus] ?? 0;
-                    const isCancelled = normStatus === 'cancelled';
-                    const customerName = o.fullName || o.customer?.fullName || '';
-                    const customerPhone = o.phone || o.customer?.phone || '';
-                    const customerWilaya = o.wilaya || o.customer?.wilaya || '';
-                    const customerAddress = o.address || o.customer?.address || '';
-                    const itemsText =
-                      o.itemsSummary ||
-                      (Array.isArray(o.items)
-                        ? o.items
-                            .map(
-                              (it) =>
-                                `${it.name} (${it.size ? `${isAr ? 'مقاس' : 'P.'} ${it.size} × ` : '× '}${it.quantity})`
-                            )
-                            .join(' + ')
-                        : '');
-
-                    const statusBadge = isCancelled
-                      ? `<span class="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-[11px] font-extrabold">${
-                          isAr ? 'طلبية ملغاة' : 'Annulée'
-                        }</span>`
-                      : normStatus === 'delivered'
-                      ? `<span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-extrabold">✓ ${
-                          isAr ? 'تم التوصيل' : 'Livrée'
-                        }</span>`
-                      : normStatus === 'shipping'
-                      ? `<span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[11px] font-extrabold">🚚 ${
-                          isAr ? 'في الطريق للتوصيل' : 'En cours de livraison'
-                        }</span>`
-                      : normStatus === 'confirming'
-                      ? `<span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-extrabold">⏳ ${
-                          isAr ? 'قيد التأكيد والتجهيز' : 'En confirmation'
-                        }</span>`
-                      : `<span class="px-2.5 py-1 rounded-full bg-[#FCE8EE] text-[#DE1B61] text-[11px] font-extrabold">✨ ${
-                          isAr ? 'تم استلام الطلب' : 'Commande reçue'
-                        }</span>`;
-
-                    return `
-                      <div
-                        style="--i: ${idx};"
-                        class="animate-stagger-item p-4 sm:p-5 rounded-2xl bg-white border border-[#DE1B61]/15 shadow-xs space-y-3.5"
-                      >
-                        <!-- رأس البطاقة: رقم الطلب والتاريخ والحالة والسعر -->
-                        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-black/6">
-                          <div>
-                            <div class="flex items-center gap-2">
-                              <span class="text-sm sm:text-base font-extrabold text-[#18181B] tabular-nums">
-                                ${t.account.orderPrefix} #${o.id}
-                              </span>
-                              ${statusBadge}
-                            </div>
-                            <span class="block text-[11px] text-[#71717A] mt-0.5 tabular-nums">
-                              📅 ${o.date || new Date().toISOString().slice(0, 10)}
-                            </span>
-                          </div>
-                          <div class="text-end">
-                            <span class="block text-[10px] text-[#71717A] font-semibold">
-                              ${isAr ? 'المبلغ الإجمالي' : 'Montant total'}
-                            </span>
-                            <span class="text-base sm:text-lg font-extrabold text-[#DE1B61] tabular-nums">
-                              ${formatDA(o.total, store.lang)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <!-- تفاصيل المنتجات والعنوان -->
-                        <div class="space-y-1.5 text-xs">
-                          ${
-                            itemsText
-                              ? `<div class="p-2.5 rounded-xl bg-[#FDF5F7]/80 border border-[#DE1B61]/10 text-[#18181B] font-bold leading-relaxed">
-                                  🛍️ ${itemsText}
-                                </div>`
-                              : ''
-                          }
-                          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[#52525B] pt-1">
-                            ${customerName ? `<span>👤 <strong>${customerName}</strong></span>` : ''}
-                            ${customerPhone ? `<span dir="ltr" class="tabular-nums">📞 ${customerPhone}</span>` : ''}
-                            ${customerWilaya ? `<span>📍 ${customerWilaya}</span>` : ''}
-                          </div>
-                          ${
-                            customerAddress
-                              ? `<p class="text-[11px] text-[#71717A]">🏠 ${customerAddress}</p>`
-                              : ''
-                          }
-                        </div>
-
-                        <!-- شريط مراحل تتبع الطلبية (4 مراحل) -->
-                        ${
-                          !isCancelled
-                            ? `<div class="pt-2">
-                                <div class="grid grid-cols-4 gap-1.5 text-center">
-                                  ${stepsMeta
-                                    .map((step, sIdx) => {
-                                      const isDone = sIdx <= currentStepIdx;
-                                      const isCurrent = sIdx === currentStepIdx;
-                                      return `
-                                        <div class="flex flex-col items-center gap-1">
-                                          <div class="w-full h-1.5 rounded-full transition-colors ${
-                                            isDone ? 'bg-[#DE1B61]' : 'bg-[#E4E4E7]'
-                                          }"></div>
-                                          <span class="text-[10px] sm:text-[11px] font-bold ${
-                                            isCurrent
-                                              ? 'text-[#DE1B61]'
-                                              : isDone
-                                              ? 'text-[#18181B]'
-                                              : 'text-[#A1A1AA]'
-                                          }">
-                                            ${isDone ? '✓ ' : ''}${step.label}
-                                          </span>
-                                        </div>
-                                      `;
-                                    })
-                                    .join('')}
-                                </div>
-                                <p class="mt-2 text-[11px] font-semibold text-[#15803D] bg-emerald-50/80 border border-emerald-200/70 rounded-xl px-3 py-1.5 text-center">
-                                  ${stepsMeta[currentStepIdx]?.desc || ''}
-                                </p>
-                              </div>`
-                            : ''
-                        }
-                      </div>
-                    `;
-                  })
-                  .join('')}
-              </div>`
-        }
+        <div id="account-orders-container">
+          ${renderAccountOrdersContentHtml(trackedOrders)}
+        </div>
       </div>
     </div>
   `;
@@ -4092,7 +4160,7 @@ function updateCategoryInPlace(updateBanner = false) {
   if (gridEl) {
     gridEl.innerHTML =
       filtered.length > 0
-        ? filtered.map((p, idx) => renderShoeStyleCard(p, idx)).join('')
+        ? filtered.map((p, idx) => renderShoeStyleCard(p, idx, true)).join('')
         : `<div class="col-span-2 lg:col-span-4 py-12 text-center bg-[#FDF5F7]/60 rounded-2xl border border-[#DE1B61]/15">
             <p class="text-sm sm:text-base font-bold text-[#18181B]">
               ${isAr ? 'لا توجد منتجات في هذا القسم حالياً' : 'Aucun produit dans cette section pour le moment'}
@@ -4176,7 +4244,7 @@ function updateCartBadgesInPlace() {
 function startHeroAutoSlider() {
   if (heroIntervalId) clearInterval(heroIntervalId);
   heroIntervalId = setInterval(() => {
-    if (store.currentScreen === 'home') {
+    if (!document.hidden && store.currentScreen === 'home') {
       const next = (heroSlideIndex + 1) % HERO_SLIDES.length;
       updateHeroSlide(next);
     }
@@ -4548,6 +4616,29 @@ function setupEvents() {
     }
   });
 
+  let searchDebounceTimer = null;
+  const warmedImageUrls = new Set();
+  const warmProductImage = (prodId) => {
+    if (!prodId) return;
+    const prod = PRODUCTS.find((p) => p.id === prodId);
+    const imgUrl = prod?.image || (Array.isArray(prod?.gallery) && prod.gallery[0]);
+    if (imgUrl && !warmedImageUrls.has(imgUrl)) {
+      warmedImageUrls.add(imgUrl);
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = imgUrl;
+    }
+  };
+
+  document.addEventListener(
+    'pointerenter',
+    (e) => {
+      const el = e.target instanceof Element ? e.target.closest('[data-action="open-pdp"]') : null;
+      if (el) warmProductImage(el.getAttribute('data-id'));
+    },
+    true
+  );
+
   document.addEventListener('input', (e) => {
     const target = e.target;
     if (
@@ -4555,32 +4646,28 @@ function setupEvents() {
       target.id === 'global-search-input'
     ) {
       store.searchQuery = target.value;
-      if (store.currentScreen !== 'category') {
-        store.currentScreen = 'category';
-        store.activeCategory = 'Tout';
-        const mainEl = document.getElementById('app-main');
-        if (mainEl) mainEl.innerHTML = renderCategoryScreen();
-        renderNavigationBars();
-      } else {
-        updateCategoryInPlace(false);
-      }
+      if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        searchDebounceTimer = null;
+        if (store.currentScreen !== 'category') {
+          store.currentScreen = 'category';
+          store.activeCategory = 'Tout';
+          const mainEl = document.getElementById('app-main');
+          if (mainEl) mainEl.innerHTML = renderCategoryScreen();
+          renderNavigationBars();
+        } else {
+          updateCategoryInPlace(false);
+        }
+      }, 90);
     } else if (
       target instanceof HTMLInputElement &&
       target.id === 'account-order-track-input'
     ) {
-      const cursorPos = target.selectionStart;
       store.orderTrackQuery = target.value;
-      const mainEl = document.getElementById('app-main');
-      if (mainEl && store.currentScreen === 'account') {
-        mainEl.innerHTML = renderAccountScreen();
-        const newInp = document.getElementById('account-order-track-input');
-        if (newInp instanceof HTMLInputElement) {
-          newInp.focus({ preventScroll: true });
-          if (cursorPos !== null) {
-            try {
-              newInp.setSelectionRange(cursorPos, cursorPos);
-            } catch {}
-          }
+      if (store.currentScreen === 'account') {
+        updateAccountOrdersInPlace();
+        if (store.orderTrackQuery.trim().length >= 3) {
+          syncAccountOrdersOnDemand();
         }
       }
     }
@@ -5047,19 +5134,42 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupEvents();
   startHeroAutoSlider();
 
-  // جلب البيانات المحدثة من Supabase وتحديث واجهة المتجر تلقائياً
-  const updatedFromSupabase = await initAdminFromSupabase();
+  // جلب بيانات الواجهة الضرورية فقط عند البدء لتسريع الفتح الأول
+  const updatedFromSupabase = await initAdminFromSupabase({
+    includeOrders: false,
+    includeLandingPages: false,
+  });
   if (updatedFromSupabase) {
     initAdPixels();
     checkUrlForLandingPage();
     renderAll();
   }
 
-  // الاستماع لأي تعديلات تجري في صفحة لوحة التحكم المستقلة (/admin.html) عبر Supabase Realtime
-  subscribeRealtimeSync(async () => {
-    adminState.reloadFromStorage();
-    await initAdminFromSupabase();
-    initAdPixels();
-    renderAll();
+  // الاستماع للتحديثات اللحظية من لوحة التحكم بكفاءة ودون إعادة رسم غير ضرورية
+  subscribeRealtimeSync(async (evt) => {
+    const tbl = String(evt?.table || '');
+    if (tbl === 'orders' || tbl === 'shoestyle_orders_vadmin_v1') {
+      if (store.currentScreen === 'account') {
+        lastAccountOrdersSyncAt = 0;
+        await syncAccountOrdersOnDemand();
+      }
+      return;
+    }
+
+    if (evt && evt.action === 'storage') {
+      adminState.reloadFromStorage();
+      initAdPixels();
+      renderAll();
+      return;
+    }
+
+    const updated = await initAdminFromSupabase({
+      includeOrders: false,
+      includeLandingPages: store.currentScreen === 'landing',
+    });
+    if (updated) {
+      initAdPixels();
+      renderAll();
+    }
   });
 });

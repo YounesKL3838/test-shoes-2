@@ -97,6 +97,8 @@ export const store = {
     this.listeners.push(fn);
   },
 
+  _saveTimer: null,
+
   save() {
     saveToStorage(STORAGE_KEYS.CART, this.cart);
     saveToStorage(STORAGE_KEYS.WISHLIST, this.wishlist);
@@ -107,9 +109,25 @@ export const store = {
     } catch {}
   },
 
-  notify() {
-    this.save();
+  scheduleSave() {
+    if (this._saveTimer) return;
+    this._saveTimer = setTimeout(() => {
+      this._saveTimer = null;
+      this.save();
+    }, 0);
+  },
+
+  notify(options = {}) {
     this.listeners.forEach((fn) => fn(this));
+    if (options.immediateSave) {
+      if (this._saveTimer) {
+        clearTimeout(this._saveTimer);
+        this._saveTimer = null;
+      }
+      this.save();
+    } else {
+      this.scheduleSave();
+    }
   },
 
   setLanguage(newLang) {
@@ -438,7 +456,7 @@ export const store = {
       if (document.documentElement) document.documentElement.scrollTop = 0;
       if (document.body) document.body.scrollTop = 0;
     }
-    this.notify();
+    this.notify({ immediateSave: true });
     syncOrderToSupabase(newOrder);
     return newOrder;
   },

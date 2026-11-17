@@ -51,24 +51,72 @@ export function notifyCrossTabSync(table, action = 'update') {
   }
 }
 
+function mapOrderRow(row) {
+  return {
+    id: row.id,
+    date: row.date,
+    fullName: row.full_name,
+    phone: row.phone,
+    wilaya: row.wilaya,
+    address: row.address,
+    itemsSummary: row.items_summary,
+    items: Array.isArray(row.items) ? row.items : [],
+    total: Number(row.total || 0),
+    status: row.status || 'new',
+  };
+}
+
+export async function fetchOrdersFromSupabase() {
+  if (!supabaseClient) return null;
+  try {
+    const { data, error } = await supabaseClient
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error || !Array.isArray(data)) return null;
+    return data.map(mapOrderRow);
+  } catch {
+    return null;
+  }
+}
+
 /**
- * جلب كافة البيانات من جداول Supabase عند تحميل المتجر أو لوحة التحكم
+ * جلب البيانات من جداول Supabase (مع إمكانية انتقاء الجداول المطلوبة لتسريع التحميل)
  */
-export async function fetchAllFromSupabase() {
+export async function fetchAllFromSupabase(options = {}) {
   if (!supabaseClient) return null;
 
+  const {
+    includeProducts = true,
+    includeOrders = true,
+    includeCms = true,
+    includeLandingPages = true,
+    includeShipping = true,
+  } = options;
+
   try {
+    const skipped = Promise.resolve({ skipped: true, error: null, data: null });
     const [prodsRes, ordersRes, cmsRes, lpRes, shipRes] = await Promise.all([
-      supabaseClient.from('products').select('*').order('updated_at', { ascending: false }),
-      supabaseClient.from('orders').select('*').order('created_at', { ascending: false }),
-      supabaseClient.from('cms_settings').select('*').eq('id', 1).maybeSingle(),
-      supabaseClient.from('landing_pages').select('*').order('updated_at', { ascending: false }),
-      supabaseClient.from('shipping_rates').select('*').order('code', { ascending: true }),
+      includeProducts
+        ? supabaseClient.from('products').select('*').order('updated_at', { ascending: false })
+        : skipped,
+      includeOrders
+        ? supabaseClient.from('orders').select('*').order('created_at', { ascending: false })
+        : skipped,
+      includeCms
+        ? supabaseClient.from('cms_settings').select('*').eq('id', 1).maybeSingle()
+        : skipped,
+      includeLandingPages
+        ? supabaseClient.from('landing_pages').select('*').order('updated_at', { ascending: false })
+        : skipped,
+      includeShipping
+        ? supabaseClient.from('shipping_rates').select('*').order('code', { ascending: true })
+        : skipped,
     ]);
 
     let parsedCms = null;
     let parsedCategories = null;
-    if (!cmsRes.error && cmsRes.data) {
+    if (!cmsRes.skipped && !cmsRes.error && cmsRes.data) {
       let extraCms = {};
       const rawAnn = cmsRes.data.announcement_text;
       if (typeof rawAnn === 'string' && rawAnn.startsWith('{')) {
@@ -103,7 +151,7 @@ export async function fetchAllFromSupabase() {
 
     return {
       products:
-        !prodsRes.error && Array.isArray(prodsRes.data) && prodsRes.data.length > 0
+        !prodsRes.skipped && !prodsRes.error && Array.isArray(prodsRes.data) && prodsRes.data.length > 0
           ? prodsRes.data.map((row) => {
               const rawSizeStock =
                 row.size_stock && typeof row.size_stock === 'object'
@@ -184,26 +232,15 @@ export async function fetchAllFromSupabase() {
           : null,
 
       orders:
-        !ordersRes.error && Array.isArray(ordersRes.data) && ordersRes.data.length > 0
-          ? ordersRes.data.map((row) => ({
-              id: row.id,
-              date: row.date,
-              fullName: row.full_name,
-              phone: row.phone,
-              wilaya: row.wilaya,
-              address: row.address,
-              itemsSummary: row.items_summary,
-              items: Array.isArray(row.items) ? row.items : [],
-              total: Number(row.total || 0),
-              status: row.status || 'new',
-            }))
+        !ordersRes.skipped && !ordersRes.error && Array.isArray(ordersRes.data) && ordersRes.data.length > 0
+          ? ordersRes.data.map(mapOrderRow)
           : null,
 
       cms: parsedCms,
       categories: parsedCategories,
 
       landingPages:
-        !lpRes.error && Array.isArray(lpRes.data) && lpRes.data.length > 0
+        !lpRes.skipped && !lpRes.error && Array.isArray(lpRes.data) && lpRes.data.length > 0
           ? lpRes.data.map((row) => {
               let extraLp = {};
               if (typeof row.created_at === 'string' && row.created_at.startsWith('{')) {
@@ -237,7 +274,7 @@ export async function fetchAllFromSupabase() {
           : null,
 
       shippingRates:
-        !shipRes.error && Array.isArray(shipRes.data) && shipRes.data.length > 0
+        !shipRes.skipped && !shipRes.error && Array.isArray(shipRes.data) && shipRes.data.length > 0
           ? shipRes.data.map((row) => ({
               code: row.code,
               name: row.name_ar,

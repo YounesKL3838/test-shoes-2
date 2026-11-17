@@ -1130,29 +1130,54 @@ export const adminState = {
     this.syncWithStorefront();
   },
 
-  saveAll() {
+  saveAll(options = {}) {
+    const {
+      notifyTabs = true,
+      skipStorefrontSync = false,
+      changedKeys = null,
+    } = options;
     this.cms.announcementEnabled = false;
-    saveJSON(CATEGORIES_STORAGE_KEY, this.categories);
-    saveJSON(CMS_STORAGE_KEY, this.cms);
-    saveJSON(ORDERS_ADMIN_KEY, this.orders);
-    saveJSON(SHIPPING_STORAGE_KEY, this.shipping);
-    saveJSON(LANDING_STORAGE_KEY, this.landingPages);
-    saveJSON(INVENTORY_STORAGE_KEY, this.inventory);
-    this.syncWithStorefront();
-    notifyCrossTabSync('all', 'save');
+    const writeKey = (keyName, storageKey, val) => {
+      if (!changedKeys || changedKeys.has(keyName)) {
+        saveJSON(storageKey, val);
+      }
+    };
+    writeKey('categories', CATEGORIES_STORAGE_KEY, this.categories);
+    writeKey('cms', CMS_STORAGE_KEY, this.cms);
+    writeKey('orders', ORDERS_ADMIN_KEY, this.orders);
+    writeKey('shipping', SHIPPING_STORAGE_KEY, this.shipping);
+    writeKey('landingPages', LANDING_STORAGE_KEY, this.landingPages);
+    writeKey('inventory', INVENTORY_STORAGE_KEY, this.inventory);
+
+    if (!skipStorefrontSync) {
+      this.syncWithStorefront();
+    }
+    if (notifyTabs) {
+      notifyCrossTabSync('all', 'save');
+    }
   },
 };
 
 // تزامن فوري ومباشر مع منتجات المتجر فور تحميل الملف لتفادي وميض المنتجات التجريبية
 adminState.syncWithStorefront();
 
-export async function initAdminFromSupabase() {
-  const remoteData = await fetchAllFromSupabase();
+function areEqualJson(a, b) {
+  if (a === b) return true;
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+}
+
+export async function initAdminFromSupabase(options = {}) {
+  const remoteData = await fetchAllFromSupabase(options);
   if (!remoteData) return false;
 
   // إذا كانت قاعدة بيانات Supabase متصلة لكنها فارغة تماماً (عند الربط لأول مرة)، نرفع بيانات المتجر الحالية إليها تلقائياً
   if (
     isSupabaseConfigured &&
+    options.includeProducts !== false &&
     !remoteData.products &&
     !remoteData.cms &&
     !remoteData.landingPages
@@ -1161,41 +1186,56 @@ export async function initAdminFromSupabase() {
     return false;
   }
 
-  let changed = false;
-  if (remoteData.products) {
+  const changedKeys = new Set();
+
+  if (remoteData.products && !areEqualJson(remoteData.products, adminState.inventory)) {
     adminState.inventory = remoteData.products;
-    changed = true;
+    changedKeys.add('inventory');
   }
-  if (remoteData.orders) {
+  if (remoteData.orders && !areEqualJson(remoteData.orders, adminState.orders)) {
     adminState.orders = remoteData.orders;
-    changed = true;
+    changedKeys.add('orders');
   }
   if (remoteData.cms) {
     const { freeShippingThreshold, ...cmsFields } = remoteData.cms;
-    adminState.cms = { ...adminState.cms, ...cmsFields, announcementEnabled: false };
-    changed = true;
+    const nextCms = { ...adminState.cms, ...cmsFields, announcementEnabled: false };
+    if (!areEqualJson(nextCms, adminState.cms)) {
+      adminState.cms = nextCms;
+      changedKeys.add('cms');
+    }
   }
-  if (Array.isArray(remoteData.categories) && remoteData.categories.length > 0) {
+  if (
+    Array.isArray(remoteData.categories) &&
+    remoteData.categories.length > 0 &&
+    !areEqualJson(remoteData.categories, adminState.categories)
+  ) {
     adminState.categories = remoteData.categories;
-    changed = true;
+    changedKeys.add('categories');
   }
-  if (remoteData.landingPages) {
+  if (
+    remoteData.landingPages &&
+    !areEqualJson(remoteData.landingPages, adminState.landingPages)
+  ) {
     adminState.landingPages = remoteData.landingPages;
-    changed = true;
+    changedKeys.add('landingPages');
   }
   if (remoteData.shippingRates) {
-    adminState.shipping.rates = ensureAll69Wilayas(remoteData.shippingRates);
-    changed = true;
+    const nextRates = ensureAll69Wilayas(remoteData.shippingRates);
+    if (!areEqualJson(nextRates, adminState.shipping.rates)) {
+      adminState.shipping.rates = nextRates;
+      changedKeys.add('shipping');
+    }
   }
 
-  if (changed) {
-    adminState.saveAll();
-    renderAdminDashboard();
+  if (changedKeys.size > 0) {
+    adminState.saveAll({ notifyTabs: false, changedKeys });
+    if (document.getElementById('admin-dashboard-root')) {
+      renderAdminDashboard();
+    }
+    return true;
   }
-  return changed;
+  return false;
 }
-
-adminState.syncWithStorefront();
 
 function getProdDisplayName(prod) {
   const lang = getLang();

@@ -999,21 +999,32 @@ async function initData() {
   setupEventListeners();
 
   try {
-    const remote = await fetchAllFromSupabase();
+    const remote = await fetchAllFromSupabase({ includeProducts: false, includeOrders: false });
     if (remote) {
+      let changed = false;
       if (Array.isArray(remote.landingPages) && remote.landingPages.length > 0) {
-        state.landingPages = remote.landingPages;
-        saveJSON(LANDING_STORAGE_KEY, remote.landingPages);
+        if (JSON.stringify(remote.landingPages) !== JSON.stringify(state.landingPages)) {
+          state.landingPages = remote.landingPages;
+          saveJSON(LANDING_STORAGE_KEY, remote.landingPages);
+          changed = true;
+        }
       }
       if (remote.cms) {
-        state.cms = { ...state.cms, ...remote.cms };
-        saveJSON(CMS_STORAGE_KEY, state.cms);
+        const nextCms = { ...state.cms, ...remote.cms };
+        if (JSON.stringify(nextCms) !== JSON.stringify(state.cms)) {
+          state.cms = nextCms;
+          saveJSON(CMS_STORAGE_KEY, state.cms);
+          changed = true;
+        }
       }
       if (Array.isArray(remote.shippingRates) && remote.shippingRates.length > 0) {
         state.shippingRates = remote.shippingRates;
+        changed = true;
       }
-      resolveActiveLanding();
-      render();
+      if (changed) {
+        resolveActiveLanding();
+        render();
+      }
     }
   } catch {
     // fallback to local data
@@ -1022,7 +1033,7 @@ async function initData() {
   // التزامن الحي مع أي تغيير في قاعدة البيانات
   subscribeRealtimeSync((data) => {
     if (data?.table === 'landing_pages' || data?.table === 'cms_settings') {
-      fetchAllFromSupabase().then((refreshed) => {
+      fetchAllFromSupabase({ includeProducts: false, includeOrders: false }).then((refreshed) => {
         if (refreshed?.landingPages) state.landingPages = refreshed.landingPages;
         if (refreshed?.cms) state.cms = { ...state.cms, ...refreshed.cms };
         resolveActiveLanding();
